@@ -502,6 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!user) {
             window.location.href = 'index.html';
             return;
+        
         }
         const userEmail = document.getElementById('user-email');
         if (userEmail) userEmail.textContent = user.email;
