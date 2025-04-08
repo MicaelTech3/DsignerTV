@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dskey - Digital Signage Player</title>
+    <link rel="stylesheet" href="dskey.css">
+</head>
+<body>
+    <!-- Modo Gerador -->
+    <div id="generator-mode">
+        <h2 class="logo">Dsigner</h2>
+        <p class="description">Vá ao painel em <a href="https://dsignertv.com.br/" target="_blank">https://dsignertv.com.br/</a></p>
+        <div id="activation-key" class="key-display">Gerando chave...</div>
+        <button id="view-btn" class="btn btn-view">Visualizar Conteúdo</button>
+        <button id="generate-new-key" class="btn btn-generate">Gerar Nova Chave</button>
+        <div class="connection-status" id="gen-status"></div>
+    </div>
+
+    <!-- Modo Player -->
+    <div id="player-mode">
+        <button class="exit-button" id="exit-btn">Sair (ESC)</button>
+        <div id="media-display"></div>
+        <div class="media-info" id="media-info"></div>
+        <div class="connection-status" id="player-status"></div>
+    </div>
+
+    <!-- Firebase SDK v10 (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="dskey.js"></script>
+    
+</body>
+</html>
