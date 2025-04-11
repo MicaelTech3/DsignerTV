@@ -8,10 +8,8 @@ const firebaseConfig = {
     appId: "1:930311416952:web:d0e7289f0688c46492d18d"
 };
 
-// Initialize Firebase sem verificação de auth
+// Initialize Firebase sem autenticação
 firebase.initializeApp(firebaseConfig);
-
-// Database Reference
 const db = firebase.database();
 
 // DOM Elements
@@ -150,7 +148,7 @@ function clearMedia() {
     currentMedia = null;
 }
 
-// Player Mode Functions (Modificado para acesso público)
+// Player Mode Functions
 function initPlayerMode(key) {
     updatePlayerStatus('Connecting...', 'offline');
     showInfo = false;
@@ -159,7 +157,6 @@ function initPlayerMode(key) {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Conexão direta sem verificação de auth
     startPublicListening(key);
 }
 
@@ -173,7 +170,7 @@ function handleOffline() {
 }
 
 function startPublicListening(key) {
-    console.log('Public access - Listening to:', key);
+    console.log('Listening to:', 'midia/' + key);
     updatePlayerStatus('Connecting...', 'offline');
     stopListening();
 
@@ -182,16 +179,72 @@ function startPublicListening(key) {
             if (snapshot.exists()) {
                 handleMediaUpdate(snapshot);
             } else {
-                showError('Nenhum conteúdo encontrado');
+                showError('Nenhum conteúdo encontrado para esta chave');
             }
         },
         (error) => {
-            console.error('Public access error:', error);
-            updatePlayerStatus('Connection error', 'offline');
+            console.error('Erro ao acessar mídia:', error);
+            updatePlayerStatus('Erro de conexão: ' + error.message, 'offline');
         }
     );
 }
-// CSS for error messages
+
+function handleMediaUpdate(snapshot) {
+    const media = snapshot.val();
+    currentMedia = media;
+    console.log('Mídia recebida:', media);
+
+    updatePlayerStatus('✔ Online - Conteúdo recebido', 'online');
+    elements.mediaDisplay.innerHTML = '';
+
+    if (media.tipo === 'text') {
+        const textDiv = document.createElement('div');
+        textDiv.className = 'text-message';
+        textDiv.textContent = media.content;
+        textDiv.style.background = media.bgColor || '#2a2f5b';
+        textDiv.style.color = media.color || 'white';
+        textDiv.style.fontSize = `${media.fontSize || 24}px`;
+        elements.mediaDisplay.appendChild(textDiv);
+    } else if (media.tipo === 'image') {
+        const img = document.createElement('img');
+        img.src = media.url;
+        img.onerror = () => showError('Erro ao carregar a imagem');
+        elements.mediaDisplay.appendChild(img);
+        setTimeout(() => {
+            if (currentMedia === media && media.duration) {
+                clearMedia();
+            }
+        }, (media.duration || 10) * 1000);
+    } else if (media.tipo === 'video') {
+        const video = document.createElement('video');
+        video.src = media.url;
+        video.controls = false;
+        video.autoplay = true;
+        video.loop = media.loop || false;
+        video.onerror = () => showError('Erro ao carregar o vídeo');
+        video.onloadeddata = () => video.play().catch(e => console.error('Erro ao reproduzir vídeo:', e));
+        elements.mediaDisplay.appendChild(video);
+    } else if (media.tipo === 'activation' || media.tipo === 'status') {
+        showError('Nenhum conteúdo para exibir (ativação ou status)');
+    }
+}
+
+function showError(message) {
+    elements.mediaDisplay.innerHTML = `<div class="error-message">${message}</div>`;
+}
+
+function handleKeyboardShortcuts(e) {
+    if (e.key === 'Escape') exitPlayerMode();
+}
+
+function showExitButton() {
+    elements.exitBtn.style.opacity = '1';
+    setTimeout(() => {
+        elements.exitBtn.style.opacity = '0';
+    }, 2000);
+}
+
+// CSS
 const style = document.createElement('style');
 style.textContent = `
     .error-message {
@@ -219,6 +272,24 @@ style.textContent = `
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
+    }
+    .connection-status {
+        padding: 5px 10px;
+        border-radius: 5px;
+        color: white;
+    }
+    .connection-status.online {
+        background-color: #4CAF50;
+    }
+    .connection-status.offline {
+        background-color: #FF9800;
+    }
+    #exit-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        opacity: 0;
+        transition: opacity 0.3s;
     }
 `;
 document.head.appendChild(style);

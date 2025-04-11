@@ -1,19 +1,7 @@
-// Configuração do Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyBhj6nv3QcIHyuznWPNM4t_0NjL0ghMwFw",
-    authDomain: "dsignertv.firebaseapp.com",
-    databaseURL: "https://dsignertv-default-rtdb.firebaseio.com",
-    projectId: "dsignertv",
-    storageBucket: "dsignertv.firebasestorage.app",
-    messagingSenderId: "930311416952",
-    appId: "1:930311416952:web:d0e7289f0688c46492d18d"
-};
+// js/Painel.js
 
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
-const storage = firebase.storage();
-const database = firebase.database();
-const auth = firebase.auth();
+// Referenciar window.authModule diretamente sem redeclarar variáveis
+const authModule = window.authModule;
 
 // Local storage for categories and TVs
 let categories = JSON.parse(localStorage.getItem('dsigner_categories')) || [];
@@ -59,8 +47,8 @@ const syncWithFirebase = async () => {
 
     try {
         console.log('Iniciando sincronização...');
-        const categoriesSnapshot = await database.ref('categories').once('value');
-        const tvsSnapshot = await database.ref('tvs').once('value');
+        const categoriesSnapshot = await authModule.database.ref('categories').once('value');
+        const tvsSnapshot = await authModule.database.ref('tvs').once('value');
 
         const remoteCategories = categoriesSnapshot.val() ? Object.entries(categoriesSnapshot.val()).map(([id, data]) => ({ id, ...data })) : [];
         const remoteTvs = tvsSnapshot.val() ? Object.entries(tvsSnapshot.val()).map(([id, data]) => ({ id, ...data })) : [];
@@ -68,7 +56,7 @@ const syncWithFirebase = async () => {
         categories = [...new Set([...remoteCategories, ...categories].map(c => JSON.stringify(c)))].map(c => JSON.parse(c));
         for (const cat of categories) {
             if (!remoteCategories.some(rc => rc.id === cat.id)) {
-                await database.ref(`categories/${cat.id}`).set(cat);
+                await authModule.database.ref(`categories/${cat.id}`).set(cat);
                 console.log(`Categoria ${cat.id} criada no Realtime Database`);
             }
         }
@@ -76,7 +64,7 @@ const syncWithFirebase = async () => {
         tvs = [...new Set([...remoteTvs, ...tvs].map(t => JSON.stringify(t)))].map(t => JSON.parse(t));
         for (const tv of tvs) {
             if (!remoteTvs.some(rt => rt.id === tv.id)) {
-                await database.ref(`tvs/${tv.id}`).set(tv);
+                await authModule.database.ref(`tvs/${tv.id}`).set(tv);
                 console.log(`TV ${tv.id} criada no Realtime Database`);
             }
         }
@@ -161,7 +149,7 @@ const updateTvGrid = () => {
                     <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEzIDNoLTJ2MTBoMlYzem03IDhoLTRjLTEuMS0yLjQtMi41LTQuOC00LTYgMS4zLTEuMyAyLjYtMi4yIDQtMyAyLjIgMS4zIDMuNSAzIDQgNXoiLz48L3N2Zz4=" width="14" height="14">
                 </button>
                 <button class="tv-action-btn view-tv-btn" data-id="${tv.id}" title="Ver Mídia">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDQuNUM2LjUgNC41IDIgNy41IDIgMTJzNC41IDcuPSAxMCA3LjVjNS41IDAgMTAtMyAxMC03LjUtNC41LTcuNS0xMC03LjUtMTAuNXptMCAxMi41Yy0zLjggMC03LjItMi42LTguOS01LjUgMS43LTIuOSA1LjEtNS41IDguOS01LjVzNy4yIDIuNiA4LjkgNS41LTEuNyAyLjktNS4xIDUuNS04LjkuNXptMC0xMC41YzIuNSAwIDQuNSAyIDQuNSA0LjVzLTIgNC41LTQuNSA0LjUtNC41LTItNC51LTQuNSAyLTQuNSA0LjUtNC41eiIvPjwvc3ZnPg==" width="14" height="14">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDQuNUM2LjUgNC41IDIgNy41IDIgMTJzNC41IDcuPSAxMCA3LjVjNS41IDAgMTAtMyAxMC03LjUtNC41LTcuNS0xMC03LjUtMTAuNXptMCAxMi41Yy0zLjggMC03LjItMi42LTguOS01LjUgMS43LTIuOSA1LjEtNS41IDguOS01LjVzNy4yIDIuNiA4LjkgNS41LTEuNyAyLjktNS4xIDUuNS04LjkuNXptMC0xMC41YzIuNSAwIDQuNSAyIDQuNSA0LjVzLTIgNC41LTQuNSA0LjUtNC41LTItNC41LTQuNSAyLTQuNSA0LjUtNC41eiIvPjwvc3ZnPg==" width="14" height="14">
                 </button>
                 <button class="tv-action-btn upload-tv-btn" data-id="${tv.id}" title="Enviar mídia">
                     <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTkgMTZoNnYtNmg0bC03LTctNyA3aDR6bS00IDJoMTR2Mkg1eiIvPjwvc3ZnPg==" width="14" height="14">
@@ -183,7 +171,7 @@ const uploadMediaToStorage = async (file, tvId) => {
     try {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
-        const storageRef = storage.ref(`tv_media/${tvId}/${fileName}`);
+        const storageRef = authModule.storage.ref(`tv_media/${tvId}/${fileName}`);
 
         const progressBar = document.querySelector('.progress-bar');
         if (progressBar) progressBar.style.width = '0%';
@@ -236,13 +224,13 @@ async function sendTextMessage(tvId, messageData) {
 
     if (isOnline()) {
         try {
-            await database.ref(`tvs/${tvId}`).update({
+            await authModule.database.ref(`tvs/${tvId}`).update({
                 media: mediaData,
                 lastUpdate: Date.now()
             });
 
             if (tv.activationKey) {
-                await database.ref('midia/' + tv.activationKey).set({
+                await authModule.database.ref('midia/' + tv.activationKey).set({
                     tipo: 'text',
                     content: messageData.text,
                     color: messageData.color,
@@ -292,9 +280,8 @@ function displayTextMessage(content, color, bgColor, fontSize) {
     modal.style.display = 'block';
 }
 
-// Original uploadMidia Function (Adapted for New Structure)
-// Função para upload de mídia corrigida
-async function uploadMidia() {
+// Função para upload de mídia (declarada globalmente para o onclick)
+window.uploadMidia = async function() {
     try {
         const tvId = document.getElementById('upload-media-btn')?.dataset.tvId;
         const mediaType = document.getElementById('media-type')?.value;
@@ -322,11 +309,10 @@ async function uploadMidia() {
                 fontSize: document.getElementById('text-size')?.value || '24',
                 timestamp: Date.now()
             };
-        } 
-        else if (mediaType === 'image' || mediaType === 'video') {
+        } else if (mediaType === 'image' || mediaType === 'video') {
             const fileInput = document.getElementById('media-file');
             const file = fileInput?.files[0];
-            
+
             if (!file) {
                 showToast('Selecione um arquivo', 'error');
                 return;
@@ -339,7 +325,7 @@ async function uploadMidia() {
 
             showToast('Iniciando upload...', 'info');
             const mediaUrl = await uploadMediaToStorage(file, tvId);
-            
+
             mediaData = {
                 type: mediaType,
                 url: mediaUrl,
@@ -348,26 +334,23 @@ async function uploadMidia() {
 
             if (mediaType === 'image') {
                 mediaData.duration = parseInt(document.getElementById('image-duration')?.value) || 10;
-            } 
-            else if (mediaType === 'video') {
+            } else if (mediaType === 'video') {
                 mediaData.loop = document.getElementById('video-loop')?.checked || false;
-                
-                // Garante que o tipo MIME está correto para vídeos
+
                 if (!file.type.startsWith('video/')) {
                     showToast('Arquivo não é um vídeo válido', 'error');
                     return;
                 }
             }
-        }
-        else if (mediaType === 'link') {
+        } else if (mediaType === 'link') {
             const mediaUrl = document.getElementById('media-link')?.value.trim();
             if (!mediaUrl) {
                 showToast('Digite uma URL válida', 'error');
                 return;
             }
 
-            const isVideo = mediaUrl.match(/\.(mp4|webm|ogg|mov|avi)$/i) || 
-                          mediaUrl.includes('youtube.com') || 
+            const isVideo = mediaUrl.match(/\.(mp4|webm|ogg|mov|avi)$/i) ||
+                          mediaUrl.includes('youtube.com') ||
                           mediaUrl.includes('vimeo.com');
 
             mediaData = {
@@ -377,20 +360,17 @@ async function uploadMidia() {
             };
         }
 
-        // Atualiza os dados da TV
         tv.media = mediaData;
         saveLocalData();
 
         if (isOnline()) {
-            // Atualiza no Firebase
-            await database.ref(`tvs/${tvId}`).update({
+            await authModule.database.ref(`tvs/${tvId}`).update({
                 media: mediaData,
                 lastUpdate: Date.now()
             });
 
-            // Se tiver chave de ativação, envia para o dispositivo
             if (tv.activationKey) {
-                await database.ref('midia/' + tv.activationKey).set({
+                await authModule.database.ref('midia/' + tv.activationKey).set({
                     tipo: mediaData.type,
                     url: mediaData.url,
                     content: mediaData.content || null,
@@ -405,11 +385,10 @@ async function uploadMidia() {
         }
 
         showToast('Conteúdo enviado com sucesso!', 'success');
-        
-        // Fecha o modal e limpa os campos
+
         const modal = document.getElementById('upload-media-modal');
         if (modal) modal.style.display = 'none';
-        
+
         const fileInput = document.getElementById('media-file');
         if (fileInput) fileInput.value = '';
 
@@ -417,9 +396,9 @@ async function uploadMidia() {
         console.error("Erro no envio:", error);
         showToast('Falha no envio: ' + error.message, 'error');
     }
-}
+};
 
-// Função para exibir a mídia (incluindo vídeos)
+// Função para exibir a mídia
 function showTvMedia(tvId) {
     const tv = tvs.find(t => t.id === tvId);
     if (!tv?.media) {
@@ -440,17 +419,14 @@ function showTvMedia(tvId) {
             tv.media.bgColor,
             tv.media.fontSize
         );
-    } 
-    else if (tv.media.type === 'image') {
+    } else if (tv.media.type === 'image') {
         const img = document.createElement('img');
         img.src = tv.media.url;
         img.style.maxWidth = '100%';
         img.onerror = () => showToast('Erro ao carregar a imagem', 'error');
         container.appendChild(img);
-    }
-    else if (tv.media.type === 'video') {
+    } else if (tv.media.type === 'video') {
         if (tv.media.url.includes('youtube.com') || tv.media.url.includes('youtu.be')) {
-            // Vídeo do YouTube
             const videoId = tv.media.url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)?.[1];
             if (videoId) {
                 const iframe = document.createElement('iframe');
@@ -462,25 +438,14 @@ function showTvMedia(tvId) {
                 container.appendChild(iframe);
             }
         } else {
-            // Vídeo MP4 ou outros formatos
             const video = document.createElement('video');
             video.src = tv.media.url;
             video.controls = true;
             video.loop = tv.media.loop || false;
             video.style.maxWidth = '100%';
             video.autoplay = true;
-            
-            // Adiciona eventos para tratamento de erro
-            video.onerror = () => {
-                showToast('Erro ao carregar o vídeo', 'error');
-                console.error('Erro ao carregar vídeo:', tv.media.url);
-            };
-            
-            video.oncanplay = () => {
-                console.log('Vídeo pronto para reprodução');
-                video.play().catch(e => console.error('Erro ao reproduzir:', e));
-            };
-            
+            video.onerror = () => showToast('Erro ao carregar o vídeo', 'error');
+            video.oncanplay = () => video.play().catch(e => console.error('Erro ao reproduzir:', e));
             container.appendChild(video);
         }
     }
@@ -498,12 +463,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     window.addEventListener('offline', updateConnectionStatus);
 
-    auth.onAuthStateChanged(user => {
+    authModule.onAuthStateChanged(user => {
         if (!user) {
+            console.log('Nenhum usuário autenticado, redirecionando para login...');
             window.location.href = 'index.html';
             return;
-        
         }
+        console.log('Usuário autenticado:', user.uid);
         const userEmail = document.getElementById('user-email');
         if (userEmail) userEmail.textContent = user.email;
         const supportEmail = document.getElementById('support-email');
@@ -531,7 +497,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dskeyBtn) {
         dskeyBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            // Use o caminho absoluto com minúsculas:
             window.location.href = 'https://dsignertv.web.app/dskey/dskey.html';
         });
     }
@@ -573,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isOnline()) {
                 try {
-                    await database.ref(`categories/${newId}`).set(newCategory);
+                    await authModule.database.ref(`categories/${newId}`).set(newCategory);
                     showToast('Andar adicionado!', 'success');
                 } catch (err) {
                     console.error('Erro ao adicionar categoria no Firebase:', err);
@@ -630,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (isOnline()) {
                     try {
-                        await database.ref(`categories/${catId}`).update({ name: newName });
+                        await authModule.database.ref(`categories/${catId}`).update({ name: newName });
                         showToast('Andar atualizado', 'success');
                     } catch (err) {
                         console.error('Erro ao atualizar categoria:', err);
@@ -661,10 +626,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isOnline()) {
                 try {
-                    await database.ref(`categories/${catId}`).remove();
+                    await authModule.database.ref(`categories/${catId}`).remove();
                     const tvsToDelete = tvs.filter(tv => tv.categoryId === catId);
                     for (const tv of tvsToDelete) {
-                        await database.ref(`tvs/${tv.id}`).remove();
+                        await authModule.database.ref(`tvs/${tv.id}`).remove();
                     }
                     showToast('Andar e TVs removidos', 'success');
                 } catch (err) {
@@ -728,11 +693,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isOnline()) {
                 try {
-                    await database.ref(`tvs/${newId}`).set(newTv);
+                    await authModule.database.ref(`tvs/${newId}`).set(newTv);
                     showToast('TV adicionada!', 'success');
 
                     if (activationKey) {
-                        await database.ref('midia/' + activationKey).set({
+                        await authModule.database.ref('midia/' + activationKey).set({
                             tipo: 'activation',
                             tvData: newTv,
                             timestamp: Date.now()
@@ -765,11 +730,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (isOnline()) {
                     try {
-                        await database.ref(`tvs/${tvId}`).update({ status: tv.status });
+                        await authModule.database.ref(`tvs/${tvId}`).update({ status: tv.status });
                         showToast(`TV ${tv.status === 'off' ? 'desligada' : 'ligada'}`, 'success');
 
                         if (tv.activationKey) {
-                            await database.ref('midia/' + tv.activationKey).set({
+                            await authModule.database.ref('midia/' + tv.activationKey).set({
                                 tipo: 'status',
                                 value: tv.status,
                                 timestamp: Date.now()
@@ -859,78 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const viewBtn = e.target.closest('.view-tv-btn');
         if (viewBtn) {
             const tvId = viewBtn.dataset.id;
-            const tv = tvs.find(t => t.id === tvId);
-            if (!tv?.media) {
-                showToast('Nenhuma mídia enviada para esta TV', 'info');
-                return;
-            }
-            if (!isOnline() && !tv.media.url && !tv.media.content) {
-                showToast('Conecte-se para visualizar a mídia', 'error');
-                return;
-            }
-
-            const modal = document.getElementById('view-media-modal');
-            const container = document.getElementById('media-container');
-            if (modal && container) {
-                container.innerHTML = '';
-
-                if (tv.media.type === 'text') {
-                    displayTextMessage(
-                        tv.media.content,
-                        tv.media.color,
-                        tv.media.bgColor,
-                        tv.media.fontSize
-                    );
-                } else if (tv.media.type === 'image') {
-                    const img = document.createElement('img');
-                    img.src = tv.media.url;
-                    img.style.maxWidth = '100%';
-                    img.onerror = () => showToast('Erro ao carregar a imagem', 'error');
-                    container.appendChild(img);
-
-                    const info = document.createElement('div');
-                    info.className = 'media-info';
-                    info.innerHTML = `
-                        <p>Duração: ${tv.media.duration || 10} segundos</p>
-                        <p>Enviado em: ${new Date(tv.media.timestamp).toLocaleString()}</p>
-                    `;
-                    container.appendChild(info);
-                } else if (tv.media.type === 'video') {
-                    if (tv.media.url.includes('youtube.com') || tv.media.url.includes('youtu.be')) {
-                        const videoId = tv.media.url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)?.[1];
-                        if (videoId) {
-                            const iframe = document.createElement('iframe');
-                            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=${tv.media.loop ? 1 : 0}`;
-                            iframe.style.width = '100%';
-                            iframe.style.height = '400px';
-                            iframe.frameBorder = '0';
-                            iframe.allow = 'autoplay; encrypted-media';
-                            container.appendChild(iframe);
-                        } else {
-                            showToast('URL do YouTube inválida', 'error');
-                        }
-                    } else {
-                        const video = document.createElement('video');
-                        video.src = tv.media.url;
-                        video.controls = true;
-                        video.loop = tv.media.loop || false;
-                        video.style.maxWidth = '100%';
-                        video.autoplay = true;
-                        video.onerror = () => showToast('Erro ao carregar o vídeo', 'error');
-                        container.appendChild(video);
-                    }
-
-                    const info = document.createElement('div');
-                    info.className = 'media-info';
-                    info.innerHTML = `
-                        <p>Loop: ${tv.media.loop ? 'Sim' : 'Não'}</p>
-                        <p>Enviado em: ${new Date(tv.media.timestamp).toLocaleString()}</p>
-                    `;
-                    container.appendChild(info);
-                }
-
-                modal.style.display = 'block';
-            }
+            showTvMedia(tvId);
         }
     });
     const viewMediaModalClose = document.querySelector('#view-media-modal .close-btn');
@@ -999,14 +893,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (isOnline()) {
                         try {
-                            await database.ref(`tvs/${tvId}`).update({
+                            await authModule.database.ref(`tvs/${tvId}`).update({
                                 activationKey: newKey,
                                 lastActivation: Date.now(),
                                 deviceName: `Dispositivo ${tv.id}`
                             });
 
                             if (newKey) {
-                                await database.ref('midia/' + newKey).set({
+                                await authModule.database.ref('midia/' + newKey).set({
                                     tipo: 'activation',
                                     tvData: tv,
                                     timestamp: Date.now()
@@ -1055,7 +949,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isOnline()) {
                 try {
-                    await database.ref(`tvs/${tvId}`).remove();
+                    await authModule.database.ref(`tvs/${tvId}`).remove();
                     showToast('TV removida', 'success');
                 } catch (err) {
                     console.error('Erro ao remover TV no Firebase:', err);
@@ -1074,7 +968,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutLink) {
         logoutLink.addEventListener('click', e => {
             e.preventDefault();
-            auth.signOut().then(() => window.location.href = 'index.html');
+            authModule.signOut().then(() => window.location.href = 'index.html');
         });
     }
 
