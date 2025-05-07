@@ -175,9 +175,9 @@ const uploadMediaToStorage = async (file, tvId) => {
         if (progressBar) progressBar.style.width = '0%';
         showToast(`Enviando: 0%`, 'info');
 
-        if (file.size > 100 * 1024 * 1024) {
-            showToast('Arquivo muito grande (máx. 100MB)', 'error');
-            throw new Error('Arquivo excede o limite de 100MB');
+        if (file.size > 190 * 1024 * 1024) {
+            showToast('Arquivo muito grande (máx. 190MB)', 'error');
+            throw new Error('Arquivo excede o limite de 190MB');
         }
 
         const uploadTask = storageRef.put(file);
