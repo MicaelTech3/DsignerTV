@@ -175,7 +175,7 @@ const uploadMediaToStorage = async (file, tvId) => {
         if (progressBar) progressBar.style.width = '0%';
         showToast(`Enviando: 0%`, 'info');
 
-        if (file.size > 190 * 1024 * 1024) {
+        if (file.size > 190 * 1080 * 1080) {
             showToast('Arquivo muito grande (máx. 190MB)', 'error');
             throw new Error('Arquivo excede o limite de 190MB');
         }
@@ -372,8 +372,8 @@ function showTvMedia(tvId) {
             input.onchange = async (e) => {
                 const files = Array.from(e.target.files);
                 for (const file of files) {
-                    if (file.size > 100 * 1024 * 1024) {
-                        showToast(`Arquivo ${file.name} excede 100MB`, 'error');
+                    if (file.size > 190 * 1080 * 1080) {
+                        showToast(`Arquivo ${file.name} excede 190MB`, 'error');
                         continue;
                     }
                     const url = await uploadMediaToStorage(file, tvId);
@@ -502,8 +502,8 @@ window.uploadMidia = async function() {
                 return;
             }
 
-            if (file.size > 100 * 1024 * 1024) {
-                showToast('Arquivo muito grande (máx. 100MB)', 'error');
+            if (file.size > 190 * 1080 * 1080) {
+                showToast('Arquivo muito grande (máx. 190MB)', 'error');
                 return;
             }
 
@@ -553,8 +553,8 @@ window.uploadMidia = async function() {
 
             const playlistItems = [];
             for (const file of Array.from(files)) {
-                if (file.size > 100 * 1024 * 1024) {
-                    showToast(`Arquivo ${file.name} excede 100MB`, 'error');
+                if (file.size > 190 * 1080 * 1080) {
+                    showToast(`Arquivo ${file.name} excede 190MB`, 'error');
                     continue;
                 }
                 const url = await uploadMediaToStorage(file, tvId);
