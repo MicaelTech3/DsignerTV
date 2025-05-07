@@ -678,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dskeyBtn) {
         dskeyBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = 'https://dskey-2025.web.app/';
+            window.location.href = 'https://tvdsigner.com.br/';
         });
     }
 
