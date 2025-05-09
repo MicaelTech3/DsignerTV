@@ -1,13 +1,10 @@
-// Referenciar window.authModule diretamente sem redeclarar variáveis
 const authModule = window.authModule;
 
-// Local storage for categories and TVs
 let categories = JSON.parse(localStorage.getItem('dsigner_categories')) || [];
 let tvs = JSON.parse(localStorage.getItem('dsigner_tvs')) || [];
 let selectedCategoryId = null;
 let currentMediaTv = null;
 
-// Utility Functions
 const isOnline = () => navigator.onLine;
 
 const saveLocalData = () => {
@@ -39,7 +36,6 @@ const updateConnectionStatus = () => {
     statusElement.style.color = 'white';
 };
 
-// Synchronize with Firebase Realtime Database
 const syncWithFirebase = async () => {
     if (!isOnline()) return;
 
@@ -77,7 +73,6 @@ const syncWithFirebase = async () => {
     }
 };
 
-// Update Category List
 const updateCategoryList = () => {
     const floorList = document.querySelector('.floor-list');
     if (!floorList) {
@@ -98,7 +93,7 @@ const updateCategoryList = () => {
                 <span>${category.name}</span>
                 <div class="floor-actions">
                     <button class="action-btn edit-floor-btn" data-id="${category.id}" title="Editar">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTMgMTcuMjVWMjFoMy43NUwxNy44MSA5Ljk0bC0zLjc1LTMuNzVMMyAxNy4yNXpNMjAuNzEgNy4wNGMuMzktLjM5LjM5LTEuMDIgMC0xLjQxbC0yLjM0LTIuMzRjLS4zOS0uMzktMS4wMi0uMzktMS40MSAwbC0xLjgzIDEuODMgMy43NSAzLjc1IDEuODMtMS44M3oiLz48L3N2Zz4=" width="14" height="14" alt="Editar">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTMgMTcuMjVWMjFiMy43NUwxNy44MSA5Ljk0bC0zLjc1LTMuNzVMMyAxNy4yNXpNMjAuNzEgNy4wNGMuMzktLjM5LjM5LTEuMDIgMC0xLjQxbC0yLjM0LTIuMzRjLS4zOS0uMzktMS4wMi0uMzktMS40MSAwbC0xLjgzIDEuODMgMy43NSAzLjc1IDEuODMtMS44M3oiLz48L3N2Zz4=" width="14" height="14" alt="Editar">
                     </button>
                     <button class="action-btn delete-btn delete-floor-btn" data-id="${category.id}" title="Excluir">
                         <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTYgMTlhMiAyIDAgMCAwIDIgMmg4YTIgMiAwIDAgMCAyLTJWN0g2djEyTTE5IDRIMTUuNWwtMS0xaC05bC0xIDFINHYyaDE2VjR6Ii8+PC9zdmc+" width="14" height="14" alt="Excluir">
@@ -116,7 +111,6 @@ const updateCategoryList = () => {
     console.log('Lista de categorias atualizada:', categories);
 };
 
-// Update TV Grid (Removido o botão de criar playlist)
 const updateTvGrid = () => {
     const tvGrid = document.getElementById('tv-grid');
     if (!tvGrid) {
@@ -164,7 +158,6 @@ const updateTvGrid = () => {
     });
 };
 
-// Upload Media to Storage (Limite de 100 MB)
 const uploadMediaToStorage = async (file, tvId) => {
     try {
         const fileExt = file.name.split('.').pop();
@@ -175,7 +168,7 @@ const uploadMediaToStorage = async (file, tvId) => {
         if (progressBar) progressBar.style.width = '0%';
         showToast(`Enviando: 0%`, 'info');
 
-        if (file.size > 190 * 1080 * 1080) {
+        if (file.size > 190 * 1024 * 1024) {
             showToast('Arquivo muito grande (máx. 190MB)', 'error');
             throw new Error('Arquivo excede o limite de 190MB');
         }
@@ -208,7 +201,6 @@ const uploadMediaToStorage = async (file, tvId) => {
     }
 };
 
-// Send Text Message
 async function sendTextMessage(tvId, messageData) {
     const tv = tvs.find(t => t.id === tvId);
     if (!tv) return false;
@@ -235,10 +227,10 @@ async function sendTextMessage(tvId, messageData) {
             if (tv.activationKey) {
                 await authModule.database.ref('midia/' + tv.activationKey).set({
                     tipo: 'text',
-                    content: messageData.text,
-                    color: messageData.color,
-                    bgColor: messageData.bgColor,
-                    fontSize: messageData.fontSize,
+                    content: mediaData.content,
+                    color: mediaData.color,
+                    bgColor: mediaData.bgColor,
+                    fontSize: mediaData.fontSize,
                     timestamp: Date.now()
                 });
             }
@@ -256,7 +248,6 @@ async function sendTextMessage(tvId, messageData) {
     }
 }
 
-// Display Text Message
 function displayTextMessage(content, color, bgColor, fontSize) {
     const modal = document.getElementById('view-media-modal');
     const container = document.getElementById('media-container');
@@ -283,7 +274,6 @@ function displayTextMessage(content, color, bgColor, fontSize) {
     modal.style.display = 'block';
 }
 
-// Show TV Media (Com edição de playlist)
 function showTvMedia(tvId) {
     const tv = tvs.find(t => t.id === tvId);
     if (!tv) {
@@ -314,21 +304,21 @@ function showTvMedia(tvId) {
                 itemDiv.className = 'playlist-item';
                 itemDiv.dataset.index = index;
                 itemDiv.innerHTML = `
-                <img src="${item.type === 'video' ? 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTE3IDMuNUgxMHYzLjVIMTdWMy41ek0xMiAxM3Y3LjVoNS41aDEuNWExLjUgMS41IDAgMCAxIDEuNSAxLjV2MS41YzAgLjgzLS42NyAxLjUtMS41IDEuNWgtMy41di0zLjVIMTdWMjEuNWgtM3YxLjVoLTN2LTEuNWgtM3YtMS41YzAtLjgzLjY3LTEuNSAxLjUtMS41aDEuNWgtMS41djcuNUg3di03LjVIM3YxLjVoLTEuNWMtLjgzIDAtMS41LS42Ny0xLjUtMS41di0xLjVjMC0uODMuNjctMS41IDEuNS0xLjVoMS41djcuNUgxMHYtNy41SDd2My41SDMuNWMtLjgzIDAtMS41LS42Ny0xLjUtMS41di0zLjVhMS41IDEuNSAwIDAgMSAxLjUtMS41aDMuNXYzLjVIMTB2LTMuNWgtM3YtMS41YzAtLjgzLjY3LTEuNSAxLjUtMS41aDEuNWgtMS41djMuNUgxN3YtMy41aC0zdi0xLjVjMC0uODMuNjctMS41IDEuNS0xLjVoMS41YzAgMCAzLjUgMCAzLjUgMHYzLjV6Ii8+PC9zdmc+' : item.url}" alt="${item.type}" style="width: 100px; height: 100px; object-fit: cover;">
-                <div>
-                    <p>Tipo: ${item.type}</p>
-                    <p>Duração: <input type="number" class="playlist-duration" value="${item.duration || 10}" min="1" ${item.type === 'video' ? 'disabled' : ''}> seg</p>
-                    <button class="move-up-btn" ${index === 0 ? 'disabled' : ''} title="Mover para cima">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="#00d4ff"><path d="M12 8l-6 6h12l-6-6z"/></svg>
-                    </button>
-                    <button class="move-down-btn" ${index === playlistItems.length - 1 ? 'disabled' : ''} title="Mover para baixo">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="#00d4ff"><path d="M12 16l6-6H6l6 6z"/></svg>
-                    </button>
-                    <button class="remove-item-btn" title="Remover item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="#ff5252"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-                    </button>
-                </div>
-            `;
+                    <img src="${item.type === 'video' ? 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTE3IDMuNUgxMHYzLjVIMTdWMy41ek0xMiAxM3Y3LjVoNS41aDEuNWExLjUgMS41IDAgMCAxIDEuNSAxLjV2MS41YzAgLjgzLS42NyAxLjUtMS41IDEuNWgtMy41di0zLjVIMTdWMjEuNWgtM3YxLjVoLTN2LTEuNWgtM3YtMS41YzAtLjgzLjY3LTEuNSAxLjUtMS41aDEuNWgtMS41djcuNUg3di03LjVIM3YxLjVoLTEuNWMtLjgzIDAtMS41LS42Ny0xLjUtMS41di0xLjVjMC0uODMuNjctMS41IDEuNS0xLjVoMS41djcuNUgxMHYtNy41SDd2My41SDMuNWMtLjgzIDAtMS41LS42Ny0xLjUtMS41di0zLjVhMS41IDEuNSAwIDAgMSAxLjUtMS41aDMuNXYzLjVIMTB2LTMuNWgtM3YtMS41YzAtLjgzLjY3LTEuNSAxLjUtMS41aDEuNWgtMS41djMuNUgxN3YtMy41aC0zdi0xLjVjMC0uODMuNjctMS41IDEuNS0xLjVoMS41YzAgMCAzLjUgMCAzLjUgMHYzLjV6Ii8+PC9zdmc+' : item.url}" alt="${item.type}" style="width: 100px; height: 100px; object-fit: cover;">
+                    <div>
+                        <p>Tipo: ${item.type}</p>
+                        <p>Duração: <input type="number" class="playlist-duration" value="${item.duration || 10}" min="1" ${item.type === 'video' ? 'disabled' : ''}> seg</p>
+                        <button class="move-up-btn" ${index === 0 ? 'disabled' : ''} title="Mover para cima">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="#00d4ff"><path d="M12 8l-6 6h12l-6-6z"/></svg>
+                        </button>
+                        <button class="move-down-btn" ${index === playlistItems.length - 1 ? 'disabled' : ''} title="Mover para baixo">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="#00d4ff"><path d="M12 16l6-6H6l6 6z"/></svg>
+                        </button>
+                        <button class="remove-item-btn" title="Remover item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="#ff5252"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                        </button>
+                    </div>
+                `;
                 playlistView.appendChild(itemDiv);
             });
         };
@@ -372,7 +362,7 @@ function showTvMedia(tvId) {
             input.onchange = async (e) => {
                 const files = Array.from(e.target.files);
                 for (const file of files) {
-                    if (file.size > 190 * 1080 * 1080) {
+                    if (file.size > 190 * 1024 * 1024) {
                         showToast(`Arquivo ${file.name} excede 190MB`, 'error');
                         continue;
                     }
@@ -438,12 +428,14 @@ function showTvMedia(tvId) {
                 const videoId = tv.media.url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)?.[1];
                 if (videoId) {
                     const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=${tv.media.loop ? 1 : 0}`;
+                    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=${tv.media.loop ? 1 : 0}${tv.media.loop ? '&playlist=' + videoId : ''}`;
                     iframe.style.width = '100%';
                     iframe.style.height = '400px';
                     iframe.frameBorder = '0';
                     iframe.allow = 'autoplay; encrypted-media';
                     container.appendChild(iframe);
+                } else {
+                    showToast('URL do YouTube inválida', 'error');
                 }
             } else {
                 const video = document.createElement('video');
@@ -464,7 +456,6 @@ function showTvMedia(tvId) {
     modal.style.display = 'block';
 }
 
-// Função para upload de mídia (Adicionada opção de playlist)
 window.uploadMidia = async function() {
     try {
         const tvId = document.getElementById('upload-media-btn')?.dataset.tvId;
@@ -502,7 +493,7 @@ window.uploadMidia = async function() {
                 return;
             }
 
-            if (file.size > 190 * 1080 * 1080) {
+            if (file.size > 190 * 1024 * 1024) {
                 showToast('Arquivo muito grande (máx. 190MB)', 'error');
                 return;
             }
@@ -520,8 +511,9 @@ window.uploadMidia = async function() {
                 mediaData.duration = parseInt(document.getElementById('image-duration')?.value) || 10;
             } else if (mediaType === 'video') {
                 mediaData.loop = document.getElementById('video-loop')?.checked || false;
-
-                if (!file.type.startsWith('video/')) {
+                const validVideoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi'];
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                if (!file.type.startsWith('video/') && !validVideoExtensions.includes(fileExtension)) {
                     showToast('Arquivo não é um vídeo válido', 'error');
                     return;
                 }
@@ -542,6 +534,10 @@ window.uploadMidia = async function() {
                 url: mediaUrl,
                 timestamp: Date.now()
             };
+
+            if (isVideo) {
+                mediaData.loop = document.getElementById('video-loop')?.checked || false;
+            }
         } else if (mediaType === 'playlist') {
             const fileInput = document.getElementById('playlist-files');
             const files = fileInput?.files;
@@ -553,7 +549,7 @@ window.uploadMidia = async function() {
 
             const playlistItems = [];
             for (const file of Array.from(files)) {
-                if (file.size > 190 * 1080 * 1080) {
+                if (file.size > 190 * 1024 * 1024) {
                     showToast(`Arquivo ${file.name} excede 190MB`, 'error');
                     continue;
                 }
@@ -634,7 +630,6 @@ window.uploadMidia = async function() {
     }
 };
 
-// Main Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM carregado, iniciando configuração...');
     updateConnectionStatus();
@@ -661,7 +656,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTvGrid();
     });
 
-    // Navigation Links
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', e => {
             e.preventDefault();
@@ -673,7 +667,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Dskey Button
     const dskeyBtn = document.getElementById('dskey-btn-header');
     if (dskeyBtn) {
         dskeyBtn.addEventListener('click', (e) => {
@@ -682,7 +675,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Category Modal
     const categoryModal = document.getElementById('category-modal');
     const selectCategoriesBtn = document.querySelector('.select-categories-btn');
     if (selectCategoriesBtn) {
@@ -699,7 +691,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Add Category
     const addCategoryBtn = document.getElementById('add-category-btn');
     if (addCategoryBtn) {
         addCategoryBtn.addEventListener('click', async () => {
@@ -735,7 +726,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Edit Category
     document.addEventListener('click', e => {
         const editBtn = e.target.closest('.edit-floor-btn');
         if (editBtn) {
@@ -793,7 +783,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Delete Category
     document.addEventListener('click', async e => {
         const deleteBtn = e.target.closest('.delete-floor-btn');
         if (deleteBtn) {
@@ -826,7 +815,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Add TV Modal
     const addTvModal = document.getElementById('add-tv-modal');
     const addTvBtn = document.querySelector('.add-tv-btn');
     if (addTvBtn) {
@@ -899,7 +887,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Toggle TV Status
     document.addEventListener('click', async e => {
         const toggleBtn = e.target.closest('.toggle-tv-btn');
         if (toggleBtn) {
@@ -932,7 +919,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Upload Media (Com opção de playlist)
     document.addEventListener('click', e => {
         const uploadBtn = e.target.closest('.upload-tv-btn');
         if (uploadBtn) {
@@ -963,10 +949,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const imageOptions = document.getElementById('image-options');
                 const videoOptions = document.getElementById('video-options');
                 const playlistGroup = document.getElementById('playlist-group');
-
-                if (!playlistGroup) {
-                    console.error('Elemento #playlist-group não encontrado no HTML');
-                }
 
                 if (mediaTypeSelect && fileGroup && linkGroup && textGroup && imageOptions && videoOptions && playlistGroup) {
                     mediaTypeSelect.innerHTML = `
@@ -1039,7 +1021,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // View Media
     document.addEventListener('click', e => {
         const viewBtn = e.target.closest('.view-tv-btn');
         if (viewBtn) {
@@ -1055,7 +1036,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // TV Info
     document.addEventListener('click', e => {
         const infoBtn = e.target.closest('.info-tv-btn');
         if (infoBtn) {
@@ -1156,7 +1136,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Delete TV
     document.addEventListener('click', async e => {
         const deleteBtn = e.target.closest('.delete-tv-btn');
         if (deleteBtn) {
@@ -1183,7 +1162,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Logout
     const logoutLink = document.getElementById('logout-link');
     if (logoutLink) {
         logoutLink.addEventListener('click', e => {
@@ -1192,7 +1170,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Support Form
     const supportForm = document.getElementById('support-form');
     if (supportForm) {
         supportForm.addEventListener('submit', async e => {
@@ -1239,7 +1216,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Select Category
     document.addEventListener('click', e => {
         const floorBtn = e.target.closest('.floor-btn');
         if (floorBtn && !e.target.closest('.action-btn')) {
@@ -1250,7 +1226,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Send Text Message
     const sendTextBtn = document.getElementById('send-text-btn');
     if (sendTextBtn) {
         sendTextBtn.addEventListener('click', async function() {
