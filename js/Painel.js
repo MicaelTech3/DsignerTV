@@ -642,7 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
     authModule.onAuthStateChanged(user => {
         if (!user) {
             console.log('Nenhum usuário autenticado, redirecionando para login...');
-            window.location.href = 'index.html';
+            window.location.href = 'iindex.html';
             return;
         }
         console.log('Usuário autenticado:', user.uid);

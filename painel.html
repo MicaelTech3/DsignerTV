@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dsigner - Painel</title>
     <link rel="stylesheet" href="css/Painel.css">
+    <style>
+      
+    </style>
 </head>
 <body>
     <div id="connection-status"></div>
@@ -157,48 +160,83 @@
                     <option value="video">Vídeo</option>
                     <option value="link">Link Externo</option>
                     <option value="playlist">Playlist</option>
-                </select>
+                    </div>
+                </div>
             </div>
-            <div class="form-group" id="text-options" style="display:none;">
-                <label for="text-content">Mensagem:</label>
-                <textarea id="text-content" rows="4"></textarea>
-                <label>Cor do Texto: <input type="color" id="text-color" value="#ffffff"></label>
-                <label>Cor de Fundo: <input type="color" id="text-bg-color" value="#1a1f3b"></label>
-                <label>Tamanho da Fonte:
-                    <select id="text-size">
-                        <option value="16">Pequeno</option>
-                        <option value="24" selected>Médio</option>
-                        <option value="32">Grande</option>
-                        <option value="48">Extra Grande</option>
-                    </select>
-                </label>
-            </div>
+            
+            <style>
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1000;
+            }
+            .modal-content {
+                background: #000000;
+                margin: 10% auto;
+                padding: 20px;
+                width: 80%;
+                max-width: 600px;
+                border-radius: 8px;
+                position: relative;
+            }
+            .close-btn {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                font-size: 20px;
+                cursor: pointer;
+            }
+            .playlist-item {
+                display: flex;
+                align-items: center;
+                margin: 10px 0;
+                border: 1px solid #ddd;
+                padding: 10px;
+                border-radius: 5px;
+            }
+            .playlist-item img {
+                margin-right: 10px;
+            }
+            .btn {
+                background: #00d4ff;
+                color: #0a0f2b;
+                border: none;
+                padding: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            </style>
+            
             <div class="form-group" id="file-upload-group" style="display:none;">
-                <label for="media-file">Arquivo (máx. 190MB):</label>
+                <label for="media-file">Arquivo (máx. 100MB):</label>
                 <input type="file" id="media-file" accept="image/*,video/*">
                 <div class="upload-progress">
                     <div class="progress-bar"></div>
                 </div>
                 <img id="media-preview" class="media-preview" alt="Pré-visualização">
             </div>
+            
             <div class="form-group" id="link-upload-group" style="display:none;">
                 <label for="media-link">URL:</label>
                 <input type="text" id="media-link" placeholder="https://exemplo.com/imagem.jpg">
             </div>
-            <div class="form-group" id="playlist-group" style="display:none;">
-                <label for="playlist-files">Selecionar Arquivos para Playlist (máx. 190MB cada):</label>
-                <input type="file" id="playlist-files" accept="image/*,video/*" multiple>
-                <div id="media-preview" class="media-preview"></div>
-            </div>
+            
             <div id="image-options" class="form-group" style="display:none;">
                 <label for="image-duration">Duração (segundos):</label>
                 <input type="number" id="image-duration" value="10" min="1">
             </div>
+            
             <div id="video-options" class="form-group" style="display:none;">
                 <label>
                     <input type="checkbox" id="video-loop"> Repetir vídeo
                 </label>
             </div>
+            
             <button id="upload-media-btn" class="btn" onclick="uploadMidia()">Enviar</button>
             <div id="upload-status" class="message"></div>
         </div>

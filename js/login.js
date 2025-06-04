@@ -1,56 +1,35 @@
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyBhj6nv3QcIHyuznWPNM4t_0NjL0ghMwFw",
-  authDomain: "dsignertv.firebaseapp.com",
-  databaseURL: "https://dsignertv-default-rtdb.firebaseio.com",
-  projectId: "dsignertv",
-  storageBucket: "dsignertv.firebasestorage.app",
-  messagingSenderId: "930311416952",
-  appId: "1:930311416952:web:d0e7289f0688c46492d18d"
-};
-
-// Inicialização do Firebase
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
-    
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Feedback visual
-            const btn = this.querySelector('button[type="submit"]');
-            const originalText = btn.textContent;
-            btn.disabled = true;
-            btn.textContent = "Autenticando...";
-            
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    console.log("Usuário logado:", userCredential.user);
-                    window.location.href = 'painel.html'; // Redireciona para painel.html
-                })
-                .catch(error => {
-                    console.error("Erro de login:", error);
-                    document.getElementById('login-message').textContent = getErrorMessage(error);
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                });
-        });
-    }
+    if (!loginForm) return;
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const btn = loginForm.querySelector('button[type="submit"]');
+        const loginMessage = document.getElementById('login-message');
+
+        btn.disabled = true;
+        btn.textContent = 'Autenticando...';
+
+        try {
+            await firebase.auth().signInWithEmailAndPassword(email, password);
+            window.location.href = 'painel.html';
+        } catch (error) {
+            loginMessage.textContent = getErrorMessage(error);
+            btn.disabled = false;
+            btn.textContent = 'Entrar';
+        }
+    });
 });
 
 function getErrorMessage(error) {
-    switch (error.code) {
-        case 'auth/invalid-email': return 'Email inválido';
-        case 'auth/user-disabled': return 'Conta desativada';
-        case 'auth/user-not-found': return 'Usuário não encontrado';
-        case 'auth/wrong-password': return 'Senha incorreta';
-        case 'auth/too-many-requests': return 'Muitas tentativas. Tente mais tarde.';
-        default: return 'Erro ao fazer login: ' + error.message;
-    }
+    const messages = {
+        'auth/invalid-email': 'Email inválido',
+        'auth/user-disabled': 'Conta desativada',
+        'auth/user-not-found': 'Usuário não encontrado',
+        'auth/wrong-password': 'Senha incorreta',
+        'auth/too-many-requests': 'Muitas tentativas. Tente mais tarde.'
+    };
+    return messages[error.code] || `Erro ao fazer login: ${error.message}`;
 }
