@@ -154,7 +154,7 @@ body {
 }
 
 .floor-btn:hover, .floor-btn.active {
-    background-color: #1a1f3b;
+    background-color: #32728f77;
     box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
 }
 
@@ -183,7 +183,7 @@ body {
 }
 
 .delete-btn:hover {
-    background-color: rgba(255, 82, 82, 0.1);
+    background-color: rgb(177, 54, 54);
 }
 
 .select-categories-btn, .add-tv-btn {
@@ -287,7 +287,7 @@ body {
 }
 
 .tv-action-btn {
-    background: rgb(255, 255, 255);
+    background: rgba(255, 255, 255, 0.788);
     border: none;
     border-radius: 50%;
     width: 28px;
@@ -391,7 +391,7 @@ body {
     width: 100%;
     padding: 10px;
     background-color: #1a1f3b;
-    border: 1px solid #00d4ff;
+    border: 1px solid #f4f5f557;
     border-radius: 5px;
     color: #ffffff;
 }
@@ -419,7 +419,7 @@ body {
 }
 
 .message.info {
-    background-color: rgba(33, 150, 243, 0.2);
+    background-color: rgba(3, 125, 224, 0.5);
     color: #2196F3;
 }
 
