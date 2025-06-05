@@ -15,8 +15,14 @@ body {
     background-color: #0a0f2b;
     padding: 10px 20px;
     border-bottom: 2px solid #bbbbbb;
+    position: relative;
+}
+
+.header-content {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    width: 100%;
     position: relative;
 }
 
@@ -42,23 +48,6 @@ body {
 .painel-menu {
     display: flex;
     align-items: center;
-    margin-left: 20px;
-}
-
-.painel-menu .logout {
-    position: absolute;
-    right: 20px;
-    color: #ffffff;
-    text-decoration: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    transition: all 0.3s;
-}
-
-.painel-menu .logout:hover {
-    background-color: #1a1f3b;
-    color: #00d4ff;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
 }
 
 .painel-menu ul {
@@ -66,6 +55,8 @@ body {
     display: flex;
     gap: 10px;
     align-items: center;
+    margin: 0;
+    padding: 0;
 }
 
 .painel-menu a {
@@ -76,7 +67,23 @@ body {
     transition: all 0.3s;
 }
 
-.painel-menu a:hover, .painel-menu a.active {
+.painel-menu a:hover, 
+.painel-menu a.active {
+    background-color: #1a1f3b;
+    color: #00d4ff;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.logout {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: all 0.3s;
+    margin-left: auto;
+}
+
+.logout:hover {
     background-color: #1a1f3b;
     color: #00d4ff;
     box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
@@ -99,6 +106,7 @@ body {
     box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
 }
 
+/* Restante do CSS permanece igual */
 .painel-content {
     padding: 20px;
     max-width: none;
@@ -533,9 +541,21 @@ body {
         align-items: flex-start;
     }
     
+    .header-title {
+        position: static;
+        transform: none;
+        margin: 10px 0;
+        order: -1;
+    }
+    
     .painel-menu ul {
         margin-top: 10px;
         flex-wrap: wrap;
+    }
+    
+    .logout {
+        margin-left: 0;
+        margin-top: 10px;
     }
     
     .modal-content {
