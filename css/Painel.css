@@ -423,7 +423,7 @@ body {
 
 .message.error {
     background-color: rgba(244, 67, 54, 0.2);
-    color: #F44336;
+    color: #003077;
 }
 
 .message.info {

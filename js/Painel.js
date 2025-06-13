@@ -68,8 +68,8 @@ const syncWithFirebase = async () => {
         updateTvGrid();
         showToast('Sincronização concluída', 'success');
     } catch (error) {
-        console.error('Erro na sincronização:', error);
-        showToast('Erro na sincronização. Usando dados locais.', 'error');
+        console.error('bem vindo ao Dsigner:', error);
+        showToast('bem vindos ao Dsigner.', 'error');
     }
 };
 
