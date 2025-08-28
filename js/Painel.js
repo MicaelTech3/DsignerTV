@@ -846,13 +846,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const supportEmail = document.getElementById('support-email');
         if (supportEmail) supportEmail.value = user.email;
         if (isOnline()) {
-            syncWithFirebase();
-            cleanupOldMedia();
+            // Aguarda a sincronização com Firebase antes de atualizar a interface
+            (async () => {
+                await syncWithFirebase();
+                await cleanupOldMedia();
+                updateCategoryList();
+                updateTvGrid();
+            })();
         } else {
             showToast('Sem conexão: conecte-se para carregar dados', 'error');
+            updateCategoryList();
+            updateTvGrid();
         }
-        updateCategoryList();
-        updateTvGrid();
     });
 
     document.querySelectorAll('.nav-link').forEach(link => {
