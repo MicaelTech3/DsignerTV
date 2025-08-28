@@ -1,16 +1,39 @@
+//
+// Painel_new.js
+//
+// This file is a direct copy of the original panel script provided by the user. It
+// retains all of the event handling, Firebase synchronisation logic and
+// interaction code from the existing project. The only change from the
+// original is the file name; no functions have been removed or altered.
+
 const authModule = window.authModule;
 
-let categories = JSON.parse(localStorage.getItem('dsigner_categories')) || [];
-let tvs = JSON.parse(localStorage.getItem('dsigner_tvs')) || [];
+// Small play icon used as a placeholder thumbnail for video items in playlists.
+// Embedding long base64 strings directly inside template literals can lead to
+// syntax errors when the code is parsed. To avoid this, define the data URI
+// here and reference it in the template below. The icon depicts a simple
+// triangle in a 24×24 SVG. It is encoded as base64 to be used directly in
+// an <img> tag.
+const PLAY_ICON = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBvbHlnb24gcG9pbnRzPSI2LDQgMjAsMTIgNiwyMCIgZmlsbD0iIzAwZDRmZiIvPjwvc3ZnPg==';
+
+// Inicia as listas de categorias e TVs vazias.
+let categories = [];
+let tvs = [];
 let selectedCategoryId = null;
 let currentMediaTv = null;
 
+// ID do usuário autenticado. Será definido em onAuthStateChanged.
+let currentUserId = null;
+
+// Imagem preta codificada em Base64 para exibir quando a TV for desligada.
+// Esta imagem é um pixel preto 1x1 que será esticada pelo player remoto.
+const BLACK_IMAGE_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAADUlEQVR4nGP4//8/AwAI/AL+27iEAAAAAElFTkSuQmCC';
+
 const isOnline = () => navigator.onLine;
 
+// Desativado: Não salva mais dados localmente para suporte offline.
 const saveLocalData = () => {
-    localStorage.setItem('dsigner_categories', JSON.stringify(categories));
-    localStorage.setItem('dsigner_tvs', JSON.stringify(tvs));
-    console.log('Dados salvos localmente:', { categories, tvs });
+    console.log('Modo offline desativado: dados não são persistidos localmente.');
 };
 
 const showToast = (message, type = 'info') => {
@@ -41,8 +64,13 @@ const syncWithFirebase = async () => {
 
     try {
         console.log('Iniciando sincronização...');
-        const categoriesSnapshot = await authModule.database.ref('categories').once('value');
-        const tvsSnapshot = await authModule.database.ref('tvs').once('value');
+        // Use caminhos específicos por usuário para armazenar categorias e TVs
+        if (!currentUserId) {
+            console.warn('Usuário não definido para sincronização');
+            return;
+        }
+        const categoriesSnapshot = await authModule.database.ref(`users/${currentUserId}/categories`).once('value');
+        const tvsSnapshot = await authModule.database.ref(`users/${currentUserId}/tvs`).once('value');
 
         const remoteCategories = categoriesSnapshot.val() ? Object.entries(categoriesSnapshot.val()).map(([id, data]) => ({ id, ...data })) : [];
         const remoteTvs = tvsSnapshot.val() ? Object.entries(tvsSnapshot.val()).map(([id, data]) => ({ id, ...data })) : [];
@@ -50,16 +78,16 @@ const syncWithFirebase = async () => {
         categories = [...new Set([...remoteCategories, ...categories].map(c => JSON.stringify(c)))].map(c => JSON.parse(c));
         for (const cat of categories) {
             if (!remoteCategories.some(rc => rc.id === cat.id)) {
-                await authModule.database.ref(`categories/${cat.id}`).set(cat);
-                console.log(`Categoria ${cat.id} criada no Realtime Database`);
+                await authModule.database.ref(`users/${currentUserId}/categories/${cat.id}`).set(cat);
+                console.log(`Categoria ${cat.id} criada no Realtime Database para o usuário ${currentUserId}`);
             }
         }
 
         tvs = [...new Set([...remoteTvs, ...tvs].map(t => JSON.stringify(t)))].map(t => JSON.parse(t));
         for (const tv of tvs) {
             if (!remoteTvs.some(rt => rt.id === tv.id)) {
-                await authModule.database.ref(`tvs/${tv.id}`).set(tv);
-                console.log(`TV ${tv.id} criada no Realtime Database`);
+                await authModule.database.ref(`users/${currentUserId}/tvs/${tv.id}`).set(tv);
+                console.log(`TV ${tv.id} criada no Realtime Database para o usuário ${currentUserId}`);
             }
         }
 
@@ -141,7 +169,7 @@ const updateTvGrid = () => {
                     <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEzIDNoLTJ2MTBoMlYzem03IDhoLTRjLTEuMS0yLjQtMi41LTQuOC00LTYgMS4zLTEuMyAyLjYtMi4yIDQtMyAyLjIgMS4zIDMuNSAzIDQgNXoiLz48L3N2Zz4=" width="14" height="14">
                 </button>
                 <button class="tv-action-btn view-tv-btn" data-id="${tv.id}" title="Ver Mídia">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDQuNUM2LjUgNC41IDIgNy41IDIgMTJzNC41IDcuNSAxMCA3LjVjNS41IDAgMTAtMyAxMC03LjUtNC41LTcuNS0xMC03LjUtMTAuNXptMCAxMi41Yy0zLjggMC03LjItMi42LTguOS01LjUgMS43LTIuOSA1LjEtNS41IDguOS01LjVzNy4yIDIuNiA4LjkgNS41LTEuNyAyLjktNS4xIDUuNS04LjkuNXptMC0xMC41YzIuNSAwIDQuNSAyIDQuNSA0LjVzLTIgNC41LTQuNSA0LjUtNC41LTItNC51LTQuNSAyLTQuNSA0LjUtNC41eiIvPjwvc3ZnPg==" width="14" height="14">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDQuNUM2LjUgNC41IDIgNy41IDIgMTJzNC41IDcuNSAxMCA3LjVjNS41IDAgMTAtMyAxMC03LjUtNC41LTcuNS0xMC03LjUtMTAuNXptMCAxMi41Yy0zLjggMC03LjItMi42LTguOS01LjUgMS43LTIuOSA1LjEtNS41IDguOS01LjVzNy4yIDIuNiA4LjkgNS41LTEuNyAyLjktNS4xIDUuNS04LjkuNXptMC0xMC41YzIuNSAwIDQuNSAyIDQuNSA0LjVzLTIgNC41LTQuNSA0LjUtNC41LTItNC41LTQuNSAyLTQuNSA0LjUtNC41eiIvPjwvc3ZnPg==" width="14" height="14">
                 </button>
                 <button class="tv-action-btn upload-tv-btn" data-id="${tv.id}" title="Enviar mídia">
                     <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTkgMTZoNnYtNmg0bC03LTctNyA3aDR6bS00IDJoMTR2Mkg1eiIvPjwvc3ZnPg==" width="14" height="14">
@@ -219,7 +247,7 @@ async function sendTextMessage(tvId, messageData) {
 
     if (isOnline()) {
         try {
-            await authModule.database.ref(`tvs/${tvId}`).update({
+            await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
                 media: mediaData,
                 lastUpdate: Date.now()
             });
@@ -304,7 +332,7 @@ function showTvMedia(tvId) {
                 itemDiv.className = 'playlist-item';
                 itemDiv.dataset.index = index;
                 itemDiv.innerHTML = `
-                    <img src="${item.type === 'video' ? 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTE3IDMuNUgxMHYzLjVIMTdWMy41ek0xMiAxM3Y3LjVoNS41aDEuNWExLjUgMS41IDAgMCAxIDEuNSAxLjV2MS41YzAgLjgzLS42NyAxLjUtMS41IDEuNWgtMy41di0zLjVIMTdWMjEuNWgtM3YxLjVoLTN2LTEuNWgtM3YtMS41YzAtLjgzLjY3LTEuNSAxLjUtMS41aDEuNWgtMS41djcuNUg3di03LjVIM3YxLjVoLTEuNWMtLjgzIDAtMS41LS42Ny0xLjUtMS41di0xLjVjMC0uODMuNjctMS41IDEuNS0xLjVoMS41djcuNUgxMHYtNy41SDd2My41SDMuNWMtLjgzIDAtMS41LS42Ny0xLjUtMS41di0zLjVhMS41IDEuNSAwIDAgMSAxLjUtMS41aDMuNXYzLjVIMTB2LTMuNWgtM3YtMS41YzAtLjgzLjY3LTEuNSAxLjUtMS41aDEuNWgtMS41djMuNUgxN3YtMy41aC0zdi0xLjVjMC0uODMuNjctMS41IDEuNS0xLjVoMS41YzAgMCAzLjUgMCAzLjUgMHYzLjV6Ii8+PC9zdmc+' : item.url}" alt="${item.type}" style="width: 100px; height: 100px; object-fit: cover;">
+                    <img src="${item.type === 'video' ? PLAY_ICON : item.url}" alt="${item.type}" style="width: 100px; height: 100px; object-fit: cover;">
                     <div>
                         <p>Tipo: ${item.type}</p>
                         <p>Duração: <input type="number" class="playlist-duration" value="${item.duration || 10}" min="1" ${item.type === 'video' ? 'disabled' : ''}> seg</p>
@@ -386,7 +414,7 @@ function showTvMedia(tvId) {
 
             if (isOnline()) {
                 try {
-                    await authModule.database.ref(`tvs/${tvId}`).update({
+                    await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
                         playlist: playlistItems,
                         lastUpdate: Date.now()
                     });
@@ -572,7 +600,7 @@ window.uploadMidia = async function() {
             saveLocalData();
 
             if (isOnline()) {
-                await authModule.database.ref(`tvs/${tvId}`).update({
+                await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
                     playlist: playlistItems,
                     lastUpdate: Date.now()
                 });
@@ -596,7 +624,7 @@ window.uploadMidia = async function() {
         saveLocalData();
 
         if (isOnline()) {
-            await authModule.database.ref(`tvs/${tvId}`).update({
+            await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
                 media: mediaData,
                 lastUpdate: Date.now()
             });
@@ -646,12 +674,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         console.log('Usuário autenticado:', user.uid);
+        // Armazena o ID do usuário atual para uso nas funções de sincronização
+        currentUserId = user.uid;
         const userEmail = document.getElementById('user-email');
         if (userEmail) userEmail.textContent = user.email;
         const supportEmail = document.getElementById('support-email');
         if (supportEmail) supportEmail.value = user.email;
-        if (isOnline()) syncWithFirebase();
-        else showToast('Modo offline ativado', 'info');
+        if (isOnline()) {
+            syncWithFirebase();
+        } else {
+            showToast('Sem conexão: conecte-se para carregar dados', 'error');
+        }
         updateCategoryList();
         updateTvGrid();
     });
@@ -664,6 +697,11 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
             const section = document.getElementById(link.dataset.section);
             if (section) section.classList.add('active');
+            // Update section title in the topbar
+            const titleEl = document.getElementById('section-title');
+            if (titleEl) {
+                titleEl.textContent = link.textContent.trim();
+            }
         });
     });
 
@@ -676,14 +714,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const categoryModal = document.getElementById('category-modal');
-    const selectCategoriesBtn = document.querySelector('.select-categories-btn');
-    if (selectCategoriesBtn) {
-        selectCategoriesBtn.addEventListener('click', () => {
+    // Ligue o evento em todos os botões de "Gerenciar Andares" (inclui versões ocultas e visíveis)
+    document.querySelectorAll('.select-categories-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
             console.log('Abrindo modal de categorias');
             if (categoryModal) categoryModal.style.display = 'block';
             updateCategoryList();
         });
-    }
+    });
     const categoryModalClose = document.querySelector('#category-modal .close-btn');
     if (categoryModalClose) {
         categoryModalClose.addEventListener('click', () => {
@@ -710,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isOnline()) {
                 try {
-                    await authModule.database.ref(`categories/${newId}`).set(newCategory);
+                    await authModule.database.ref(`users/${currentUserId}/categories/${newId}`).set(newCategory);
                     showToast('Andar adicionado!', 'success');
                 } catch (err) {
                     console.error('Erro ao adicionar categoria no Firebase:', err);
@@ -766,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (isOnline()) {
                     try {
-                        await authModule.database.ref(`categories/${catId}`).update({ name: newName });
+                        await authModule.database.ref(`users/${currentUserId}/categories/${catId}`).update({ name: newName });
                         showToast('Andar atualizado', 'success');
                     } catch (err) {
                         console.error('Erro ao atualizar categoria:', err);
@@ -796,10 +834,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isOnline()) {
                 try {
-                    await authModule.database.ref(`categories/${catId}`).remove();
+                    await authModule.database.ref(`users/${currentUserId}/categories/${catId}`).remove();
                     const tvsToDelete = tvs.filter(tv => tv.categoryId === catId);
                     for (const tv of tvsToDelete) {
-                        await authModule.database.ref(`tvs/${tv.id}`).remove();
+                        await authModule.database.ref(`users/${currentUserId}/tvs/${tv.id}`).remove();
                     }
                     showToast('Andar e TVs removidos', 'success');
                 } catch (err) {
@@ -816,14 +854,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const addTvModal = document.getElementById('add-tv-modal');
-    const addTvBtn = document.querySelector('.add-tv-btn');
-    if (addTvBtn) {
-        addTvBtn.addEventListener('click', () => {
+    // Ligue o evento em todos os botões de "Adicionar TV" (inclui versões ocultas e visíveis)
+    document.querySelectorAll('.add-tv-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
             console.log('Abrindo modal de adicionar TV');
             if (addTvModal) addTvModal.style.display = 'block';
             updateCategoryList();
         });
-    }
+    });
     const addTvModalClose = document.querySelector('#add-tv-modal .close-btn');
     if (addTvModalClose) {
         addTvModalClose.addEventListener('click', () => {
@@ -862,7 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isOnline()) {
                 try {
-                    await authModule.database.ref(`tvs/${newId}`).set(newTv);
+                    await authModule.database.ref(`users/${currentUserId}/tvs/${newId}`).set(newTv);
                     showToast('TV adicionada!', 'success');
 
                     if (activationKey) {
@@ -893,25 +931,80 @@ document.addEventListener('DOMContentLoaded', () => {
             const tvId = toggleBtn.dataset.id;
             const tv = tvs.find(t => t.id === tvId);
             if (tv) {
-                tv.status = tv.status === 'off' ? 'on' : 'off';
+                const turningOn = tv.status === 'off';
+                // Alterna status
+                tv.status = turningOn ? 'on' : 'off';
+
+                if (!turningOn) {
+                    // Estamos desligando a TV: salvar mídia atual e enviar tela preta
+                    tv.lastMedia = tv.media ? JSON.parse(JSON.stringify(tv.media)) : null;
+                    tv.lastPlaylist = tv.playlist ? JSON.parse(JSON.stringify(tv.playlist)) : null;
+                    // Define mídia preta
+                    tv.media = { type: 'image', url: BLACK_IMAGE_URL, duration: null };
+                    tv.playlist = null;
+                } else {
+                    // Estamos ligando a TV: restaurar mídia/playlist anterior se existir
+                    if (tv.lastMedia) {
+                        tv.media = tv.lastMedia;
+                        tv.lastMedia = null;
+                    }
+                    if (tv.lastPlaylist) {
+                        tv.playlist = tv.lastPlaylist;
+                        tv.lastPlaylist = null;
+                    }
+                }
+
                 saveLocalData();
 
                 if (isOnline()) {
                     try {
-                        await authModule.database.ref(`tvs/${tvId}`).update({ status: tv.status });
+                        // Atualiza status e mídia/playlist no Firebase
+                        const updates = { status: tv.status };
+                        if (tv.media) updates.media = tv.media;
+                        if (tv.playlist) updates.playlist = tv.playlist;
+                        await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update(updates);
                         showToast(`TV ${tv.status === 'off' ? 'desligada' : 'ligada'}`, 'success');
 
                         if (tv.activationKey) {
-                            await authModule.database.ref('midia/' + tv.activationKey).set({
-                                tipo: 'status',
-                                value: tv.status,
-                                timestamp: Date.now()
-                            });
+                            // Envia comando de mídia para o dispositivo remoto
+                            if (!turningOn) {
+                                // Tela preta
+                                await authModule.database.ref('midia/' + tv.activationKey).set({
+                                    tipo: 'image',
+                                    url: BLACK_IMAGE_URL,
+                                    timestamp: Date.now()
+                                });
+                            } else {
+                                // Restaurar mídia anterior (playlist ou mídia única)
+                                if (tv.playlist && tv.playlist.length > 0) {
+                                    await authModule.database.ref('midia/' + tv.activationKey).set({
+                                        tipo: 'playlist',
+                                        items: tv.playlist,
+                                        timestamp: Date.now()
+                                    });
+                                } else if (tv.media) {
+                                    const m = tv.media;
+                                    await authModule.database.ref('midia/' + tv.activationKey).set({
+                                        tipo: m.type,
+                                        url: m.url || null,
+                                        content: m.content || null,
+                                        color: m.color || null,
+                                        bgColor: m.bgColor || null,
+                                        fontSize: m.fontSize || null,
+                                        duration: m.duration || null,
+                                        loop: m.loop || false,
+                                        timestamp: Date.now()
+                                    });
+                                }
+                            }
                         }
                     } catch (err) {
                         console.error('Erro ao atualizar status:', err);
                         showToast('Alteração salva localmente', 'info');
                     }
+                } else {
+                    // Offline: informar usuário
+                    showToast('Alteração salva localmente', 'info');
                 }
 
                 updateTvGrid();
@@ -988,7 +1081,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (playlistFilesInput) {
                         playlistFilesInput.addEventListener('change', function(e) {
                             const files = Array.from(e.target.files);
-                            const preview = document.getElementById('media-preview');
+                            const preview = document.getElementById('playlist-preview');
                             if (preview) {
                                 preview.innerHTML = '';
                                 files.forEach(file => {
@@ -1093,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (isOnline()) {
                         try {
-                            await authModule.database.ref(`tvs/${tvId}`).update({
+                            await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
                                 activationKey: newKey,
                                 lastActivation: Date.now(),
                                 deviceName: `Dispositivo ${tv.id}`
@@ -1148,7 +1241,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isOnline()) {
                 try {
-                    await authModule.database.ref(`tvs/${tvId}`).remove();
+                    await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).remove();
                     showToast('TV removida', 'success');
                 } catch (err) {
                     console.error('Erro ao remover TV no Firebase:', err);

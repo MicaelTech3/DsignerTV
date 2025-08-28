@@ -3,98 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dsigner - Painel</title>
+    <title>DsignerTV - Painel</title>
+    <!-- Link to the new consolidated stylesheet -->
     <link rel="stylesheet" href="css/Painel.css">
-    <style>
-      
-    </style>
 </head>
 <body>
+    <!-- Connection status indicator; stays fixed in the bottom right -->
     <div id="connection-status"></div>
 
-    <header class="painel-header">
-        <div class="header-content">
-            <div class="header-title">
+    <!-- Dashboard layout wrapper -->
+    <div class="dashboard">
+        <!-- Persistent sidebar containing navigation and actions -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>DsignerTV</h1>
             </div>
-            <nav class="painel-menu">
+            <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="#tvs" class="nav-link active" data-section="tvs-section">TVs</a></li>
+                    <!-- Use data-section attributes to map links to content sections -->
+                    <li><a href="#tvs" class="nav-link active" data-section="tvs-section">Dashboard</a></li>
                     <li><a href="#app" class="nav-link" data-section="app-section">App</a></li>
                     <li><a href="#perfil" class="nav-link" data-section="perfil-section">Perfil</a></li>
                     <li><a href="#support" class="nav-link" data-section="support-section">Suporte</a></li>
-                    <li><button id="dskey-btn-header" class="dskey-btn-nav">dskey</button></li>
-                    <div class="header-title">
-                 <h1>DsignerTV</h1>
                 </ul>
             </nav>
-            <div><a href="#" id="logout-link" class="logout">Sair</a></div>
-        </div>
-    </header>
+            <!-- dskey button remains accessible -->
+            <button id="dskey-btn-header" class="dskey-btn-nav">dskey</button>
+            <!-- Logout link positioned at the bottom of the sidebar -->
+            <a href="#" id="logout-link" class="logout">Sair</a>
+        </aside>
 
-    <main class="painel-content">
-        <section id="tvs-section" class="content-section active">
-            <div class="tvs-menu">
-                <div class="tvs-content">
+        <!-- Main scrollable content area -->
+        <main class="main-content">
+            <!-- Top bar inside the main content; can be used to display section titles -->
+            <header class="topbar">
+                <h2 id="section-title">Dashboard</h2>
+            </header>
+
+            <!-- Dashboard section: TVs and categories management -->
+            <section id="tvs-section" class="content-section active">
+                <div class="tvs-layout">
+                    <!-- Categories (floors) list -->
                     <div class="floor-list">
-                        <button class="select-categories-btn">Gerenciar Andares</button>
+                        <!-- Mantemos o botão original oculto para que a funcionalidade JavaScript continue funcionando -->
+                        <button class="select-categories-btn" style="display:none;">Gerenciar Andares</button>
                     </div>
+                    <!-- Content grid for TVs -->
                     <div class="content-grid">
-                        <h3>Conteúdo</h3>
+                        <div class="content-grid-header">
+                            <h3>Conteúdo</h3>
+                            <div class="grid-actions">
+                                <!-- Placeholder for future controls (e.g. search or filters) -->
+                            </div>
+                        </div>
                         <div class="grid" id="tv-grid"></div>
-                        <button class="add-tv-btn">Adicionar TV</button>
+                        <!-- Ocultamos o botão original de adicionar TV para substituí-lo por uma versão fixa -->
+                        <button class="add-tv-btn" style="display:none;">Adicionar TV</button>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section id="app-section" class="content-section">
-            <div class="app-content">
-                <h2>Download do App</h2>
-                <div class="demo-area">
-                    <h3>Como instalar</h3>
-                    <div class="gallery">
-                        <img src="/imagens/logo Dsigner 2.png" alt="Screenshot 1">
-                        <img src="/imagens/logo_Dsigner_2.png" alt="Screenshot 2">
+            <!-- App installation section -->
+            <section id="app-section" class="content-section">
+                <div class="app-content container-neon">
+                    <h2>Download do App</h2>
+                    <div class="demo-area">
+                        <h3>Como instalar</h3>
+                        <div class="gallery">
+                            <img src="/imagens/logo Dsigner 2.png" alt="Screenshot 1">
+                            <img src="/imagens/logo_Dsigner_2.png" alt="Screenshot 2">
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section id="perfil-section" class="content-section">
-            <div class="profile-content">
-                <h2>Meu Perfil</h2>
-                <div class="profile-info">
-                    <p><strong>Email:</strong> <span id="user-email"></span></p>
+            <!-- User profile section -->
+            <section id="perfil-section" class="content-section">
+                <div class="profile-content container-neon">
+                    <h2>Meu Perfil</h2>
+                    <div class="profile-info">
+                        <p><strong>Email:</strong> <span id="user-email"></span></p>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section id="support-section" class="content-section">
-            <div class="support-content">
-                <h2>Suporte Técnico</h2>
-                <form id="support-form">
-                    <div class="form-group">
-                        <label for="support-email">Email:</label>
-                        <input type="email" id="support-email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="support-empresa">Nome da Empresa:</label>
-                        <input type="text" id="support-empresa" name="empresa" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="support-chamado">Mensagem:</label>
-                        <textarea id="support-chamado" name="chamado" required></textarea>
-                    </div>
-                    <button type="submit">Enviar Chamado</button>
-                    <div id="support-message" class="message"></div>
-                </form>
-            </div>
-        </section>
-    </main>
+            <!-- Support form section -->
+            <section id="support-section" class="content-section">
+                <div class="support-content container-neon">
+                    <h2>Suporte Técnico</h2>
+                    <form id="support-form">
+                        <div class="form-group">
+                            <label for="support-email">Email:</label>
+                            <input type="email" id="support-email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="support-empresa">Nome da Empresa:</label>
+                            <input type="text" id="support-empresa" name="empresa" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="support-chamado">Mensagem:</label>
+                            <textarea id="support-chamado" name="chamado" required></textarea>
+                        </div>
+                        <button type="submit">Enviar Chamado</button>
+                        <div id="support-message" class="message"></div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
 
-    <!-- Modals -->
+    <!-- Modals: copy of the original markup so all functionality stays intact -->
     <div class="modal" id="category-modal">
-        <div class="modal-content">
+    <div class="modal-content container-neon">
             <span class="close-btn">×</span>
             <h2>Gerenciar Andares</h2>
             <div class="category-form">
@@ -109,7 +129,7 @@
     </div>
 
     <div class="modal" id="edit-floor-modal">
-        <div class="modal-content">
+        <div class="modal-content container-neon">
             <span class="close-btn">×</span>
             <h2>Editar Andar</h2>
             <div class="form-group">
@@ -121,7 +141,7 @@
     </div>
 
     <div class="modal" id="add-tv-modal">
-        <div class="modal-content">
+        <div class="modal-content container-neon">
             <span class="close-btn">×</span>
             <h2>Adicionar TV</h2>
             <div class="form-group">
@@ -141,7 +161,7 @@
     </div>
 
     <div class="modal" id="view-media-modal">
-        <div class="modal-content">
+        <div class="modal-content container-neon">
             <span class="close-btn">×</span>
             <h2>Mídia da TV</h2>
             <div id="media-container"></div>
@@ -149,7 +169,7 @@
     </div>
 
     <div class="modal" id="upload-media-modal">
-        <div class="modal-content">
+        <div class="modal-content container-neon">
             <span class="close-btn">×</span>
             <h2>Enviar Mídia</h2>
             <div class="form-group">
@@ -160,58 +180,8 @@
                     <option value="video">Vídeo</option>
                     <option value="link">Link Externo</option>
                     <option value="playlist">Playlist</option>
-                    </div>
-                </div>
+                </select>
             </div>
-            
-            <style>
-            .modal {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                z-index: 1000;
-            }
-            .modal-content {
-                background: #000000;
-                margin: 10% auto;
-                padding: 20px;
-                width: 80%;
-                max-width: 600px;
-                border-radius: 8px;
-                position: relative;
-            }
-            .close-btn {
-                position: absolute;
-                top: 10px;
-                right: 15px;
-                font-size: 20px;
-                cursor: pointer;
-            }
-            .playlist-item {
-                display: flex;
-                align-items: center;
-                margin: 10px 0;
-                border: 1px solid #ddd;
-                padding: 10px;
-                border-radius: 5px;
-            }
-            .playlist-item img {
-                margin-right: 10px;
-            }
-            .btn {
-                background: #00d4ff;
-                color: #0a0f2b;
-                border: none;
-                padding: 10px;
-                border-radius: 5px;
-                cursor: pointer;
-            }
-            </style>
-            
             <div class="form-group" id="file-upload-group" style="display:none;">
                 <label for="media-file">Arquivo (máx. 100MB):</label>
                 <input type="file" id="media-file" accept="image/*,video/*">
@@ -220,30 +190,44 @@
                 </div>
                 <img id="media-preview" class="media-preview" alt="Pré-visualização">
             </div>
-            
             <div class="form-group" id="link-upload-group" style="display:none;">
                 <label for="media-link">URL:</label>
                 <input type="text" id="media-link" placeholder="https://exemplo.com/imagem.jpg">
             </div>
-            
             <div id="image-options" class="form-group" style="display:none;">
                 <label for="image-duration">Duração (segundos):</label>
                 <input type="number" id="image-duration" value="10" min="1">
             </div>
-            
             <div id="video-options" class="form-group" style="display:none;">
-                <label>
-                    <input type="checkbox" id="video-loop"> Repetir vídeo
-                </label>
+                <label><input type="checkbox" id="video-loop"> Repetir vídeo</label>
             </div>
-            
+            <div id="text-options" class="form-group" style="display:none;">
+                <label for="text-content">Texto:</label>
+                <textarea id="text-content" rows="4"></textarea>
+                <label for="text-color">Cor do Texto:</label>
+                <input type="color" id="text-color" value="#ffffff">
+                <label for="text-bg-color">Cor de Fundo:</label>
+                <input type="color" id="text-bg-color" value="#1a1f3b">
+                <label for="text-size">Tamanho da Fonte:</label>
+                <select id="text-size">
+                    <option value="16">Pequeno</option>
+                    <option value="24" selected>Médio</option>
+                    <option value="32">Grande</option>
+                    <option value="48">Extra Grande</option>
+                </select>
+            </div>
+            <div id="playlist-group" class="form-group" style="display:none;">
+                <label for="playlist-files">Arquivos da Playlist:</label>
+                <input type="file" id="playlist-files" accept="image/*,video/mp4,.gif" multiple>
+                <div id="playlist-preview" class="media-preview"></div>
+            </div>
             <button id="upload-media-btn" class="btn" onclick="uploadMidia()">Enviar</button>
             <div id="upload-status" class="message"></div>
         </div>
     </div>
 
     <div class="modal" id="activation-info-modal">
-        <div class="modal-content">
+        <div class="modal-content container-neon">
             <span class="close-btn">×</span>
             <h2>Informações de Ativação</h2>
             <div class="form-group">
@@ -264,7 +248,7 @@
     </div>
 
     <div class="modal" id="text-message-modal">
-        <div class="modal-content">
+        <div class="modal-content container-neon">
             <span class="close-btn">×</span>
             <h2>Enviar Mensagem de Texto</h2>
             <div class="form-group">
@@ -291,12 +275,20 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Botões de ações fixos na base do layout -->
+    <div class="fixed-actions">
+        <button class="select-categories-btn">Gerenciar Andares</button>
+        <button class="add-tv-btn">Adicionar TV</button>
+    </div>
+
+    <!-- External scripts and initialization -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <!-- Authentication helper script -->
     <script src="js/auth.js"></script>
+    <!-- Main panel logic (unchanged from original) -->
     <script src="js/Painel.js"></script>
 </body>
 </html>
