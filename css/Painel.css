@@ -950,6 +950,56 @@ body {
     position: relative;
 }
 
+/* Lista de mídias na seção de perfil */
+.media-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.media-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid #00d4ff;
+    border-radius: 5px;
+    background-color: #0a0f2b;
+}
+
+.media-item .media-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.media-item .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.media-item .actions {
+    display: flex;
+    gap: 8px;
+}
+
+.media-item .action-btn {
+    background: none;
+    border: none;
+    color: #00d4ff;
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.2s;
+}
+
+.media-item .action-btn:hover {
+    color: #00b3d1;
+}
+
 
 #add-to-playlist-btn,
 #update-playlist-btn {

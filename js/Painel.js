@@ -23,11 +23,64 @@ let selectedCategoryId = null;
 let currentMediaTv = null;
 
 // ID do usuário autenticado. Será definido em onAuthStateChanged.
-let currentUserId = null;
+let currentUserId = null; // Ainda usado para controle de login, mas dados não são mais segregados por usuário
 
 // Imagem preta codificada em Base64 para exibir quando a TV for desligada.
 // Esta imagem é um pixel preto 1x1 que será esticada pelo player remoto.
 const BLACK_IMAGE_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAADUlEQVR4nGP4//8/AwAI/AL+27iEAAAAAElFTkSuQmCC';
+
+/**
+ * Atualiza o estado de ativação das mídias associadas a uma TV específica.
+ * Define como ativo apenas os nomes passados em activeMediaNames e marca todas
+ * as outras mídias como inativas, atualizando o campo lastActive.
+ *
+ * @param {string} tvNameSlug Slug do nome da TV (em minúsculas e sem espaços).
+ * @param {string[]} activeMediaNames Lista de nomes de mídia que devem ser marcadas como ativas.
+ */
+async function updateActiveMediaStatus(tvNameSlug, activeMediaNames) {
+    if (!currentUserId || !isOnline()) return;
+    try {
+        const snapshot = await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvNameSlug}`).once('value');
+        const data = snapshot.val() || {};
+        const updates = {};
+        const now = Date.now();
+        for (const mediaKey in data) {
+            const isActive = activeMediaNames.includes(mediaKey);
+            updates[`${mediaKey}/active`] = isActive;
+            updates[`${mediaKey}/lastActive`] = now;
+        }
+        await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvNameSlug}`).update(updates);
+    } catch (err) {
+        console.error('Erro ao atualizar status de mídias:', err);
+    }
+}
+
+/**
+ * Extrai o nome da mídia a partir de uma URL de download.
+ * Remove o slug da TV e o prefixo de timestamp, além da extensão.
+ * @param {string} tvName Nome da TV para derivar o slug.
+ * @param {string} url URL completa da mídia armazenada.
+ * @returns {string|null} Nome básico da mídia ou null se não for possível extrair.
+ */
+function getMediaNameFromUrl(tvName, url) {
+    try {
+        const tvSlug = tvName.replace(/\s+/g, '_').toLowerCase();
+        // Extrai a parte do caminho após o nome da TV
+        const path = decodeURIComponent(url.split('?')[0]);
+        const parts = path.split('/tv_media/')[1];
+        if (!parts) return null;
+        const segments = parts.split('/');
+        if (segments.length < 2) return null;
+        const file = segments[1];
+        // Remove o timestamp (parte antes do primeiro underscore) e a extensão
+        const fileParts = file.split('_');
+        fileParts.shift();
+        const base = fileParts.join('_');
+        return base.replace(/\.[^/.]+$/, '');
+    } catch (err) {
+        return null;
+    }
+}
 
 const isOnline = () => navigator.onLine;
 
@@ -89,6 +142,21 @@ const syncWithFirebase = async () => {
                 await authModule.database.ref(`users/${currentUserId}/tvs/${tv.id}`).set(tv);
                 console.log(`TV ${tv.id} criada no Realtime Database para o usuário ${currentUserId}`);
             }
+            // Deriva nomes de mídias ativas para esta TV
+            tv.activeMediaNames = [];
+            if (tv.playlist && tv.playlist.length > 0) {
+                const names = [];
+                for (const item of tv.playlist) {
+                    const name = item.url ? getMediaNameFromUrl(tv.name, item.url) : null;
+                    if (name) names.push(name);
+                }
+                tv.activeMediaNames = names;
+            } else if (tv.media && tv.media.url && tv.media.type !== 'text') {
+                const name = getMediaNameFromUrl(tv.name, tv.media.url);
+                if (name) tv.activeMediaNames = [name];
+            }
+            // Também inicializa savedActiveMediaNames vazia
+            tv.savedActiveMediaNames = [];
         }
 
         saveLocalData();
@@ -186,11 +254,14 @@ const updateTvGrid = () => {
     });
 };
 
-const uploadMediaToStorage = async (file, tvId) => {
+const uploadMediaToStorage = async (file, tv) => {
     try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const storageRef = authModule.storage.ref(`tv_media/${tvId}/${fileName}`);
+        // Usa o nome da TV e o nome do arquivo para criar um caminho legível em vez de números
+        const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+        const originalName = file.name.replace(/\s+/g, '_').toLowerCase();
+        // Prefixa com timestamp para evitar colisões
+        const fileName = `${Date.now()}_${originalName}`;
+        const storageRef = authModule.storage.ref(`tv_media/${tvNameSlug}/${fileName}`);
 
         const progressBar = document.querySelector('.progress-bar');
         if (progressBar) progressBar.style.width = '0%';
@@ -218,7 +289,7 @@ const uploadMediaToStorage = async (file, tvId) => {
                 async () => {
                     const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
                     console.log('Upload concluído, URL:', downloadURL);
-                    resolve(downloadURL);
+                    resolve({ url: downloadURL, fileName });
                 }
             );
         });
@@ -228,6 +299,44 @@ const uploadMediaToStorage = async (file, tvId) => {
         throw error;
     }
 };
+
+/**
+ * Registra os metadados de uma mídia enviada no Realtime Database.
+ * A mídia é salva em um caminho legível por nome de TV e nome de mídia.
+ *
+ * @param {Object} tv      Objeto da TV à qual a mídia pertence.
+ * @param {string} fileName Nome do arquivo (com prefixo timestamp) usado no storage.
+ * @param {Object} mediaData Objeto de mídia contendo tipo, url e demais propriedades.
+ */
+async function registerMediaInDB(tv, fileName, mediaData) {
+    if (!currentUserId) return null;
+    const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+    // Extrai o nome original sem timestamp e sem extensão para fins de exibição
+    const nameParts = fileName.split('_');
+    // Remove a parte do timestamp
+    nameParts.shift();
+    const baseName = nameParts.join('_');
+    const mediaName = baseName.replace(/\.[^/.]+$/, '');
+    const entry = {
+        tvId: tv.id,
+        tvName: tv.name,
+        mediaName: mediaName,
+        mediaType: mediaData.type,
+        url: mediaData.url || null,
+        content: mediaData.content || null,
+        color: mediaData.color || null,
+        bgColor: mediaData.bgColor || null,
+        fontSize: mediaData.fontSize || null,
+        duration: mediaData.duration || null,
+        loop: mediaData.loop || false,
+        timestamp: mediaData.timestamp || Date.now(),
+        lastActive: Date.now(),
+        active: true,
+        storagePath: `tv_media/${tvNameSlug}/${fileName}`
+    };
+    await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvNameSlug}/${mediaName}`).set(entry);
+    return { tvNameSlug, mediaName };
+}
 
 async function sendTextMessage(tvId, messageData) {
     const tv = tvs.find(t => t.id === tvId);
@@ -264,6 +373,12 @@ async function sendTextMessage(tvId, messageData) {
             }
 
             showToast('Mensagem enviada com sucesso!', 'success');
+
+            // Marque todas as mídias desta TV como inativas, pois a TV está exibindo texto
+            const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+            tv.activeMediaNames = [];
+            await updateActiveMediaStatus(tvNameSlug, []);
+
             return true;
         } catch (error) {
             console.error("Erro ao enviar mensagem:", error);
@@ -394,13 +509,23 @@ function showTvMedia(tvId) {
                         showToast(`Arquivo ${file.name} excede 190MB`, 'error');
                         continue;
                     }
-                    const url = await uploadMediaToStorage(file, tvId);
+                    const uploadResult = await uploadMediaToStorage(file, tv);
+                    const url = uploadResult.url;
+                    const uploadedFileName = uploadResult.fileName;
                     const type = file.type.startsWith('video/') ? 'video' : file.type === 'image/gif' ? 'gif' : 'image';
-                    playlistItems.push({
+                    const newItem = {
                         url,
                         type,
                         duration: type === 'video' ? null : 10,
                         order: playlistItems.length
+                    };
+                    playlistItems.push(newItem);
+                    // Registra cada item da playlist na base de dados
+                    await registerMediaInDB(tv, uploadedFileName, {
+                        type: type,
+                        url: url,
+                        duration: newItem.duration,
+                        timestamp: Date.now()
                     });
                 }
                 renderPlaylistView();
@@ -427,6 +552,16 @@ function showTvMedia(tvId) {
                         });
                     }
 
+                    // Atualiza o status ativo das mídias da playlist
+                    const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+                    // Recalcula os nomes de mídia ativos da playlist a partir das URLs
+                    const activeNames = [];
+                    for (const item of playlistItems) {
+                        const name = item.url ? getMediaNameFromUrl(tv.name, item.url) : null;
+                        if (name) activeNames.push(name);
+                    }
+                    tv.activeMediaNames = activeNames;
+                    await updateActiveMediaStatus(tvNameSlug, activeNames);
                     showToast('Playlist atualizada com sucesso!', 'success');
                     modal.style.display = 'none';
                 } catch (error) {
@@ -527,7 +662,10 @@ window.uploadMidia = async function() {
             }
 
             showToast('Iniciando upload...', 'info');
-            const mediaUrl = await uploadMediaToStorage(file, tvId);
+
+            const uploadResult = await uploadMediaToStorage(file, tv);
+            const mediaUrl = uploadResult.url;
+            const uploadedFileName = uploadResult.fileName;
 
             mediaData = {
                 type: mediaType,
@@ -545,6 +683,14 @@ window.uploadMidia = async function() {
                     showToast('Arquivo não é um vídeo válido', 'error');
                     return;
                 }
+            }
+
+            // Registra a mídia na base de dados para listagem futura e obtém o slug e nome
+            const regResult = await registerMediaInDB(tv, uploadedFileName, mediaData);
+            if (regResult) {
+                // Atualiza a lista de mídias ativas da TV
+                tv.activeMediaNames = [regResult.mediaName];
+                await updateActiveMediaStatus(regResult.tvNameSlug, tv.activeMediaNames);
             }
         } else if (mediaType === 'link') {
             const mediaUrl = document.getElementById('media-link')?.value.trim();
@@ -576,19 +722,33 @@ window.uploadMidia = async function() {
             }
 
             const playlistItems = [];
+            const mediaNamesForPlaylist = [];
             for (const file of Array.from(files)) {
                 if (file.size > 190 * 1024 * 1024) {
                     showToast(`Arquivo ${file.name} excede 190MB`, 'error');
                     continue;
                 }
-                const url = await uploadMediaToStorage(file, tvId);
+                const uploadResult = await uploadMediaToStorage(file, tv);
+                const url = uploadResult.url;
+                const uploadedFileName = uploadResult.fileName;
                 const type = file.type.startsWith('video/') ? 'video' : file.type === 'image/gif' ? 'gif' : 'image';
-                playlistItems.push({
+                const playlistItem = {
                     url,
                     type,
                     duration: type === 'video' ? null : 10,
                     order: playlistItems.length
+                };
+                playlistItems.push(playlistItem);
+                // Registra cada item da playlist individualmente na base de dados
+                const regResult = await registerMediaInDB(tv, uploadedFileName, {
+                    type: type,
+                    url: url,
+                    duration: playlistItem.duration,
+                    timestamp: Date.now()
                 });
+                if (regResult) {
+                    mediaNamesForPlaylist.push(regResult.mediaName);
+                }
             }
 
             if (playlistItems.length === 0) {
@@ -613,6 +773,11 @@ window.uploadMidia = async function() {
                     });
                 }
             }
+
+            // Atualiza o status das mídias para refletir a playlist ativa
+            const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+            tv.activeMediaNames = mediaNamesForPlaylist;
+            await updateActiveMediaStatus(tvNameSlug, tv.activeMediaNames);
 
             showToast('Playlist enviada com sucesso! Veja em "Ver Mídia" para ajustar.', 'success');
             const modal = document.getElementById('upload-media-modal');
@@ -682,6 +847,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (supportEmail) supportEmail.value = user.email;
         if (isOnline()) {
             syncWithFirebase();
+            cleanupOldMedia();
         } else {
             showToast('Sem conexão: conecte-se para carregar dados', 'error');
         }
@@ -942,6 +1108,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Define mídia preta
                     tv.media = { type: 'image', url: BLACK_IMAGE_URL, duration: null };
                     tv.playlist = null;
+                    // Desativa todas as mídias associadas a esta TV no banco de dados
+                    const tvSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+                    // Salva nomes ativos antes de limpar
+                    tv.savedActiveMediaNames = tv.activeMediaNames ? [...tv.activeMediaNames] : [];
+                    tv.activeMediaNames = [];
+                    await updateActiveMediaStatus(tvSlug, []);
                 } else {
                     // Estamos ligando a TV: restaurar mídia/playlist anterior se existir
                     if (tv.lastMedia) {
@@ -951,6 +1123,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (tv.lastPlaylist) {
                         tv.playlist = tv.lastPlaylist;
                         tv.lastPlaylist = null;
+                    }
+                    // Restaura o estado ativo das mídias salvas
+                    const tvSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+                    if (tv.savedActiveMediaNames) {
+                        tv.activeMediaNames = [...tv.savedActiveMediaNames];
+                        await updateActiveMediaStatus(tvSlug, tv.activeMediaNames);
+                        tv.savedActiveMediaNames = [];
                     }
                 }
 
@@ -1344,11 +1523,175 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Carrega a lista de mídias enviadas para o usuário atual e renderiza no painel.
+     */
+    async function loadMediaList() {
+        const mediaListContainer = document.getElementById('media-list');
+        if (!mediaListContainer) return;
+        mediaListContainer.innerHTML = '';
+        if (!currentUserId || !isOnline()) {
+            showToast('Não foi possível carregar mídias (sem usuário ou offline)', 'error');
+            return;
+        }
+        try {
+            const snapshot = await authModule.database.ref(`users/${currentUserId}/tv_midias`).once('value');
+            const data = snapshot.val() || {};
+            const items = [];
+            for (const tvSlug in data) {
+                const medias = data[tvSlug];
+                for (const mediaName in medias) {
+                    const item = medias[mediaName];
+                    items.push({ keyTvSlug: tvSlug, keyMediaName: mediaName, ...item });
+                }
+            }
+            if (items.length === 0) {
+                mediaListContainer.textContent = 'Nenhuma mídia enviada.';
+                return;
+            }
+            items.sort((a, b) => b.timestamp - a.timestamp);
+            for (const item of items) {
+                const div = document.createElement('div');
+                div.className = 'media-item';
+                const statusColor = item.active ? '#4CAF50' : '#ff5252';
+                div.innerHTML = `
+                    <div class="media-info">
+                        <span class="status-dot" style="background-color:${statusColor}"></span>
+                        <span><strong>${item.tvName}</strong> - ${item.mediaName}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="action-btn rename-media-btn" title="Renomear" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}">✏</button>
+                        <button class="action-btn delete-media-btn" title="Excluir" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}" data-storagepath="${item.storagePath}">🗑</button>
+                    </div>
+                `;
+                mediaListContainer.appendChild(div);
+            }
+        } catch (err) {
+            console.error('Erro ao carregar mídias:', err);
+            showToast('Erro ao carregar mídias', 'error');
+        }
+    }
+
+    /**
+     * Exclui uma mídia específica do database e do storage.
+     */
+    async function deleteMedia(tvSlug, mediaName, storagePath) {
+        if (!currentUserId) return;
+        try {
+            // Remove do database
+            await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${mediaName}`).remove();
+        // Remove do storage se o caminho for fornecido
+        if (storagePath) {
+            // É mais seguro usar child() para obter uma referência ao objeto
+            await authModule.storage.ref().child(storagePath).delete().catch(() => {});
+        }
+            showToast('Mídia excluída', 'success');
+            await loadMediaList();
+        } catch (err) {
+            console.error('Erro ao excluir mídia:', err);
+            showToast('Erro ao excluir mídia', 'error');
+        }
+    }
+
+    /**
+     * Renomeia uma mídia no banco de dados (não altera o arquivo de storage).
+     */
+    async function renameMedia(tvSlug, oldMediaName) {
+        const newName = prompt('Novo nome para a mídia:', oldMediaName);
+        if (!newName || newName.trim() === oldMediaName) return;
+        const sanitized = newName.trim().replace(/\s+/g, '_');
+        try {
+            const snap = await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${oldMediaName}`).once('value');
+            const data = snap.val();
+            if (!data) {
+                showToast('Mídia não encontrada', 'error');
+                return;
+            }
+            // Atualiza o nome exibido (mediaName) e recria a entrada com a nova chave
+            data.mediaName = sanitized;
+            await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${sanitized}`).set(data);
+            await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${oldMediaName}`).remove();
+            showToast('Mídia renomeada', 'success');
+            await loadMediaList();
+        } catch (err) {
+            console.error('Erro ao renomear mídia:', err);
+            showToast('Erro ao renomear mídia', 'error');
+        }
+    }
+
+    /**
+     * Remove mídias que estão inativas há mais de dois dias.
+     */
+    async function cleanupOldMedia() {
+        if (!currentUserId || !isOnline()) return;
+        try {
+            const snapshot = await authModule.database.ref(`users/${currentUserId}/tv_midias`).once('value');
+            const data = snapshot.val() || {};
+            const now = Date.now();
+            const twoDaysMs = 2 * 24 * 60 * 60 * 1000;
+            for (const tvSlug in data) {
+                for (const mediaName in data[tvSlug]) {
+                    const item = data[tvSlug][mediaName];
+                    if (!item.active && item.lastActive && now - item.lastActive > twoDaysMs) {
+                        // Remove do storage
+                        if (item.storagePath) {
+                            await authModule.storage.ref(item.storagePath).delete().catch(() => {});
+                        }
+                        // Remove da base
+                        await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${mediaName}`).remove();
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Erro ao limpar mídias antigas:', err);
+        }
+    }
+
+    // Event delegation for actions (rename/delete) na lista de mídias
+    const mediaListContainer = document.getElementById('media-list');
+    if (mediaListContainer) {
+        mediaListContainer.addEventListener('click', async (e) => {
+            const renameBtn = e.target.closest('.rename-media-btn');
+            if (renameBtn) {
+                const tvSlug = renameBtn.dataset.tvslug;
+                const mediaName = renameBtn.dataset.medianame;
+                await renameMedia(tvSlug, mediaName);
+                return;
+            }
+            const deleteBtn = e.target.closest('.delete-media-btn');
+            if (deleteBtn) {
+                const tvSlug = deleteBtn.dataset.tvslug;
+                const mediaName = deleteBtn.dataset.medianame;
+                const storagePath = deleteBtn.dataset.storagepath;
+                if (confirm('Tem certeza que deseja excluir esta mídia?')) {
+                    await deleteMedia(tvSlug, mediaName, storagePath);
+                }
+                return;
+            }
+        });
+    }
+
     const textMessageModalClose = document.querySelector('#text-message-modal .close-btn');
     if (textMessageModalClose) {
         textMessageModalClose.addEventListener('click', () => {
             const modal = document.getElementById('text-message-modal');
             if (modal) modal.style.display = 'none';
+        });
+    }
+
+    // Botão para exibir a lista de mídias no perfil
+    const mediaButton = document.getElementById('media-button');
+    if (mediaButton) {
+        mediaButton.addEventListener('click', async () => {
+            const mediaListContainer = document.getElementById('media-list');
+            if (!mediaListContainer) return;
+            if (mediaListContainer.style.display === 'none') {
+                // Carrega e exibe a lista
+                await loadMediaList();
+                mediaListContainer.style.display = 'block';
+            } else {
+                mediaListContainer.style.display = 'none';
+            }
         });
     }
 });
