@@ -342,6 +342,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    /* Use flexbox to align the text and action icons on the same line. */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .floor-btn:hover,
@@ -357,6 +361,8 @@ body {
 .floor-actions {
     display: flex;
     gap: 5px;
+    /* Push the actions to the right within the flex container */
+    margin-left: auto;
 }
 
 .action-btn {

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DsignerTV - Painel</title>
     <!-- Link to the new consolidated stylesheet -->
-    <link rel="stylesheet" href="css/Painel.css">
+    <link rel="stylesheet" href="CSS/Painel.css">
 </head>
 <body>
     <!-- Connection status indicator; stays fixed in the bottom right -->
@@ -16,7 +16,7 @@
         <!-- Persistent sidebar containing navigation and actions -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h1>DsignerTV</h1>
+                <h1>D`Signer</h1>
             </div>
             <nav class="sidebar-nav">
                 <ul>
@@ -108,7 +108,8 @@
                             <label for="support-chamado">Mensagem:</label>
                             <textarea id="support-chamado" name="chamado" required></textarea>
                         </div>
-                        <button type="submit">Enviar Chamado</button>
+                        <!-- Apply the standard button style to match the neon theme -->
+                        <button type="submit" class="btn">Enviar Chamado</button>
                         <div id="support-message" class="message"></div>
                     </form>
                 </div>
