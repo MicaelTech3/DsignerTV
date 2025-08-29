@@ -1700,3 +1700,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// --- Navegação da sidebar moderna (pills) ---
+(function initSidebarPills(){
+  const pills = document.querySelectorAll('.sidebar-modern .pill');
+  const titleEl = document.getElementById('section-title');
+
+  function activate(sectionId, pillBtn){
+    // atualizar título
+    if (titleEl) titleEl.textContent = pillBtn?.querySelector('span')?.textContent || 'Dashboard';
+    // ativa seção
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    const section = document.getElementById(sectionId);
+    if (section) section.classList.add('active');
+    // ativa visual do botão
+    pills.forEach(p => p.classList.remove('active'));
+    pillBtn?.classList.add('active');
+  }
+
+  pills.forEach(btn=>{
+    const sectionId = btn.dataset.section;
+    if (sectionId){
+      btn.addEventListener('click', ()=> activate(sectionId, btn));
+    }
+  });
+
+  // dskey (botão especial)
+  const dskeyBtn = document.getElementById('pill-dskey');
+  if (dskeyBtn){
+    dskeyBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      window.open('https://tvdsigner.com.br/', '_blank');
+    });
+  }
+
+  // botão “Sair” (logout)
+  const logout = document.getElementById('logout-link');
+  if (logout){
+    logout.addEventListener('click', (e)=>{
+      e.preventDefault();
+      authModule.signOut().then(()=> window.location.href='index.html');
+    });
+  }
+})();
