@@ -1,31 +1,47 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dsigner - Login</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="css/login.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D`Signer - Login</title>
+  <link rel="stylesheet" href="css/login.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 </head>
-<body class="bg-gray-900 flex items-center justify-center min-h-screen">
-    <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-3xl font-bold text-cyan-400 text-center mb-6">Dsigner</h1>
-        <form id="login-form" class="space-y-4">
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-300">Email</label>
-                <input type="email" id="email" class="w-full p-2 mt-1 bg-gray-700 text-white rounded border border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-400" required>
-            </div>
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-300">Senha</label>
-                <input type="password" id="password" class="w-full p-2 mt-1 bg-gray-700 text-white rounded border border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-400" required>
-            </div>
-            <button type="submit" class="w-full p-2 bg-cyan-500 text-gray-900 font-bold rounded hover:bg-cyan-600 transition">Entrar</button>
-            <p id="login-message" class="text-center text-red-400 mt-2"></p>
-        </form>
+<body>
+  <div class="container">
+    <div class="heading">D`Signer</div>
+    <form id="login-form" class="form">
+      <input required class="input" type="email" name="email" id="email" placeholder="E-mail">
+      <input required class="input" type="password" name="password" id="password" placeholder="Password">
+      <button type="submit" class="login-button">Entrar</button>
+      <p id="login-message"></p>
+    </form>
+
+    <div class="social-account-container">
+      <span class="title">Ou entre com</span>
+      <div class="social-accounts">
+        <button class="social-button google">
+          <svg class="svg" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 488 512">
+            <path d="M488 261.8C488 403.3..."></path>
+          </svg>
+        </button>
+        <button class="social-button apple">
+          <svg class="svg" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512">
+            <path d="M318.7 268.7c-.2-36.7..."></path>
+          </svg>
+        </button>
+        <button class="social-button twitter">
+          <svg class="svg" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
+            <path d="M389.2 48h70.6L305.6..."></path>
+          </svg>
+        </button>
+      </div>
     </div>
-    <script src="js/auth.js"></script>
-    <script src="js/login.js"></script>
+    <span class="agreement"><a href="#">Termos de uso</a></span>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/login.js"></script>
 </body>
 </html>
