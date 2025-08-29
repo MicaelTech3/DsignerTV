@@ -208,51 +208,60 @@ const updateCategoryList = () => {
 };
 
 const updateTvGrid = () => {
-    const tvGrid = document.getElementById('tv-grid');
-    if (!tvGrid) {
-        console.error('Elemento #tv-grid não encontrado na página');
-        return;
-    }
+  const tvGrid = document.getElementById('tv-grid');
+  if (!tvGrid) {
+    console.error('Elemento #tv-grid não encontrado na página');
+    return;
+  }
 
-    tvGrid.innerHTML = '';
-    const filteredTvs = selectedCategoryId ? tvs.filter(tv => tv.categoryId === selectedCategoryId) : tvs;
+  tvGrid.innerHTML = '';
+  const filteredTvs = selectedCategoryId ? tvs.filter(tv => tv.categoryId === selectedCategoryId) : tvs;
 
-    if (filteredTvs.length === 0) {
-        tvGrid.innerHTML = '<div class="no-items">Nenhuma TV encontrada</div>';
-        return;
-    }
+  if (filteredTvs.length === 0) {
+    tvGrid.innerHTML = '<div class="no-items">Nenhuma TV encontrada</div>';
+    return;
+  }
 
-    filteredTvs.forEach(tv => {
-        const category = categories.find(c => c.id === tv.categoryId);
-        const gridItem = document.createElement('div');
-        gridItem.className = `grid-item ${tv.status === 'off' ? 'offline' : ''}`;
-        gridItem.dataset.tvId = tv.id;
-        gridItem.innerHTML = `
-            <div class="tv-status">${tv.status === 'off' ? 'OFF' : 'ON'}</div>
-            <span>${tv.name}</span>
-            <small>${category?.name || 'Sem categoria'}</small>
-            ${tv.activationKey ? '<div class="activation-badge">Ativada</div>' : ''}
-            <div class="tv-actions">
-                <button class="tv-action-btn toggle-tv-btn" data-id="${tv.id}" title="${tv.status === 'off' ? 'Ligar' : 'Desligar'}">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEzIDNoLTJ2MTBoMlYzem03IDhoLTRjLTEuMS0yLjQtMi41LTQuOC00LTYgMS4zLTEuMyAyLjYtMi4yIDQtMyAyLjIgMS4zIDMuNSAzIDQgNXoiLz48L3N2Zz4=" width="14" height="14">
-                </button>
-                <button class="tv-action-btn view-tv-btn" data-id="${tv.id}" title="Ver Mídia">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDQuNUM2LjUgNC41IDIgNy41IDIgMTJzNC41IDcuNSAxMCA3LjVjNS41IDAgMTAtMyAxMC03LjUtNC41LTcuNS0xMC03LjUtMTAuNXptMCAxMi41Yy0zLjggMC03LjItMi42LTguOS01LjUgMS43LTIuOSA1LjEtNS41IDguOS01LjVzNy4yIDIuNiA4LjkgNS41LTEuNyAyLjktNS4xIDUuNS04LjkuNXptMC0xMC41YzIuNSAwIDQuNSAyIDQuNSA0LjVzLTIgNC41LTQuNSA0LjUtNC41LTItNC41LTQuNSAyLTQuNSA0LjUtNC41eiIvPjwvc3ZnPg==" width="14" height="14">
-                </button>
-                <button class="tv-action-btn upload-tv-btn" data-id="${tv.id}" title="Enviar mídia">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTkgMTZoNnYtNmg0bC03LTctNyA3aDR6bS00IDJoMTR2Mkg1eiIvPjwvc3ZnPg==" width="14" height="14">
-                </button>
-                <button class="tv-action-btn info-tv-btn" data-id="${tv.id}" title="Informações">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTExIDE3aDJ2LTZoLTJ2NnptMS0xNUM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptMCAxOGMtNC40MSAwLTgtMy41OS04LThzMy41OS04IDgtOCA4IDMuNTkgOCA4LTMuNTkgOC04IDh6bTAtMTRjLTIuMjEgMC00IDEuNzktNCA0aDJjMC0xLjEuOS0yIDItMnMyIC45IDIgMmMwIDItMyAxLjc1LTMgNWgyYzAtMi4yNSAzLTIuNSAzLTUgMC0yLjIxLTEuNzktNC00LTR6Ii8+PC9zdmc+" width="14" height="14">
-                </button>
-                <button class="tv-action-btn delete-tv-btn" data-id="${tv.id}" title="Excluir">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTYgMTlhMiAyIDAgMCAwIDIgMmg4YTIgMiAwIDAgMCAyLTJWN0g2djEyTTE5IDRIMTUuNWwtMS0xaC05bC0xIDFINHYyaDE2VjR6Ii8+PC9zdmc+" width="14" height="14">
-                </button>
-            </div>
-        `;
-        tvGrid.appendChild(gridItem);
-    });
+  filteredTvs.forEach(tv => {
+    const category = categories.find(c => c.id === tv.categoryId);
+
+    const gridItem = document.createElement('div');
+    gridItem.className = `grid-item ${tv.status === 'off' ? 'offline' : ''}`;
+    gridItem.dataset.tvId = tv.id;
+
+    // markup do card (mantive estrutura, só garanto ordem e classes)
+    gridItem.innerHTML = `
+      <div class="tv-status">${tv.status === 'off' ? 'OFF' : 'ON'}</div>
+      <span class="tv-name">${tv.name}</span>
+      <small class="tv-cat">${category?.name || 'Sem categoria'}</small>
+      ${tv.activationKey ? '<div class="activation-badge">Ativada</div>' : ''}
+      <div class="tv-actions">
+        <button class="tv-action-btn toggle-tv-btn" data-id="${tv.id}" title="${tv.status === 'off' ? 'Ligar' : 'Desligar'}">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEzIDNoLTJ2MTBoMlYzem03IDhoLTRjLTEuMS0yLjQtMi41LTQuOC00LTYgMS4zLTEuMyAyLjYtMi4yIDQtMyAyLjIgMS4zIDMuNSAzIDQgNXoiLz48L3N2Zz4=" width="14" height="14" alt="">
+        </button>
+        <button class="tv-action-btn view-tv-btn" data-id="${tv.id}" title="Ver Mídia">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDQuNUM2LjUgNC41IDIgNy41IDIgMTJzNC41IDcuNSAxMCA3LjVjNS41IDAgMTAtMyAxMC03LjUtNC41LTcuNS0xMC03LjUtMTAuNXptMCAxMi41Yy0zLjggMC03LjItMi42LTguOS01LjUgMS43LTIuOSA1LjEtNS41IDguOS01LjVzNy4yIDIuNiA4LjkgNS41LTEuNyAyLjktNS4xIDUuNS04LjkuNXptMC0xMC41YzIuNSAwIDQuNSAyIDQuNSA0LjVzLTIgNC41LTQuNSA0LjUtNC41LTItNC41LTQuNSAyLTQuNSA0LjUtNC41eiIvPjwvc3ZnPg==" width="14" height="14" alt="">
+        </button>
+        <button class="tv-action-btn upload-tv-btn" data-id="${tv.id}" title="Enviar mídia">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTkgMTZoNnYtNmg0bC03LTctNyA3aDR6bS00IDJoMTR2Mkg1eiIvPjwvc3ZnPg==" width="14" height="14" alt="">
+        </button>
+        <button class="tv-action-btn info-tv-btn" data-id="${tv.id}" title="Informações">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTExIDE3aDJ2LTZoLTJ2NnptMS0xNUM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptMCAxOGMtNC40MSAwLTgtMy41OS04LThzMy41OS04IDgtOCA4IDMuNTkgOCA4LTMuNTkgOC04IDh6bTAtMTRjLTIuMjEgMC00IDEuNzktNCA0aDJjMC0xLjEuOS0yIDItMnMyIC45IDIgMmMwIDItMyAxLjc1LTMgNWgyYzAtMi4yNSAzLTIuNSAzLTUgMC0yLjIxLTEuNzktNC00LTR6Ii8+PC9zdmc+" width="14" height="14" alt="">
+        </button>
+        <button class="tv-action-btn delete-tv-btn" data-id="${tv.id}" title="Excluir">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTYgMTlhMiAyIDAgMCAwIDIgMmg4YTIgMiAwIDAgMCAyLTJWN0g2djEyTTE5IDRIMTUuNWwtMS0xaC05bC0xIDFINHYyaDE2VjR6Ii8+PC9zdmc+" width="14" height="14" alt="">
+        </button>
+      </div>
+    `;
+
+    // Fallback JS para garantir ocultar/mostrar (vence conflitos de CSS)
+    gridItem.addEventListener('mouseenter', () => gridItem.classList.add('hovered'));
+    gridItem.addEventListener('mouseleave', () => gridItem.classList.remove('hovered'));
+
+    tvGrid.appendChild(gridItem);
+  });
 };
+
 
 const uploadMediaToStorage = async (file, tv) => {
     try {

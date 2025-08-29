@@ -200,3 +200,127 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
   background:#0a0f2b;color:#00d4ff;border:1px solid #00d4ff;border-radius:5px;padding:6px 12px;font-size:12px;cursor:pointer;transition:all .3s
 }
 .fixed-actions .select-categories-btn:hover,.fixed-actions .add-tv-btn:hover{background:#1a1f3b;box-shadow:0 0 10px rgba(0,212,255,.3)}
+
+/* Força o estado inicial escondido */
+.grid-item { position: relative; overflow: hidden; }
+
+.tv-actions{
+  position: absolute; /* já é, mas reforçamos */
+  right: 10px; bottom: 10px;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease, visibility 0s linear .22s; /* visibility troca após o fade */
+  will-change: opacity, transform;
+}
+
+/* Mostra no hover e no focus-within (teclado/controle) */
+.grid-item:hover .tv-actions,
+.grid-item:focus-within .tv-actions{
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity .22s ease, transform .22s ease, visibility 0s;
+}
+
+/* Aparência corporativa dos botões (opcional) */
+.tv-action-btn{
+  background: rgba(6,12,32,.78);
+  border: 1px solid rgba(0,212,255,.35);
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  width: 30px; height: 30px;
+}
+.tv-action-btn img, .tv-action-btn svg{
+  width:16px; height:16px;
+  filter: invert(1) brightness(1.2) contrast(1.1);
+  opacity:.95;
+}
+.tv-action-btn:hover{ transform: scale(1.08); border-color:#00d4ff; }
+/* ===== Efeito estilo Uiverse aplicado ao seu card de TV ===== */
+
+/* estado base: conteúdo visível, ações ocultas */
+/* ====== CARDS DE TV COM ÍCONES BRANCOS ====== */
+
+.grid-item {
+  position: relative;
+  overflow: hidden;              /* recorte suave do slide */
+  transition: box-shadow .3s ease, transform .2s ease;
+}
+
+/* "card-info" equivalente: os textos principais do card */
+.grid-item > span,
+.grid-item > small {
+  transition: transform .2s ease, opacity .2s ease;
+}
+
+/* "card-social" equivalente: bloco de ações da TV */
+.tv-actions {
+  position: absolute;
+  right: 10px; bottom: 10px;
+  display: flex; gap: 6px;
+
+  /* oculto por padrão (como .card-social do Uiverse) */
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(120%);      /* vem de baixo */
+  pointer-events: none;
+  transition: transform .2s ease, opacity .2s ease, visibility 0s linear .2s;
+}
+
+/* hover do card */
+.grid-item:hover {
+  box-shadow: 0 8px 50px #fffdfd33;
+}
+
+/* conteúdo sobe levemente */
+.grid-item:hover > span,
+.grid-item:hover > small,
+.grid-item:focus-within > span,
+.grid-item:focus-within > small {
+  transform: translateY(-5%);
+}
+
+/* ações sobem e aparecem */
+.grid-item:hover .tv-actions,
+.grid-item:focus-within .tv-actions {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: transform .2s ease, opacity .2s ease, visibility 0s;
+}
+
+/* botão das ações */
+.tv-action-btn {
+  background: rgba(6,12,32,.78);
+  border: 1px solid rgba(0,212,255,.35);
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+}
+
+/* ÍCONES SEMPRE BRANCOS */
+.tv-action-btn img,
+.tv-action-btn svg {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) invert(1); /* força branco puro */
+}
+
+/* hover do botão */
+.tv-action-btn:hover {
+  transform: scale(1.08);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0,212,255,.15), 0 6px 18px rgba(0,0,0,.45);
+}
+
+/* foco acessível */
+.tv-action-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px #ffffff;
+}
+
