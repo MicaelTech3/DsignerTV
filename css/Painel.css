@@ -1,58 +1,35 @@
-/* ========= RESET/BASE ========= */
+/* ========= RESET/BASE ========= */ 
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Arial',sans-serif}
 body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
 
 /* ========= LAYOUT ========= */
 .dashboard{display:flex;min-height:100vh;background:#1a1f3b;color:#fff}
 
-/* === SIDEBAR MODERNA (Uiverse) === */
+/* === SIDEBAR MODERNA === */
 .sidebar-modern{
-  width: 220px;
-  background:#0a0f2b;
-  padding:16px 14px;
-  border-right:2px solid #bbbbbb;
+  width:220px;background:#0a0f2b;padding:16px 14px;border-right:2px solid #bbbbbb;
   display:flex;flex-direction:column;align-items:center;gap:16px
 }
-.sidebar-modern .brand{
-  color:#00d4ff;font-weight:800;font-size:1.4rem;margin:6px 0 4px
-}
-.sidebar-modern .pills{
-  width:100%;
-  display:flex;flex-direction:column;gap:10px
-}
-/* “pill” vertical com ícone + rótulo */
+.sidebar-modern .brand{color:#00d4ff;font-weight:800;font-size:1.4rem;margin:6px 0 4px}
+.sidebar-modern .pills{width:100%;display:flex;flex-direction:column;gap:10px}
 .pill{
-  width:100%; height:56px;
-  background:#0f142f; color:#c9d4ff;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:14px;
-  display:flex; align-items:center; gap:12px;
-  padding:0 14px;
-  transition:.25s ease;
-  box-shadow: 0 0 0 rgba(0,212,255,0);
+  width:100%;height:56px;background:#0f142f;color:#c9d4ff;border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;display:flex;align-items:center;gap:12px;padding:0 14px;transition:.25s ease;
+  box-shadow:0 0 0 rgba(0,212,255,0)
 }
 .pill svg{fill:currentColor}
-.pill span{font-size:.95rem; letter-spacing:.2px}
-.pill:hover{
-  transform: translateY(-1px);
-  color:#00d4ff; box-shadow:0 8px 20px rgba(0,212,255,.15)
-}
-.pill.active{
-  color:#00b7ff; border-color:#00b7ff;
-  box-shadow:0 10px 24px rgba(0,212,255,.22), inset 0 0 18px rgba(0,212,255,.08);
-}
+.pill span{font-size:.95rem;letter-spacing:.2px}
+.pill:hover{transform:translateY(-1px);color:#00d4ff;box-shadow:0 8px 20px rgba(0,212,255,.15)}
+.pill.active{color:#00b7ff;border-color:#00b7ff;box-shadow:0 10px 24px rgba(0,212,255,.22), inset 0 0 18px rgba(0,212,255,.08)}
 .pill-dskey{background:#0b1735}
 .pill-dskey:hover{color:#7ae1ff}
 
 /* Botão Sair */
 .logout-btn{
-  margin-top:auto;
-  width:100%; height:44px;
-  background:#0a0f2b; color:#00d4ff;
-  border:1px solid #00d4ff; border-radius:10px;
-  cursor:pointer; transition:.25s ease;
+  margin-top:auto;width:100%;height:44px;background:#0a0f2b;color:#00d4ff;
+  border:1px solid #00d4ff;border-radius:10px;cursor:pointer;transition:.25s ease
 }
-.logout-btn:hover{background:#1a1f3b; box-shadow:0 0 10px rgba(0,212,255,.3)}
+.logout-btn:hover{background:#1a1f3b;box-shadow:0 0 10px rgba(0,212,255,.3)}
 
 /* ========= TOPBAR / MAIN ========= */
 .main-content{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;background:#1a1f3b}
@@ -67,17 +44,18 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
 .content-grid h3{color:#00d4ff;margin:0}
 .grid-actions{display:flex;gap:10px}
 
-/* ========= Antigo header some (garantir) ========= */
+/* ========= Antigo header some ========= */
 .painel-header{display:none}
 
-/* ========= STATUS FIXO ========= */
+/* ========= STATUS FIXO (override p/ bolinha ✓) ========= */
 #connection-status{
-  position:fixed;bottom:20px;right:20px;padding:8px 16px;border-radius:20px;z-index:1000;
-  font-size:14px;font-weight:bold;box-shadow:0 2px 10px rgba(0,0,0,.2)
+  position:fixed;right:20px;bottom:20px;z-index:1000;
+  width:36px;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:18px;background:#22c55e;color:#081427;box-shadow:0 6px 18px rgba(0,0,0,.25);
+  pointer-events:none
 }
 
-/* ========= (A PARTIR DAQUI É O SEU CSS ORIGINAL) ========= */
-
+/* ========= RESTANTE ========= */
 .painel-header{background-color:#0a0f2b;padding:10px 20px;border-bottom:2px solid #bbbbbb;position:relative}
 .header-content{display:flex;align-items:center;justify-content:space-between;width:100%;position:relative}
 .header-title{position:absolute;left:50%;transform:translateX(-50%);text-align:center}
@@ -141,11 +119,6 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;background:#1a1f3b;border:1px solid #f4f5f557;border-radius:5px;color:#ffffff}
 .form-group textarea{min-height:100px;resize:vertical}
 
-.message{margin-top:10px;padding:10px;border-radius:5px;text-align:center}
-.message.success{background:rgba(76,175,80,.2);color:#4CAF50}
-.message.error{background:rgba(244,67,54,.2);color:#003077}
-.message.info{background:rgba(3,125,224,.5);color:#2196F3}
-
 .app-content,.profile-content,.support-content{padding:20px 0}
 .app-content h2,.profile-content h2,.support-content h2{color:#00d4ff;margin:0 0 20px}
 .gallery{display:flex;gap:20px;justify-content:flex-start;margin:0}
@@ -159,15 +132,68 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
 .progress-bar{height:100%;background:#00d4ff;width:0%;transition:width .3s}
 .media-preview{max-width:100%;max-height:200px;margin:10px 0;border-radius:5px;display:none;border:1px solid #00d4ff}
 
-/* Toasts */
-.toast{position:fixed;bottom:60px;right:20px;padding:12px 24px;border-radius:4px;z-index:1001;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.2);animation:fadeIn .3s, fadeOut .3s 2.7s}
-.toast.success{background:#4CAF50}
-.toast.error{background:#F44336}
-.toast.info{background:#2196F3}
-@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+/* ===== FAB ===== */
+:root{ --fab-size:56px; --fab-gap:20px; }
+
+.fab-container{
+  position:fixed;right:20px;bottom:calc(20px + 44px);z-index:1002;
+}
+
+.fab-main{
+  width:var(--fab-size);height:var(--fab-size);border-radius:50%;
+  background:linear-gradient(135deg,#0a0f2b,#172053);
+  border:1px solid #00d4ff;color:#00d4ff;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 8px 24px rgba(0,212,255,.15);
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.fab-main:hover{transform:scale(1.06);box-shadow:0 10px 30px rgba(0,212,255,.25)}
+.fab-main:focus{outline:none;box-shadow:0 0 0 3px rgba(0,212,255,.35)}
+
+.fab-menu{
+  position:absolute;right:0;bottom:calc(var(--fab-size) + 14px);
+  display:flex;flex-direction:column;gap:8px;
+  transform:translateY(10px) scale(.98);opacity:0;visibility:hidden;
+  transition:opacity .25s ease, transform .25s ease, visibility 0s linear .25s;
+}
+.fab-container.open .fab-menu{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+
+.fab-menu .select-categories-btn,
+.fab-menu .add-tv-btn{
+  padding:10px 14px;font-size:12px;border-radius:999px;background:#0a0f2b;color:#00d4ff;
+  border:1px solid #00d4ff;cursor:pointer;white-space:nowrap;transition:.25s ease;
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+}
+.fab-menu .select-categories-btn:hover,
+.fab-menu .add-tv-btn:hover{background:#1a1f3b;box-shadow:0 0 10px rgba(0,212,255,.3)}
+
+/* ===== Notificação compacta ===== */
+.notify{
+  position:fixed;top:18px;left:50%;transform:translateX(-50%);
+  background:#16a34a;color:#fff;border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:10px 14px;font-weight:600;font-size:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:1003;display:flex;align-items:center;gap:8px;
+  transition:.35s ease;
+}
+.notify .icon{font-size:16px}
+.notify.error{background:#ef4444}
+
+/* ===== Banner offline ===== */
+#offline-banner{
+  position:fixed;top:0;left:0;right:0;background:#ef4444;color:#fff;
+  padding:10px 16px;text-align:center;font-weight:700;z-index:1004;
+  box-shadow:0 6px 18px rgba(0,0,0,.25);
+}
+
+/* Desabilita cliques quando offline */
+body.offline .btn,
+body.offline .floor-btn,
+body.offline .tv-action-btn,
+body.offline .select-categories-btn,
+body.offline .add-tv-btn{pointer-events:none;opacity:.6;filter:grayscale(.2)}
 
 /* Responsivo */
-@media (max-width: 900px){
+@media (max-width:900px){
   .sidebar-modern{width:90px}
   .pill span{display:none}
   .pill{justify-content:center}
@@ -178,11 +204,11 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
   .modal-content{width:95%;margin:10% 10px}
 }
 
-/* Container “neon” utilitário */
+/* Container “neon” */
 .container-neon{
   background:#0a0f2b;border:1px solid #00d4ff;border-radius:10px;
   box-shadow:0 0 10px rgba(0,212,255,.25), inset 0 0 20px rgba(0,212,255,.1);
-  padding:20px; position:relative
+  padding:20px;position:relative
 }
 
 /* Lista de mídias no Perfil */
@@ -194,133 +220,27 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
 .media-item .action-btn{background:none;border:none;color:#00d4ff;cursor:pointer;font-size:16px;transition:color .2s}
 .media-item .action-btn:hover{color:#00b3d1}
 
-/* Ações fixas */
-.fixed-actions{position:fixed;bottom:20px;right:120px;display:flex;gap:10px;z-index:1000}
-.fixed-actions .select-categories-btn,.fixed-actions .add-tv-btn{
-  background:#0a0f2b;color:#00d4ff;border:1px solid #00d4ff;border-radius:5px;padding:6px 12px;font-size:12px;cursor:pointer;transition:all .3s
-}
-.fixed-actions .select-categories-btn:hover,.fixed-actions .add-tv-btn:hover{background:#1a1f3b;box-shadow:0 0 10px rgba(0,212,255,.3)}
-
-/* Força o estado inicial escondido */
-.grid-item { position: relative; overflow: hidden; }
-
+/* Efeitos nos cards */
+.grid-item{position:relative;overflow:hidden;transition:box-shadow .3s ease, transform .2s ease}
+.grid-item > span,.grid-item > small{transition:transform .2s ease, opacity .2s ease}
 .tv-actions{
-  position: absolute; /* já é, mas reforçamos */
-  right: 10px; bottom: 10px;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  transform: translateY(12px);
-  pointer-events: none;
-  transition: opacity .22s ease, transform .22s ease, visibility 0s linear .22s; /* visibility troca após o fade */
-  will-change: opacity, transform;
+  position:absolute;right:10px;bottom:10px;display:flex;gap:6px;
+  opacity:0;visibility:hidden;transform:translateY(12px);pointer-events:none;
+  transition:opacity .22s ease, transform .22s ease, visibility 0s linear .22s
 }
-
-/* Mostra no hover e no focus-within (teclado/controle) */
-.grid-item:hover .tv-actions,
-.grid-item:focus-within .tv-actions{
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: translateY(0);
-  pointer-events: auto;
-  transition: opacity .22s ease, transform .22s ease, visibility 0s;
+.grid-item:hover .tv-actions,.grid-item:focus-within .tv-actions{
+  opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto;transition:opacity .22s ease, transform .22s ease, visibility 0s
 }
+.grid-item:hover{box-shadow:0 8px 50px #fffdfd33}
+.grid-item:hover > span,.grid-item:hover > small,
+.grid-item:focus-within > span,.grid-item:focus-within > small{transform:translateY(-5%)}
 
-/* Aparência corporativa dos botões (opcional) */
 .tv-action-btn{
-  background: rgba(6,12,32,.78);
-  border: 1px solid rgba(0,212,255,.35);
-  box-shadow: 0 2px 8px rgba(0,0,0,.35);
-  width: 30px; height: 30px;
+  background:rgba(6,12,32,.78);border:1px solid rgba(0,212,255,.35);
+  box-shadow:0 2px 8px rgba(0,0,0,.35);width:30px;height:30px;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease
 }
-.tv-action-btn img, .tv-action-btn svg{
-  width:16px; height:16px;
-  filter: invert(1) brightness(1.2) contrast(1.1);
-  opacity:.95;
-}
-.tv-action-btn:hover{ transform: scale(1.08); border-color:#00d4ff; }
-/* ===== Efeito estilo Uiverse aplicado ao seu card de TV ===== */
-
-/* estado base: conteúdo visível, ações ocultas */
-/* ====== CARDS DE TV COM ÍCONES BRANCOS ====== */
-
-.grid-item {
-  position: relative;
-  overflow: hidden;              /* recorte suave do slide */
-  transition: box-shadow .3s ease, transform .2s ease;
-}
-
-/* "card-info" equivalente: os textos principais do card */
-.grid-item > span,
-.grid-item > small {
-  transition: transform .2s ease, opacity .2s ease;
-}
-
-/* "card-social" equivalente: bloco de ações da TV */
-.tv-actions {
-  position: absolute;
-  right: 10px; bottom: 10px;
-  display: flex; gap: 6px;
-
-  /* oculto por padrão (como .card-social do Uiverse) */
-  opacity: 0 !important;
-  visibility: hidden !important;
-  transform: translateY(120%);      /* vem de baixo */
-  pointer-events: none;
-  transition: transform .2s ease, opacity .2s ease, visibility 0s linear .2s;
-}
-
-/* hover do card */
-.grid-item:hover {
-  box-shadow: 0 8px 50px #fffdfd33;
-}
-
-/* conteúdo sobe levemente */
-.grid-item:hover > span,
-.grid-item:hover > small,
-.grid-item:focus-within > span,
-.grid-item:focus-within > small {
-  transform: translateY(-5%);
-}
-
-/* ações sobem e aparecem */
-.grid-item:hover .tv-actions,
-.grid-item:focus-within .tv-actions {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: translateY(0);
-  pointer-events: auto;
-  transition: transform .2s ease, opacity .2s ease, visibility 0s;
-}
-
-/* botão das ações */
-.tv-action-btn {
-  background: rgba(6,12,32,.78);
-  border: 1px solid rgba(0,212,255,.35);
-  box-shadow: 0 2px 8px rgba(0,0,0,.35);
-  width: 30px; height: 30px;
-  display: inline-flex; align-items: center; justify-content: center;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
-}
-
-/* ÍCONES SEMPRE BRANCOS */
-.tv-action-btn img,
-.tv-action-btn svg {
-  width: 16px;
-  height: 16px;
-  filter: brightness(0) invert(1); /* força branco puro */
-}
-
-/* hover do botão */
-.tv-action-btn:hover {
-  transform: scale(1.08);
-  background: rgba(255, 255, 255, 0.15);
-  border-color: #00d4ff;
-  box-shadow: 0 0 0 3px rgba(0,212,255,.15), 0 6px 18px rgba(0,0,0,.45);
-}
-
-/* foco acessível */
-.tv-action-btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px #ffffff;
-}
-
+.tv-action-btn img,.tv-action-btn svg{width:16px;height:16px;filter:brightness(0) invert(1)}
+.tv-action-btn:hover{transform:scale(1.08);background:rgba(255,255,255,.15);border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.15),0 6px 18px rgba(0,0,0,.45)}
+.tv-action-btn:focus{outline:none;box-shadow:0 0 0 3px #ffffff}

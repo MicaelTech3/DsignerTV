@@ -7,33 +7,29 @@
   <link rel="stylesheet" href="css/Painel.css"/>
 </head>
 <body>
-  <!-- Indicador de conexão -->
-  <div id="connection-status"></div>
+  <!-- Indicador de conexão (o JS muda a cor/estado) -->
+  <div id="connection-status">✓</div>
 
   <!-- Layout geral -->
   <div class="dashboard">
-    <!-- SIDEBAR NOVA (estilo Uiverse adaptado) -->
+    <!-- SIDEBAR -->
     <aside class="sidebar sidebar-modern">
       <div class="brand">D`Signer</div>
 
       <nav class="pills">
-        <!-- Cada botão tem data-section apontando para a seção -->
         <button class="pill active" data-section="tvs-section" title="Dashboard">
-          <!-- dashboard -->
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path d="M4 13h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1zm-1 7a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v4zm10 0a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v7zm1-10h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1z"/>
           </svg>
           <span>Dashboard</span>
         </button>
 
-       <button class="pill" data-section="app-section" title="App">
-         <img src="imagens/download.png" alt="App" width="24" height="24" />
-         <span>App</span>
-       </button>
-
+        <button class="pill" data-section="app-section" title="App">
+          <img src="imagens/download.png" alt="App" width="24" height="24" />
+          <span>App</span>
+        </button>
 
         <button class="pill" data-section="perfil-section" title="Perfil">
-          <!-- profile -->
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path d="M12 2a5 5 0 1 0 5 5 5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3zm9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z"/>
           </svg>
@@ -41,7 +37,6 @@
         </button>
 
         <button class="pill" data-section="support-section" title="Suporte">
-          <!-- help -->
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path d="M11.953 2C6.465 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.493 2 11.953 2zM12 20c-4.411 0-8-3.589-8-8s3.567-8 7.953-8C16.391 4 20 7.589 20 12s-3.589 8-8 8z"></path>
             <path d="M11 7h2v7h-2zm0 8h2v2h-2z"></path>
@@ -50,7 +45,6 @@
         </button>
 
         <button class="pill pill-dskey" id="pill-dskey" title="dskey (site)">
-          <!-- settings usado para representar “dskey” como ação -->
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path d="M12 16c2.206 0 4-1.794 4-4s-1.794-4-4-4-4 1.794-4 4 1.794 4 4 4zm0-6c1.084 0 2 .916 2 2s-.916 2-2 2-2-.916-2-2 .916-2 2-2z"/>
             <path d="m2.845 16.136 1 1.73c.531.917 1.809 1.261 2.73.73l.529-.306A8.1 8.1 0 0 0 9 19.402V20c0 1.103.897 2 2 2h2c1.103 0 2-.897 2-2v-.598a8.132 8.132 0 0 0 1.896-1.111l.529.306c.923.53 2.198.188 2.731-.731l.999-1.729a2.001 2.001 0 0 0-.731-2.732l-.505-.292a7.718 7.718 0 0 0 0-2.224l.505-.292a2.002 2.002 0 0 0 .731-2.732l-.999-1.729c-.531-.92-1.808-1.265-2.731-.732l-.529.306A8.1 8.1 0 0 0 15 4.598V4c0-1.103-.897-2-2-2h-2c-1.103 0-2 .897-2 2v.598a8.132 8.132 0 0 0-1.896 1.111l-.529-.306c-.924-.531-2.2-.187-2.731.732l-.999 1.729a2.001 2.001 0 0 0 .731 2.732l.505.292a7.683 7.683 0 0 0 0 2.223l-.505.292a2.003 2.003 0 0 0-.731 2.733z"/>
@@ -68,10 +62,11 @@
         <h2 id="section-title">Dashboard</h2>
       </header>
 
-      <!-- Seções -->
+      <!-- TVS -->
       <section id="tvs-section" class="content-section active">
         <div class="tvs-layout">
           <div class="floor-list">
+            <!-- botão "Gerenciar Andares" escondido (use o do FAB) -->
             <button class="select-categories-btn" style="display:none;">Gerenciar Andares</button>
           </div>
           <div class="content-grid">
@@ -80,11 +75,13 @@
               <div class="grid-actions"></div>
             </div>
             <div class="grid" id="tv-grid"></div>
+            <!-- botão "Adicionar TV" escondido (use o do FAB) -->
             <button class="add-tv-btn" style="display:none;">Adicionar TV</button>
           </div>
         </div>
       </section>
 
+      <!-- APP -->
       <section id="app-section" class="content-section">
         <div class="app-content container-neon">
           <h2>Download do App</h2>
@@ -98,6 +95,7 @@
         </div>
       </section>
 
+      <!-- PERFIL -->
       <section id="perfil-section" class="content-section">
         <div class="profile-content container-neon">
           <h2>Meu Perfil</h2>
@@ -107,6 +105,7 @@
         </div>
       </section>
 
+      <!-- SUPORTE -->
       <section id="support-section" class="content-section">
         <div class="support-content container-neon">
           <h2>Suporte Técnico</h2>
@@ -131,7 +130,7 @@
     </main>
   </div>
 
-  <!-- Modais originais (inalterados) -->
+  <!-- Modais -->
   <div class="modal" id="category-modal">
     <div class="modal-content container-neon">
       <span class="close-btn">×</span>
@@ -262,10 +261,15 @@
     </div>
   </div>
 
-  <!-- Ações fixas -->
-  <div class="fixed-actions">
-    <button class="select-categories-btn">Gerenciar Andares</button>
-    <button class="add-tv-btn">Adicionar TV</button>
+  <!-- FAB de ações -->
+  <div class="fab-container">
+    <button class="fab-main" aria-label="Ações">
+      <span style="font-size:24px;line-height:1">+</span>
+    </button>
+    <div class="fab-menu">
+      <button class="select-categories-btn">Gerenciar Andares</button>
+      <button class="add-tv-btn">Adicionar TV</button>
+    </div>
   </div>
 
   <!-- Scripts -->

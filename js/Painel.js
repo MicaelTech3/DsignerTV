@@ -1,218 +1,192 @@
-//
-// Painel_new.js
-//
-// This file is a direct copy of the original panel script provided by the user. It
-// retains all of the event handling, Firebase synchronisation logic and
-// interaction code from the existing project. The only change from the
-// original is the file name; no functions have been removed or altered.
-
+// ========================== Painel.js ==========================
 const authModule = window.authModule;
 
-// Small play icon used as a placeholder thumbnail for video items in playlists.
-// Embedding long base64 strings directly inside template literals can lead to
-// syntax errors when the code is parsed. To avoid this, define the data URI
-// here and reference it in the template below. The icon depicts a simple
-// triangle in a 24×24 SVG. It is encoded as base64 to be used directly in
-// an <img> tag.
+// Ícone play (thumb de vídeo)
 const PLAY_ICON = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBvbHlnb24gcG9pbnRzPSI2LDQgMjAsMTIgNiwyMCIgZmlsbD0iIzAwZDRmZiIvPjwvc3ZnPg==';
 
-// Inicia as listas de categorias e TVs vazias.
+// Estado em memória
 let categories = [];
 let tvs = [];
 let selectedCategoryId = null;
 let currentMediaTv = null;
+let currentUserId = null;
 
-// ID do usuário autenticado. Será definido em onAuthStateChanged.
-let currentUserId = null; // Ainda usado para controle de login, mas dados não são mais segregados por usuário
-
-// Imagem preta codificada em Base64 para exibir quando a TV for desligada.
-// Esta imagem é um pixel preto 1x1 que será esticada pelo player remoto.
+// Imagem preta (1x1) para desligar TV
 const BLACK_IMAGE_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAADUlEQVR4nGP4//8/AwAI/AL+27iEAAAAAElFTkSuQmCC';
 
-/**
- * Atualiza o estado de ativação das mídias associadas a uma TV específica.
- * Define como ativo apenas os nomes passados em activeMediaNames e marca todas
- * as outras mídias como inativas, atualizando o campo lastActive.
- *
- * @param {string} tvNameSlug Slug do nome da TV (em minúsculas e sem espaços).
- * @param {string[]} activeMediaNames Lista de nomes de mídia que devem ser marcadas como ativas.
- */
-async function updateActiveMediaStatus(tvNameSlug, activeMediaNames) {
-    if (!currentUserId || !isOnline()) return;
-    try {
-        const snapshot = await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvNameSlug}`).once('value');
-        const data = snapshot.val() || {};
-        const updates = {};
-        const now = Date.now();
-        for (const mediaKey in data) {
-            const isActive = activeMediaNames.includes(mediaKey);
-            updates[`${mediaKey}/active`] = isActive;
-            updates[`${mediaKey}/lastActive`] = now;
-        }
-        await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvNameSlug}`).update(updates);
-    } catch (err) {
-        console.error('Erro ao atualizar status de mídias:', err);
-    }
-}
-
-/**
- * Extrai o nome da mídia a partir de uma URL de download.
- * Remove o slug da TV e o prefixo de timestamp, além da extensão.
- * @param {string} tvName Nome da TV para derivar o slug.
- * @param {string} url URL completa da mídia armazenada.
- * @returns {string|null} Nome básico da mídia ou null se não for possível extrair.
- */
-function getMediaNameFromUrl(tvName, url) {
-    try {
-        const tvSlug = tvName.replace(/\s+/g, '_').toLowerCase();
-        // Extrai a parte do caminho após o nome da TV
-        const path = decodeURIComponent(url.split('?')[0]);
-        const parts = path.split('/tv_media/')[1];
-        if (!parts) return null;
-        const segments = parts.split('/');
-        if (segments.length < 2) return null;
-        const file = segments[1];
-        // Remove o timestamp (parte antes do primeiro underscore) e a extensão
-        const fileParts = file.split('_');
-        fileParts.shift();
-        const base = fileParts.join('_');
-        return base.replace(/\.[^/.]+$/, '');
-    } catch (err) {
-        return null;
-    }
-}
-
+// ===== Helpers de UI =====
 const isOnline = () => navigator.onLine;
 
-// Desativado: Não salva mais dados localmente para suporte offline.
-const saveLocalData = () => {
-    console.log('Modo offline desativado: dados não são persistidos localmente.');
+// Notificação compacta no topo
+const showToast = (message, type = 'success') => {
+  const n = document.createElement('div');
+  n.className = `notify ${type === 'error' ? 'error' : ''}`;
+  n.innerHTML = `<span class="icon">${type === 'error' ? '⚠' : '✓'}</span><span>${message}</span>`;
+  document.body.appendChild(n);
+  setTimeout(() => { n.style.opacity = '0'; n.style.transform = 'translate(-50%, -6px)'; }, 2200);
+  setTimeout(() => n.remove(), 2600);
 };
 
-const showToast = (message, type = 'info') => {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-        toast.style.animation = 'fadeOut 0.3s';
-        setTimeout(() => toast.remove(), 300);
-    }, 2700);
+// Banner offline + status minimalista
+const ensureOfflineBanner = () => {
+  let b = document.getElementById('offline-banner');
+  if (!b) {
+    b = document.createElement('div');
+    b.id = 'offline-banner';
+    b.textContent = 'Sem internet. Ações desativadas até reconectar.';
+    document.body.appendChild(b);
+  }
+  return b;
 };
 
 const updateConnectionStatus = () => {
-    let statusElement = document.getElementById('connection-status');
-    if (!statusElement) {
-        statusElement = document.createElement('div');
-        statusElement.id = 'connection-status';
-        document.body.appendChild(statusElement);
-    }
-    statusElement.textContent = isOnline() ? '✔ Online' : '⚡ Offline - Modo Local';
-    statusElement.style.backgroundColor = isOnline() ? '#4CAF50' : '#FF9800';
-    statusElement.style.color = 'white';
+  let el = document.getElementById('connection-status');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'connection-status';
+    el.textContent = '✓';
+    document.body.appendChild(el);
+  }
+  if (isOnline()) {
+    el.style.backgroundColor = '#22c55e';
+    el.style.color = '#081427';
+    document.body.classList.remove('offline');
+    const b = document.getElementById('offline-banner');
+    if (b) b.remove();
+  } else {
+    el.style.backgroundColor = '#ef4444';
+    el.style.color = '#ffffff';
+    document.body.classList.add('offline');
+    ensureOfflineBanner();
+  }
 };
 
+// ====== Firebase sync (sem merge local) ======
 const syncWithFirebase = async () => {
-    if (!isOnline()) return;
+  if (!isOnline()) return;
+  try {
+    if (!currentUserId) return;
 
-    try {
-        console.log('Iniciando sincronização...');
-        // Use caminhos específicos por usuário para armazenar categorias e TVs
-        if (!currentUserId) {
-            console.warn('Usuário não definido para sincronização');
-            return;
+    const categoriesSnapshot = await authModule.database.ref(`users/${currentUserId}/categories`).once('value');
+    const tvsSnapshot        = await authModule.database.ref(`users/${currentUserId}/tvs`).once('value');
+
+    const remoteCategories = categoriesSnapshot.val()
+      ? Object.entries(categoriesSnapshot.val()).map(([id, data]) => ({ id, ...data }))
+      : [];
+    const remoteTvs = tvsSnapshot.val()
+      ? Object.entries(tvsSnapshot.val()).map(([id, data]) => ({ id, ...data }))
+      : [];
+
+    // 🚫 sem merge com arrays locais
+    categories = remoteCategories;
+    tvs        = remoteTvs;
+
+    // recalcula mídias ativas
+    for (const tv of tvs) {
+      tv.activeMediaNames = [];
+      tv.savedActiveMediaNames = [];
+      if (tv.playlist && tv.playlist.length > 0) {
+        const names = [];
+        for (const item of tv.playlist) {
+          const name = item.url ? getMediaNameFromUrl(tv.name, item.url) : null;
+          if (name) names.push(name);
         }
-        const categoriesSnapshot = await authModule.database.ref(`users/${currentUserId}/categories`).once('value');
-        const tvsSnapshot = await authModule.database.ref(`users/${currentUserId}/tvs`).once('value');
-
-        const remoteCategories = categoriesSnapshot.val() ? Object.entries(categoriesSnapshot.val()).map(([id, data]) => ({ id, ...data })) : [];
-        const remoteTvs = tvsSnapshot.val() ? Object.entries(tvsSnapshot.val()).map(([id, data]) => ({ id, ...data })) : [];
-
-        categories = [...new Set([...remoteCategories, ...categories].map(c => JSON.stringify(c)))].map(c => JSON.parse(c));
-        for (const cat of categories) {
-            if (!remoteCategories.some(rc => rc.id === cat.id)) {
-                await authModule.database.ref(`users/${currentUserId}/categories/${cat.id}`).set(cat);
-                console.log(`Categoria ${cat.id} criada no Realtime Database para o usuário ${currentUserId}`);
-            }
-        }
-
-        tvs = [...new Set([...remoteTvs, ...tvs].map(t => JSON.stringify(t)))].map(t => JSON.parse(t));
-        for (const tv of tvs) {
-            if (!remoteTvs.some(rt => rt.id === tv.id)) {
-                await authModule.database.ref(`users/${currentUserId}/tvs/${tv.id}`).set(tv);
-                console.log(`TV ${tv.id} criada no Realtime Database para o usuário ${currentUserId}`);
-            }
-            // Deriva nomes de mídias ativas para esta TV
-            tv.activeMediaNames = [];
-            if (tv.playlist && tv.playlist.length > 0) {
-                const names = [];
-                for (const item of tv.playlist) {
-                    const name = item.url ? getMediaNameFromUrl(tv.name, item.url) : null;
-                    if (name) names.push(name);
-                }
-                tv.activeMediaNames = names;
-            } else if (tv.media && tv.media.url && tv.media.type !== 'text') {
-                const name = getMediaNameFromUrl(tv.name, tv.media.url);
-                if (name) tv.activeMediaNames = [name];
-            }
-            // Também inicializa savedActiveMediaNames vazia
-            tv.savedActiveMediaNames = [];
-        }
-
-        saveLocalData();
-        updateCategoryList();
-        updateTvGrid();
-        showToast('Sincronização concluída', 'success');
-    } catch (error) {
-        console.error('bem vindo ao Dsigner:', error);
-        showToast('bem vindos ao Dsigner.', 'error');
+        tv.activeMediaNames = names;
+      } else if (tv.media && tv.media.url && tv.media.type !== 'text') {
+        const name = getMediaNameFromUrl(tv.name, tv.media.url);
+        if (name) tv.activeMediaNames = [name];
+      }
     }
+
+    updateCategoryList();
+    updateTvGrid();
+    showToast('Sincronizado', 'success');
+  } catch (error) {
+    console.error('Erro ao sincronizar:', error);
+    showToast('Falha ao sincronizar', 'error');
+  }
 };
 
+// Atualiza status de mídias ativas por TV
+async function updateActiveMediaStatus(tvNameSlug, activeMediaNames) {
+  if (!currentUserId || !isOnline()) return;
+  try {
+    const snapshot = await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvNameSlug}`).once('value');
+    const data = snapshot.val() || {};
+    const updates = {};
+    const now = Date.now();
+    for (const mediaKey in data) {
+      const isActive = activeMediaNames.includes(mediaKey);
+      updates[`${mediaKey}/active`] = isActive;
+      updates[`${mediaKey}/lastActive`] = now;
+    }
+    await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvNameSlug}`).update(updates);
+  } catch (err) {
+    console.error('Erro ao atualizar status de mídias:', err);
+  }
+}
+
+// Extrai nome a partir da URL
+function getMediaNameFromUrl(tvName, url) {
+  try {
+    const tvSlug = tvName.replace(/\s+/g, '_').toLowerCase();
+    const path = decodeURIComponent(url.split('?')[0]);
+    const parts = path.split('/tv_media/')[1];
+    if (!parts) return null;
+    const segments = parts.split('/');
+    if (segments.length < 2) return null;
+    const file = segments[1];
+    const fileParts = file.split('_');
+    fileParts.shift();
+    const base = fileParts.join('_');
+    return base.replace(/\.[^/.]+$/, '');
+  } catch {
+    return null;
+  }
+}
+
+// ===== UI render =====
 const updateCategoryList = () => {
-    const floorList = document.querySelector('.floor-list');
-    if (!floorList) {
-        console.error('Elemento .floor-list não encontrado na página');
-        return;
-    }
+  const floorList = document.querySelector('.floor-list');
+  if (!floorList) return;
 
-    const button = floorList.querySelector('.select-categories-btn');
-    floorList.innerHTML = '';
-    if (button) floorList.appendChild(button);
+  const button = floorList.querySelector('.select-categories-btn');
+  floorList.innerHTML = '';
+  if (button) floorList.appendChild(button);
 
-    categories.forEach(category => {
-        const floorItem = document.createElement('div');
-        floorItem.className = 'floor-item';
-        floorItem.dataset.categoryId = category.id;
-        floorItem.innerHTML = `
-            <button class="floor-btn ${selectedCategoryId === category.id ? 'active' : ''}" data-id="${category.id}">
-                <span>${category.name}</span>
-                <div class="floor-actions">
-                    <button class="action-btn edit-floor-btn" data-id="${category.id}" title="Editar">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTMgMTcuMjVWMjFiMy43NUwxNy44MSA5Ljk0bC0zLjc1LTMuNzVMMyAxNy4yNXpNMjAuNzEgNy4wNGMuMzktLjM5LjM5LTEuMDIgMC0xLjQxbC0yLjM0LTIuMzRjLS4zOS0uMzktMS4wMi0uMzktMS40MSAwbC0xLjgzIDEuODMgMy43NSAzLjc1IDEuODMtMS44M3oiLz48L3N2Zz4=" width="14" height="14" alt="Editar">
-                    </button>
-                    <button class="action-btn delete-btn delete-floor-btn" data-id="${category.id}" title="Excluir">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTYgMTlhMiAyIDAgMCAwIDIgMmg4YTIgMiAwIDAgMCAyLTJWN0g2djEyTTE5IDRIMTUuNWwtMS0xaC05bC0xIDFINHYyaDE2VjR6Ii8+PC9zdmc+" width="14" height="14" alt="Excluir">
-                    </button>
-                </div>
-            </button>
-        `;
-        floorList.insertBefore(floorItem, button);
-    });
+  categories.forEach(category => {
+    const floorItem = document.createElement('div');
+    floorItem.className = 'floor-item';
+    floorItem.dataset.categoryId = category.id;
+    floorItem.innerHTML = `
+  <div class="floor-btn ${selectedCategoryId === category.id ? 'active' : ''}"
+       data-id="${category.id}" role="button" tabindex="0">
+    <span>${category.name}</span>
+    <div class="floor-actions">
+      <button class="action-btn edit-floor-btn" data-id="${category.id}" title="Editar">
+        <img src="<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+</svg>
 
-    const tvCategorySelect = document.getElementById('tv-category');
-    if (tvCategorySelect) {
-        tvCategorySelect.innerHTML = categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
-    }
-    console.log('Lista de categorias atualizada:', categories);
+      </button>
+      <button class="action-btn delete-btn delete-floor-btn" data-id="${category.id}" title="Excluir">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTYgMTlhMiAyIDAgMCAwIDIgMmg4YTIgMiAwIDAgMCAyLTJWN0g2djEyTTE5IDRIMTUuNWwtMS0xaC05bC0xIDFINHYyaDE2VjR6Ii8+PC9zdmc+" width="14" height="14" alt="Excluir">
+      </button>
+    </div>
+  </div>
+`;
+    floorList.insertBefore(floorItem, button);
+  });
+
+  const tvCategorySelect = document.getElementById('tv-category');
+  if (tvCategorySelect) {
+    tvCategorySelect.innerHTML = categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+  }
 };
 
 const updateTvGrid = () => {
   const tvGrid = document.getElementById('tv-grid');
-  if (!tvGrid) {
-    console.error('Elemento #tv-grid não encontrado na página');
-    return;
-  }
+  if (!tvGrid) return;
 
   tvGrid.innerHTML = '';
   const filteredTvs = selectedCategoryId ? tvs.filter(tv => tv.categoryId === selectedCategoryId) : tvs;
@@ -224,12 +198,10 @@ const updateTvGrid = () => {
 
   filteredTvs.forEach(tv => {
     const category = categories.find(c => c.id === tv.categoryId);
-
     const gridItem = document.createElement('div');
     gridItem.className = `grid-item ${tv.status === 'off' ? 'offline' : ''}`;
     gridItem.dataset.tvId = tv.id;
 
-    // markup do card (mantive estrutura, só garanto ordem e classes)
     gridItem.innerHTML = `
       <div class="tv-status">${tv.status === 'off' ? 'OFF' : 'ON'}</div>
       <span class="tv-name">${tv.name}</span>
@@ -253,1501 +225,861 @@ const updateTvGrid = () => {
         </button>
       </div>
     `;
-
-    // Fallback JS para garantir ocultar/mostrar (vence conflitos de CSS)
-    gridItem.addEventListener('mouseenter', () => gridItem.classList.add('hovered'));
-    gridItem.addEventListener('mouseleave', () => gridItem.classList.remove('hovered'));
-
     tvGrid.appendChild(gridItem);
   });
 };
 
-
+// ===== Uploads e DB =====
 const uploadMediaToStorage = async (file, tv) => {
-    try {
-        // Usa o nome da TV e o nome do arquivo para criar um caminho legível em vez de números
-        const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
-        const originalName = file.name.replace(/\s+/g, '_').toLowerCase();
-        // Prefixa com timestamp para evitar colisões
-        const fileName = `${Date.now()}_${originalName}`;
-        const storageRef = authModule.storage.ref(`tv_media/${tvNameSlug}/${fileName}`);
+  try {
+    const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+    const originalName = file.name.replace(/\s+/g, '_').toLowerCase();
+    const fileName = `${Date.now()}_${originalName}`;
+    const storageRef = authModule.storage.ref(`tv_media/${tvNameSlug}/${fileName}`);
 
-        const progressBar = document.querySelector('.progress-bar');
-        if (progressBar) progressBar.style.width = '0%';
-        showToast(`Enviando: 0%`, 'info');
+    const progressBar = document.querySelector('.progress-bar');
+    if (progressBar) progressBar.style.width = '0%';
+    showToast(`Enviando arquivo...`, 'success');
 
-        if (file.size > 190 * 1024 * 1024) {
-            showToast('Arquivo muito grande (máx. 190MB)', 'error');
-            throw new Error('Arquivo excede o limite de 190MB');
-        }
-
-        const uploadTask = storageRef.put(file);
-
-        return new Promise((resolve, reject) => {
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    if (progressBar) progressBar.style.width = `${progress}%`;
-                    showToast(`Enviando: ${Math.round(progress)}%`, 'info');
-                },
-                (error) => {
-                    console.error("Erro no upload:", error);
-                    showToast('Falha no upload', 'error');
-                    reject(error);
-                },
-                async () => {
-                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                    console.log('Upload concluído, URL:', downloadURL);
-                    resolve({ url: downloadURL, fileName });
-                }
-            );
-        });
-    } catch (error) {
-        console.error("Erro no upload:", error);
-        showToast('Falha no upload', 'error');
-        throw error;
+    if (file.size > 190 * 1024 * 1024) {
+      showToast('Arquivo muito grande (máx. 190MB)', 'error');
+      throw new Error('Arquivo excede o limite de 190MB');
     }
+
+    const uploadTask = storageRef.put(file);
+    return new Promise((resolve, reject) => {
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          if (progressBar) progressBar.style.width = `${progress}%`;
+        },
+        (error) => { console.error("Erro no upload:", error); showToast('Falha no upload', 'error'); reject(error); },
+        async () => {
+          const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+          resolve({ url: downloadURL, fileName });
+        }
+      );
+    });
+  } catch (error) {
+    console.error("Erro no upload:", error);
+    showToast('Falha no upload', 'error');
+    throw error;
+  }
 };
 
-/**
- * Registra os metadados de uma mídia enviada no Realtime Database.
- * A mídia é salva em um caminho legível por nome de TV e nome de mídia.
- *
- * @param {Object} tv      Objeto da TV à qual a mídia pertence.
- * @param {string} fileName Nome do arquivo (com prefixo timestamp) usado no storage.
- * @param {Object} mediaData Objeto de mídia contendo tipo, url e demais propriedades.
- */
 async function registerMediaInDB(tv, fileName, mediaData) {
-    if (!currentUserId) return null;
-    const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
-    // Extrai o nome original sem timestamp e sem extensão para fins de exibição
-    const nameParts = fileName.split('_');
-    // Remove a parte do timestamp
-    nameParts.shift();
-    const baseName = nameParts.join('_');
-    const mediaName = baseName.replace(/\.[^/.]+$/, '');
-    const entry = {
-        tvId: tv.id,
-        tvName: tv.name,
-        mediaName: mediaName,
-        mediaType: mediaData.type,
-        url: mediaData.url || null,
-        content: mediaData.content || null,
-        color: mediaData.color || null,
-        bgColor: mediaData.bgColor || null,
-        fontSize: mediaData.fontSize || null,
-        duration: mediaData.duration || null,
-        loop: mediaData.loop || false,
-        timestamp: mediaData.timestamp || Date.now(),
-        lastActive: Date.now(),
-        active: true,
-        storagePath: `tv_media/${tvNameSlug}/${fileName}`
-    };
-    await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvNameSlug}/${mediaName}`).set(entry);
-    return { tvNameSlug, mediaName };
+  if (!currentUserId) return null;
+  const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+  const nameParts = fileName.split('_'); nameParts.shift();
+  const baseName = nameParts.join('_');
+  const mediaName = baseName.replace(/\.[^/.]+$/, '');
+  const entry = {
+    tvId: tv.id, tvName: tv.name, mediaName, mediaType: mediaData.type,
+    url: mediaData.url || null, content: mediaData.content || null,
+    color: mediaData.color || null, bgColor: mediaData.bgColor || null,
+    fontSize: mediaData.fontSize || null, duration: mediaData.duration || null,
+    loop: mediaData.loop || false, timestamp: mediaData.timestamp || Date.now(),
+    lastActive: Date.now(), active: true,
+    storagePath: `tv_media/${tvNameSlug}/${fileName}`
+  };
+  await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvNameSlug}/${mediaName}`).set(entry);
+  return { tvNameSlug, mediaName };
 }
 
+// ===== Envio de texto =====
 async function sendTextMessage(tvId, messageData) {
-    const tv = tvs.find(t => t.id === tvId);
-    if (!tv) return false;
+  const tv = tvs.find(t => t.id === tvId);
+  if (!tv) return false;
+  const mediaData = {
+    type:'text', content: messageData.text, color: messageData.color,
+    bgColor: messageData.bgColor, fontSize: messageData.fontSize, timestamp: Date.now()
+  };
 
-    const mediaData = {
-        type: 'text',
-        content: messageData.text,
-        color: messageData.color,
-        bgColor: messageData.bgColor,
-        fontSize: messageData.fontSize,
-        timestamp: Date.now()
-    };
+  if (!isOnline()) { showToast('Sem internet', 'error'); return false; }
 
-    tv.media = mediaData;
-    saveLocalData();
-
-    if (isOnline()) {
-        try {
-            await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
-                media: mediaData,
-                lastUpdate: Date.now()
-            });
-
-            if (tv.activationKey) {
-                await authModule.database.ref('midia/' + tv.activationKey).set({
-                    tipo: 'text',
-                    content: mediaData.content,
-                    color: mediaData.color,
-                    bgColor: mediaData.bgColor,
-                    fontSize: mediaData.fontSize,
-                    timestamp: Date.now()
-                });
-            }
-
-            showToast('Mensagem enviada com sucesso!', 'success');
-
-            // Marque todas as mídias desta TV como inativas, pois a TV está exibindo texto
-            const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
-            tv.activeMediaNames = [];
-            await updateActiveMediaStatus(tvNameSlug, []);
-
-            return true;
-        } catch (error) {
-            console.error("Erro ao enviar mensagem:", error);
-            showToast('Erro ao enviar. Mensagem salva localmente.', 'error');
-            return false;
-        }
-    } else {
-        showToast('Mensagem salva localmente (offline)', 'info');
-        return false;
+  try {
+    await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
+      media: mediaData, lastUpdate: Date.now()
+    });
+    if (tv.activationKey) {
+      await authModule.database.ref('midia/' + tv.activationKey).set({
+        tipo:'text', content: mediaData.content, color: mediaData.color,
+        bgColor: mediaData.bgColor, fontSize: mediaData.fontSize, timestamp: Date.now()
+      });
     }
+    // desativa mídias ativas
+    const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+    tv.activeMediaNames = [];
+    await updateActiveMediaStatus(tvNameSlug, []);
+    showToast('Mensagem enviada com sucesso!', 'success');
+    return true;
+  } catch (error) {
+    console.error("Erro ao enviar mensagem:", error);
+    showToast('Erro ao enviar', 'error');
+    return false;
+  }
 }
 
 function displayTextMessage(content, color, bgColor, fontSize) {
-    const modal = document.getElementById('view-media-modal');
-    const container = document.getElementById('media-container');
-    if (!modal || !container) {
-        console.error('Elementos do modal de mídia não encontrados');
-        return;
-    }
-
-    container.innerHTML = `
-        <div class="text-message" style="
-            padding: 20px;
-            background: ${bgColor || '#2a2f5b'};
-            border-radius: 10px;
-            color: ${color || 'white'};
-            font-size: ${fontSize || 24}px;
-            max-width: 80%;
-            margin: 0 auto;
-            text-align: center;
-        ">
-            ${content}
-        </div>
-    `;
-
-    modal.style.display = 'block';
+  const modal = document.getElementById('view-media-modal');
+  const container = document.getElementById('media-container');
+  if (!modal || !container) return;
+  container.innerHTML = `
+    <div class="text-message" style="padding:20px;background:${bgColor || '#2a2f5b'};border-radius:10px;color:${color || 'white'};font-size:${fontSize || 24}px;max-width:80%;margin:0 auto;text-align:center;">
+      ${content}
+    </div>`;
+  modal.style.display = 'block';
 }
 
 function showTvMedia(tvId) {
-    const tv = tvs.find(t => t.id === tvId);
-    if (!tv) {
-        showToast('TV não encontrada', 'error');
-        return;
-    }
+  const tv = tvs.find(t => t.id === tvId);
+  if (!tv) { showToast('TV não encontrada', 'error'); return; }
 
-    const modal = document.getElementById('view-media-modal');
-    const container = document.getElementById('media-container');
-    if (!modal || !container) return;
+  const modal = document.getElementById('view-media-modal');
+  const container = document.getElementById('media-container');
+  if (!modal || !container) return;
+  container.innerHTML = '';
 
-    container.innerHTML = '';
+  if (tv.playlist && tv.playlist.length > 0) {
+    container.innerHTML = `
+      <h3>Playlist de ${tv.name}</h3>
+      <div id="playlist-view"></div>
+      <button id="add-to-playlist-btn" class="btn" data-tv-id="${tvId}">Adicionar Mídia</button>
+      <button id="update-playlist-btn" class="btn" data-tv-id="${tvId}">Atualizar Playlist</button>
+    `;
+    const playlistView = container.querySelector('#playlist-view');
+    let playlistItems = tv.playlist.slice().sort((a,b)=>(a.order||0)-(b.order||0));
 
-    if (tv.playlist && tv.playlist.length > 0) {
-        container.innerHTML = `
-            <h3>Playlist de ${tv.name}</h3>
-            <div id="playlist-view"></div>
-            <button id="add-to-playlist-btn" class="btn" data-tv-id="${tvId}">Adicionar Mídia</button>
-            <button id="update-playlist-btn" class="btn" data-tv-id="${tvId}">Atualizar Playlist</button>
+    const renderPlaylistView = () => {
+      playlistView.innerHTML = '';
+      playlistItems.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'playlist-item';
+        itemDiv.dataset.index = index;
+        itemDiv.innerHTML = `
+          <img src="${item.type === 'video' ? PLAY_ICON : item.url}" alt="${item.type}" style="width:100px;height:100px;object-fit:cover;">
+          <div>
+            <p>Tipo: ${item.type}</p>
+            <p>Duração: <input type="number" class="playlist-duration" value="${item.duration || 10}" min="1" ${item.type === 'video' ? 'disabled' : ''}> seg</p>
+            <button class="move-up-btn" ${index===0?'disabled':''} title="Mover para cima">▲</button>
+            <button class="move-down-btn" ${index===playlistItems.length-1?'disabled':''} title="Mover para baixo">▼</button>
+            <button class="remove-item-btn" title="Remover item">✖</button>
+          </div>
         `;
-        const playlistView = container.querySelector('#playlist-view');
-        let playlistItems = tv.playlist.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+        playlistView.appendChild(itemDiv);
+      });
+    };
+    renderPlaylistView();
 
-        const renderPlaylistView = () => {
-            playlistView.innerHTML = '';
-            playlistItems.forEach((item, index) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'playlist-item';
-                itemDiv.dataset.index = index;
-                itemDiv.innerHTML = `
-                    <img src="${item.type === 'video' ? PLAY_ICON : item.url}" alt="${item.type}" style="width: 100px; height: 100px; object-fit: cover;">
-                    <div>
-                        <p>Tipo: ${item.type}</p>
-                        <p>Duração: <input type="number" class="playlist-duration" value="${item.duration || 10}" min="1" ${item.type === 'video' ? 'disabled' : ''}> seg</p>
-                        <button class="move-up-btn" ${index === 0 ? 'disabled' : ''} title="Mover para cima">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="#00d4ff"><path d="M12 8l-6 6h12l-6-6z"/></svg>
-                        </button>
-                        <button class="move-down-btn" ${index === playlistItems.length - 1 ? 'disabled' : ''} title="Mover para baixo">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="#00d4ff"><path d="M12 16l6-6H6l6 6z"/></svg>
-                        </button>
-                        <button class="remove-item-btn" title="Remover item">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="#ff5252"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-                        </button>
-                    </div>
-                `;
-                playlistView.appendChild(itemDiv);
-            });
-        };
-
+    playlistView.addEventListener('click', (e) => {
+      const card = e.target.closest('.playlist-item');
+      if (!card) return;
+      const index = parseInt(card.dataset.index);
+      if (e.target.classList.contains('move-up-btn') && index>0) {
+        [playlistItems[index], playlistItems[index-1]] = [playlistItems[index-1], playlistItems[index]];
+        playlistItems.forEach((it,i)=> it.order=i);
         renderPlaylistView();
-
-        playlistView.addEventListener('click', (e) => {
-            const index = parseInt(e.target.closest('.playlist-item')?.dataset.index);
-            if (isNaN(index)) return;
-
-            if (e.target.classList.contains('move-up-btn') && index > 0) {
-                [playlistItems[index], playlistItems[index - 1]] = [playlistItems[index - 1], playlistItems[index]];
-                playlistItems.forEach((item, i) => item.order = i);
-                renderPlaylistView();
-            } else if (e.target.classList.contains('move-down-btn') && index < playlistItems.length - 1) {
-                [playlistItems[index], playlistItems[index + 1]] = [playlistItems[index + 1], playlistItems[index]];
-                playlistItems.forEach((item, i) => item.order = i);
-                renderPlaylistView();
-            } else if (e.target.classList.contains('remove-item-btn')) {
-                playlistItems.splice(index, 1);
-                playlistItems.forEach((item, i) => item.order = i);
-                renderPlaylistView();
-            }
-        });
-
-        playlistView.addEventListener('input', (e) => {
-            const index = parseInt(e.target.closest('.playlist-item')?.dataset.index);
-            if (e.target.classList.contains('playlist-duration')) {
-                const duration = parseInt(e.target.value);
-                if (duration >= 1) {
-                    playlistItems[index].duration = duration;
-                }
-            }
-        });
-
-        document.getElementById('add-to-playlist-btn').addEventListener('click', () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*,video/mp4,.gif';
-            input.multiple = true;
-            input.onchange = async (e) => {
-                const files = Array.from(e.target.files);
-                for (const file of files) {
-                    if (file.size > 190 * 1024 * 1024) {
-                        showToast(`Arquivo ${file.name} excede 190MB`, 'error');
-                        continue;
-                    }
-                    const uploadResult = await uploadMediaToStorage(file, tv);
-                    const url = uploadResult.url;
-                    const uploadedFileName = uploadResult.fileName;
-                    const type = file.type.startsWith('video/') ? 'video' : file.type === 'image/gif' ? 'gif' : 'image';
-                    const newItem = {
-                        url,
-                        type,
-                        duration: type === 'video' ? null : 10,
-                        order: playlistItems.length
-                    };
-                    playlistItems.push(newItem);
-                    // Registra cada item da playlist na base de dados
-                    await registerMediaInDB(tv, uploadedFileName, {
-                        type: type,
-                        url: url,
-                        duration: newItem.duration,
-                        timestamp: Date.now()
-                    });
-                }
-                renderPlaylistView();
-            };
-            input.click();
-        });
-
-        document.getElementById('update-playlist-btn').addEventListener('click', async () => {
-            tv.playlist = playlistItems;
-            saveLocalData();
-
-            if (isOnline()) {
-                try {
-                    await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
-                        playlist: playlistItems,
-                        lastUpdate: Date.now()
-                    });
-
-                    if (tv.activationKey) {
-                        await authModule.database.ref('midia/' + tv.activationKey).set({
-                            tipo: 'playlist',
-                            items: playlistItems,
-                            timestamp: Date.now()
-                        });
-                    }
-
-                    // Atualiza o status ativo das mídias da playlist
-                    const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
-                    // Recalcula os nomes de mídia ativos da playlist a partir das URLs
-                    const activeNames = [];
-                    for (const item of playlistItems) {
-                        const name = item.url ? getMediaNameFromUrl(tv.name, item.url) : null;
-                        if (name) activeNames.push(name);
-                    }
-                    tv.activeMediaNames = activeNames;
-                    await updateActiveMediaStatus(tvNameSlug, activeNames);
-                    showToast('Playlist atualizada com sucesso!', 'success');
-                    modal.style.display = 'none';
-                } catch (error) {
-                    console.error('Erro ao atualizar playlist:', error);
-                    showToast('Erro ao atualizar playlist', 'error');
-                }
-            } else {
-                showToast('Playlist atualizada localmente (offline)', 'info');
-            }
-        });
-    } else if (tv.media) {
-        if (tv.media.type === 'text') {
-            displayTextMessage(
-                tv.media.content,
-                tv.media.color,
-                tv.media.bgColor,
-                tv.media.fontSize
-            );
-        } else if (tv.media.type === 'image') {
-            const img = document.createElement('img');
-            img.src = tv.media.url;
-            img.style.maxWidth = '100%';
-            img.onerror = () => showToast('Erro ao carregar a imagem', 'error');
-            container.appendChild(img);
-        } else if (tv.media.type === 'video') {
-            if (tv.media.url.includes('youtube.com') || tv.media.url.includes('youtu.be')) {
-                const videoId = tv.media.url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)?.[1];
-                if (videoId) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=${tv.media.loop ? 1 : 0}${tv.media.loop ? '&playlist=' + videoId : ''}`;
-                    iframe.style.width = '100%';
-                    iframe.style.height = '400px';
-                    iframe.frameBorder = '0';
-                    iframe.allow = 'autoplay; encrypted-media';
-                    container.appendChild(iframe);
-                } else {
-                    showToast('URL do YouTube inválida', 'error');
-                }
-            } else {
-                const video = document.createElement('video');
-                video.src = tv.media.url;
-                video.controls = true;
-                video.loop = tv.media.loop || false;
-                video.style.maxWidth = '100%';
-                video.autoplay = true;
-                video.onerror = () => showToast('Erro ao carregar o vídeo', 'error');
-                video.oncanplay = () => video.play().catch(e => console.error('Erro ao reproduzir:', e));
-                container.appendChild(video);
-            }
-        }
-    } else {
-        showToast('Nenhuma mídia ou playlist enviada para esta TV', 'info');
-    }
-
-    modal.style.display = 'block';
-}
-
-window.uploadMidia = async function() {
-    try {
-        const tvId = document.getElementById('upload-media-btn')?.dataset.tvId;
-        const mediaType = document.getElementById('media-type')?.value;
-        const tv = tvs.find(t => t.id === tvId);
-
-        if (!tv || !mediaType) {
-            showToast('TV ou tipo de mídia inválidos', 'error');
-            return;
-        }
-
-        let mediaData = {};
-
-        if (mediaType === 'text') {
-            const content = document.getElementById('text-content')?.value.trim();
-            if (!content) {
-                showToast('Digite o conteúdo do texto!', 'error');
-                return;
-            }
-
-            mediaData = {
-                type: 'text',
-                content: content,
-                color: document.getElementById('text-color')?.value || '#ffffff',
-                bgColor: document.getElementById('text-bg-color')?.value || '#1a1f3b',
-                fontSize: document.getElementById('text-size')?.value || '24',
-                timestamp: Date.now()
-            };
-        } else if (mediaType === 'image' || mediaType === 'video') {
-            const fileInput = document.getElementById('media-file');
-            const file = fileInput?.files[0];
-
-            if (!file) {
-                showToast('Selecione um arquivo', 'error');
-                return;
-            }
-
-            if (file.size > 190 * 1024 * 1024) {
-                showToast('Arquivo muito grande (máx. 190MB)', 'error');
-                return;
-            }
-
-            showToast('Iniciando upload...', 'info');
-
-            const uploadResult = await uploadMediaToStorage(file, tv);
-            const mediaUrl = uploadResult.url;
-            const uploadedFileName = uploadResult.fileName;
-
-            mediaData = {
-                type: mediaType,
-                url: mediaUrl,
-                timestamp: Date.now()
-            };
-
-            if (mediaType === 'image') {
-                mediaData.duration = parseInt(document.getElementById('image-duration')?.value) || 10;
-            } else if (mediaType === 'video') {
-                mediaData.loop = document.getElementById('video-loop')?.checked || false;
-                const validVideoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi'];
-                const fileExtension = file.name.split('.').pop().toLowerCase();
-                if (!file.type.startsWith('video/') && !validVideoExtensions.includes(fileExtension)) {
-                    showToast('Arquivo não é um vídeo válido', 'error');
-                    return;
-                }
-            }
-
-            // Registra a mídia na base de dados para listagem futura e obtém o slug e nome
-            const regResult = await registerMediaInDB(tv, uploadedFileName, mediaData);
-            if (regResult) {
-                // Atualiza a lista de mídias ativas da TV
-                tv.activeMediaNames = [regResult.mediaName];
-                await updateActiveMediaStatus(regResult.tvNameSlug, tv.activeMediaNames);
-            }
-        } else if (mediaType === 'link') {
-            const mediaUrl = document.getElementById('media-link')?.value.trim();
-            if (!mediaUrl) {
-                showToast('Digite uma URL válida', 'error');
-                return;
-            }
-
-            const isVideo = mediaUrl.match(/\.(mp4|webm|ogg|mov|avi)$/i) ||
-                          mediaUrl.includes('youtube.com') ||
-                          mediaUrl.includes('vimeo.com');
-
-            mediaData = {
-                type: isVideo ? 'video' : 'image',
-                url: mediaUrl,
-                timestamp: Date.now()
-            };
-
-            if (isVideo) {
-                mediaData.loop = document.getElementById('video-loop')?.checked || false;
-            }
-        } else if (mediaType === 'playlist') {
-            const fileInput = document.getElementById('playlist-files');
-            const files = fileInput?.files;
-
-            if (!files || files.length === 0) {
-                showToast('Selecione pelo menos um arquivo para a playlist', 'error');
-                return;
-            }
-
-            const playlistItems = [];
-            const mediaNamesForPlaylist = [];
-            for (const file of Array.from(files)) {
-                if (file.size > 190 * 1024 * 1024) {
-                    showToast(`Arquivo ${file.name} excede 190MB`, 'error');
-                    continue;
-                }
-                const uploadResult = await uploadMediaToStorage(file, tv);
-                const url = uploadResult.url;
-                const uploadedFileName = uploadResult.fileName;
-                const type = file.type.startsWith('video/') ? 'video' : file.type === 'image/gif' ? 'gif' : 'image';
-                const playlistItem = {
-                    url,
-                    type,
-                    duration: type === 'video' ? null : 10,
-                    order: playlistItems.length
-                };
-                playlistItems.push(playlistItem);
-                // Registra cada item da playlist individualmente na base de dados
-                const regResult = await registerMediaInDB(tv, uploadedFileName, {
-                    type: type,
-                    url: url,
-                    duration: playlistItem.duration,
-                    timestamp: Date.now()
-                });
-                if (regResult) {
-                    mediaNamesForPlaylist.push(regResult.mediaName);
-                }
-            }
-
-            if (playlistItems.length === 0) {
-                showToast('Nenhum arquivo válido para a playlist', 'error');
-                return;
-            }
-
-            tv.playlist = playlistItems;
-            saveLocalData();
-
-            if (isOnline()) {
-                await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
-                    playlist: playlistItems,
-                    lastUpdate: Date.now()
-                });
-
-                if (tv.activationKey) {
-                    await authModule.database.ref('midia/' + tv.activationKey).set({
-                        tipo: 'playlist',
-                        items: playlistItems,
-                        timestamp: Date.now()
-                    });
-                }
-            }
-
-            // Atualiza o status das mídias para refletir a playlist ativa
-            const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
-            tv.activeMediaNames = mediaNamesForPlaylist;
-            await updateActiveMediaStatus(tvNameSlug, tv.activeMediaNames);
-
-            showToast('Playlist enviada com sucesso! Veja em "Ver Mídia" para ajustar.', 'success');
-            const modal = document.getElementById('upload-media-modal');
-            if (modal) modal.style.display = 'none';
-            return;
-        }
-
-        tv.media = mediaData;
-        saveLocalData();
-
-        if (isOnline()) {
-            await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
-                media: mediaData,
-                lastUpdate: Date.now()
-            });
-
-            if (tv.activationKey) {
-                await authModule.database.ref('midia/' + tv.activationKey).set({
-                    tipo: mediaData.type,
-                    url: mediaData.url,
-                    content: mediaData.content || null,
-                    color: mediaData.color || null,
-                    bgColor: mediaData.bgColor || null,
-                    fontSize: mediaData.fontSize || null,
-                    duration: mediaData.duration || null,
-                    loop: mediaData.loop || false,
-                    timestamp: Date.now()
-                });
-            }
-        }
-
-        showToast('Conteúdo enviado com sucesso!', 'success');
-
-        const modal = document.getElementById('upload-media-modal');
-        if (modal) modal.style.display = 'none';
-
-        const fileInput = document.getElementById('media-file');
-        if (fileInput) fileInput.value = '';
-
-    } catch (error) {
-        console.error("Erro no envio:", error);
-        showToast('Falha no envio: ' + error.message, 'error');
-    }
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM carregado, iniciando configuração...');
-    updateConnectionStatus();
-    window.addEventListener('online', () => {
-        updateConnectionStatus();
-        syncWithFirebase();
-    });
-    window.addEventListener('offline', updateConnectionStatus);
-
-    authModule.onAuthStateChanged(user => {
-        if (!user) {
-            console.log('Nenhum usuário autenticado, redirecionando para login...');
-            window.location.href = 'index.html';
-            return;
-        }
-        console.log('Usuário autenticado:', user.uid);
-        // Armazena o ID do usuário atual para uso nas funções de sincronização
-        currentUserId = user.uid;
-        const userEmail = document.getElementById('user-email');
-        if (userEmail) userEmail.textContent = user.email;
-        const supportEmail = document.getElementById('support-email');
-        if (supportEmail) supportEmail.value = user.email;
-        if (isOnline()) {
-            // Aguarda a sincronização com Firebase antes de atualizar a interface
-            (async () => {
-                await syncWithFirebase();
-                await cleanupOldMedia();
-                updateCategoryList();
-                updateTvGrid();
-            })();
-        } else {
-            showToast('Sem conexão: conecte-se para carregar dados', 'error');
-            updateCategoryList();
-            updateTvGrid();
-        }
+      } else if (e.target.classList.contains('move-down-btn') && index<playlistItems.length-1) {
+        [playlistItems[index], playlistItems[index+1]] = [playlistItems[index+1], playlistItems[index]];
+        playlistItems.forEach((it,i)=> it.order=i);
+        renderPlaylistView();
+      } else if (e.target.classList.contains('remove-item-btn')) {
+        playlistItems.splice(index,1);
+        playlistItems.forEach((it,i)=> it.order=i);
+        renderPlaylistView();
+      }
     });
 
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', e => {
-            e.preventDefault();
-            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
-            link.classList.add('active');
-            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
-            const section = document.getElementById(link.dataset.section);
-            if (section) section.classList.add('active');
-            // Update section title in the topbar
-            const titleEl = document.getElementById('section-title');
-            if (titleEl) {
-                titleEl.textContent = link.textContent.trim();
-            }
-        });
+    playlistView.addEventListener('input', (e) => {
+      const card = e.target.closest('.playlist-item');
+      if (!card) return;
+      const index = parseInt(card.dataset.index);
+      if (e.target.classList.contains('playlist-duration')) {
+        const duration = parseInt(e.target.value);
+        if (duration >= 1) playlistItems[index].duration = duration;
+      }
     });
 
-    const dskeyBtn = document.getElementById('dskey-btn-header');
-    if (dskeyBtn) {
-        dskeyBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = 'https://tvdsigner.com.br/';
-        });
-    }
-
-    const categoryModal = document.getElementById('category-modal');
-    // Ligue o evento em todos os botões de "Gerenciar Andares" (inclui versões ocultas e visíveis)
-    document.querySelectorAll('.select-categories-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            console.log('Abrindo modal de categorias');
-            if (categoryModal) categoryModal.style.display = 'block';
-            updateCategoryList();
-        });
-    });
-    const categoryModalClose = document.querySelector('#category-modal .close-btn');
-    if (categoryModalClose) {
-        categoryModalClose.addEventListener('click', () => {
-            if (categoryModal) categoryModal.style.display = 'none';
-        });
-    }
-
-    const addCategoryBtn = document.getElementById('add-category-btn');
-    if (addCategoryBtn) {
-        addCategoryBtn.addEventListener('click', async () => {
-            const nameInput = document.getElementById('new-category-name');
-            const name = nameInput ? nameInput.value.trim() : '';
-            if (!name) {
-                showToast('Digite um nome para o andar', 'error');
-                return;
-            }
-
-            const newId = (categories.length ? Math.max(...categories.map(c => parseInt(c.id))) + 1 : 1).toString();
-            const newCategory = { id: newId, name, status: 'active' };
-            console.log('Adicionando categoria:', newCategory);
-
-            categories.push(newCategory);
-            saveLocalData();
-
-            if (isOnline()) {
-                try {
-                    await authModule.database.ref(`users/${currentUserId}/categories/${newId}`).set(newCategory);
-                    showToast('Andar adicionado!', 'success');
-                } catch (err) {
-                    console.error('Erro ao adicionar categoria no Firebase:', err);
-                    showToast('Salvo localmente', 'info');
-                }
-            } else {
-                showToast('Salvo localmente', 'info');
-            }
-
-            if (nameInput) nameInput.value = '';
-            updateCategoryList();
-            if (categoryModal) categoryModal.style.display = 'none';
-        });
-    }
-
-    document.addEventListener('click', e => {
-        const editBtn = e.target.closest('.edit-floor-btn');
-        if (editBtn) {
-            const catId = editBtn.dataset.id;
-            const category = categories.find(c => c.id === catId);
-            const modal = document.getElementById('edit-floor-modal');
-            const nameInput = document.getElementById('edit-floor-name');
-            if (modal && nameInput && category) {
-                nameInput.value = category.name;
-                document.getElementById('save-floor-btn').dataset.id = catId;
-                modal.style.display = 'block';
-                console.log('Abrindo modal de edição para categoria:', catId);
-            }
+    document.getElementById('add-to-playlist-btn').addEventListener('click', () => {
+      if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*,video/mp4,.gif';
+      input.multiple = true;
+      input.onchange = async (e) => {
+        const files = Array.from(e.target.files);
+        for (const file of files) {
+          if (file.size > 190 * 1024 * 1024) { showToast(`Arquivo ${file.name} excede 190MB`, 'error'); continue; }
+          const uploadResult = await uploadMediaToStorage(file, tv);
+          const url = uploadResult.url;
+          const uploadedFileName = uploadResult.fileName;
+          const type = file.type.startsWith('video/') ? 'video' : file.type === 'image/gif' ? 'gif' : 'image';
+          const newItem = { url, type, duration: type==='video'?null:10, order: playlistItems.length };
+          playlistItems.push(newItem);
+          await registerMediaInDB(tv, uploadedFileName, { type, url, duration:newItem.duration, timestamp: Date.now() });
         }
-    });
-    const editFloorModalClose = document.querySelector('#edit-floor-modal .close-btn');
-    if (editFloorModalClose) {
-        editFloorModalClose.addEventListener('click', () => {
-            const modal = document.getElementById('edit-floor-modal');
-            if (modal) modal.style.display = 'none';
-        });
-    }
-    const saveFloorBtn = document.getElementById('save-floor-btn');
-    if (saveFloorBtn) {
-        saveFloorBtn.addEventListener('click', async () => {
-            const catId = saveFloorBtn.dataset.id;
-            const nameInput = document.getElementById('edit-floor-name');
-            const newName = nameInput ? nameInput.value.trim() : '';
-            if (!newName) {
-                showToast('Digite um nome válido', 'error');
-                return;
-            }
-
-            const categoryIndex = categories.findIndex(c => c.id === catId);
-            if (categoryIndex !== -1) {
-                categories[categoryIndex].name = newName;
-                saveLocalData();
-
-                if (isOnline()) {
-                    try {
-                        await authModule.database.ref(`users/${currentUserId}/categories/${catId}`).update({ name: newName });
-                        showToast('Andar atualizado', 'success');
-                    } catch (err) {
-                        console.error('Erro ao atualizar categoria:', err);
-                        showToast('Atualizado localmente', 'info');
-                    }
-                } else {
-                    showToast('Atualizado localmente', 'info');
-                }
-
-                updateCategoryList();
-                const modal = document.getElementById('edit-floor-modal');
-                if (modal) modal.style.display = 'none';
-            }
-        });
-    }
-
-    document.addEventListener('click', async e => {
-        const deleteBtn = e.target.closest('.delete-floor-btn');
-        if (deleteBtn) {
-            if (!confirm('Tem certeza que deseja excluir este andar? Todas as TVs serão removidas.')) return;
-            const catId = deleteBtn.dataset.id;
-            console.log('Deletando categoria:', catId);
-
-            categories = categories.filter(c => c.id !== catId);
-            tvs = tvs.filter(tv => tv.categoryId !== catId);
-            saveLocalData();
-
-            if (isOnline()) {
-                try {
-                    await authModule.database.ref(`users/${currentUserId}/categories/${catId}`).remove();
-                    const tvsToDelete = tvs.filter(tv => tv.categoryId === catId);
-                    for (const tv of tvsToDelete) {
-                        await authModule.database.ref(`users/${currentUserId}/tvs/${tv.id}`).remove();
-                    }
-                    showToast('Andar e TVs removidos', 'success');
-                } catch (err) {
-                    console.error('Erro ao remover no Firebase:', err);
-                    showToast('Removido localmente', 'info');
-                }
-            } else {
-                showToast('Removido localmente', 'info');
-            }
-
-            updateCategoryList();
-            updateTvGrid();
-        }
+        renderPlaylistView();
+      };
+      input.click();
     });
 
-    const addTvModal = document.getElementById('add-tv-modal');
-    // Ligue o evento em todos os botões de "Adicionar TV" (inclui versões ocultas e visíveis)
-    document.querySelectorAll('.add-tv-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            console.log('Abrindo modal de adicionar TV');
-            if (addTvModal) addTvModal.style.display = 'block';
-            updateCategoryList();
-        });
-    });
-    const addTvModalClose = document.querySelector('#add-tv-modal .close-btn');
-    if (addTvModalClose) {
-        addTvModalClose.addEventListener('click', () => {
-            if (addTvModal) addTvModal.style.display = 'none';
-        });
-    }
-    const addTvSubmitBtn = document.getElementById('add-tv-submit-btn');
-    if (addTvSubmitBtn) {
-        addTvSubmitBtn.addEventListener('click', async () => {
-            const nameInput = document.getElementById('tv-name');
-            const categorySelect = document.getElementById('tv-category');
-            const keyInput = document.getElementById('tv-activation-key');
-            const name = nameInput ? nameInput.value.trim() : '';
-            const categoryId = categorySelect ? categorySelect.value : '';
-            const activationKey = keyInput ? keyInput.value.trim() : '';
-
-            if (!name || !categoryId) {
-                showToast('Preencha todos os campos obrigatórios', 'error');
-                return;
-            }
-
-            const newId = (tvs.length ? Math.max(...tvs.map(t => parseInt(t.id))) + 1 : 1).toString();
-            const newTv = {
-                id: newId,
-                name,
-                categoryId,
-                status: 'on',
-                activationKey: activationKey || null,
-                deviceName: activationKey ? `Dispositivo ${newId}` : null,
-                lastActivation: activationKey ? Date.now() : null
-            };
-            console.log('Adicionando TV:', newTv);
-
-            tvs.push(newTv);
-            saveLocalData();
-
-            if (isOnline()) {
-                try {
-                    await authModule.database.ref(`users/${currentUserId}/tvs/${newId}`).set(newTv);
-                    showToast('TV adicionada!', 'success');
-
-                    if (activationKey) {
-                        await authModule.database.ref('midia/' + activationKey).set({
-                            tipo: 'activation',
-                            tvData: newTv,
-                            timestamp: Date.now()
-                        });
-                    }
-                } catch (err) {
-                    console.error('Erro ao adicionar TV no Firebase:', err);
-                    showToast('Salva localmente', 'info');
-                }
-            } else {
-                showToast('Salva localmente', 'info');
-            }
-
-            if (nameInput) nameInput.value = '';
-            if (keyInput) keyInput.value = '';
-            if (addTvModal) addTvModal.style.display = 'none';
-            updateTvGrid();
-        });
-    }
-
-    document.addEventListener('click', async e => {
-        const toggleBtn = e.target.closest('.toggle-tv-btn');
-        if (toggleBtn) {
-            const tvId = toggleBtn.dataset.id;
-            const tv = tvs.find(t => t.id === tvId);
-            if (tv) {
-                const turningOn = tv.status === 'off';
-                // Alterna status
-                tv.status = turningOn ? 'on' : 'off';
-
-                if (!turningOn) {
-                    // Estamos desligando a TV: salvar mídia atual e enviar tela preta
-                    tv.lastMedia = tv.media ? JSON.parse(JSON.stringify(tv.media)) : null;
-                    tv.lastPlaylist = tv.playlist ? JSON.parse(JSON.stringify(tv.playlist)) : null;
-                    // Define mídia preta
-                    tv.media = { type: 'image', url: BLACK_IMAGE_URL, duration: null };
-                    tv.playlist = null;
-                    // Desativa todas as mídias associadas a esta TV no banco de dados
-                    const tvSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
-                    // Salva nomes ativos antes de limpar
-                    tv.savedActiveMediaNames = tv.activeMediaNames ? [...tv.activeMediaNames] : [];
-                    tv.activeMediaNames = [];
-                    await updateActiveMediaStatus(tvSlug, []);
-                } else {
-                    // Estamos ligando a TV: restaurar mídia/playlist anterior se existir
-                    if (tv.lastMedia) {
-                        tv.media = tv.lastMedia;
-                        tv.lastMedia = null;
-                    }
-                    if (tv.lastPlaylist) {
-                        tv.playlist = tv.lastPlaylist;
-                        tv.lastPlaylist = null;
-                    }
-                    // Restaura o estado ativo das mídias salvas
-                    const tvSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
-                    if (tv.savedActiveMediaNames) {
-                        tv.activeMediaNames = [...tv.savedActiveMediaNames];
-                        await updateActiveMediaStatus(tvSlug, tv.activeMediaNames);
-                        tv.savedActiveMediaNames = [];
-                    }
-                }
-
-                saveLocalData();
-
-                if (isOnline()) {
-                    try {
-                        // Atualiza status e mídia/playlist no Firebase
-                        const updates = { status: tv.status };
-                        if (tv.media) updates.media = tv.media;
-                        if (tv.playlist) updates.playlist = tv.playlist;
-                        await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update(updates);
-                        showToast(`TV ${tv.status === 'off' ? 'desligada' : 'ligada'}`, 'success');
-
-                        if (tv.activationKey) {
-                            // Envia comando de mídia para o dispositivo remoto
-                            if (!turningOn) {
-                                // Tela preta
-                                await authModule.database.ref('midia/' + tv.activationKey).set({
-                                    tipo: 'image',
-                                    url: BLACK_IMAGE_URL,
-                                    timestamp: Date.now()
-                                });
-                            } else {
-                                // Restaurar mídia anterior (playlist ou mídia única)
-                                if (tv.playlist && tv.playlist.length > 0) {
-                                    await authModule.database.ref('midia/' + tv.activationKey).set({
-                                        tipo: 'playlist',
-                                        items: tv.playlist,
-                                        timestamp: Date.now()
-                                    });
-                                } else if (tv.media) {
-                                    const m = tv.media;
-                                    await authModule.database.ref('midia/' + tv.activationKey).set({
-                                        tipo: m.type,
-                                        url: m.url || null,
-                                        content: m.content || null,
-                                        color: m.color || null,
-                                        bgColor: m.bgColor || null,
-                                        fontSize: m.fontSize || null,
-                                        duration: m.duration || null,
-                                        loop: m.loop || false,
-                                        timestamp: Date.now()
-                                    });
-                                }
-                            }
-                        }
-                    } catch (err) {
-                        console.error('Erro ao atualizar status:', err);
-                        showToast('Alteração salva localmente', 'info');
-                    }
-                } else {
-                    // Offline: informar usuário
-                    showToast('Alteração salva localmente', 'info');
-                }
-
-                updateTvGrid();
-            }
+    document.getElementById('update-playlist-btn').addEventListener('click', async () => {
+      if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+      try {
+        tv.playlist = playlistItems;
+        await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({ playlist: playlistItems, lastUpdate: Date.now() });
+        if (tv.activationKey) {
+          await authModule.database.ref('midia/' + tv.activationKey).set({ tipo: 'playlist', items: playlistItems, timestamp: Date.now() });
         }
+        const tvSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+        const activeNames = [];
+        for (const item of playlistItems) {
+          const name = item.url ? getMediaNameFromUrl(tv.name, item.url) : null;
+          if (name) activeNames.push(name);
+        }
+        tv.activeMediaNames = activeNames;
+        await updateActiveMediaStatus(tvSlug, activeNames);
+        showToast('Playlist atualizada!', 'success');
+        modal.style.display = 'none';
+      } catch (err) {
+        console.error('Erro ao atualizar playlist:', err);
+        showToast('Erro ao atualizar', 'error');
+      }
     });
 
-    document.addEventListener('click', e => {
-        const uploadBtn = e.target.closest('.upload-tv-btn');
-        if (uploadBtn) {
-            const tvId = uploadBtn.dataset.id;
-            currentMediaTv = tvs.find(t => t.id === tvId);
-            const modal = document.getElementById('upload-media-modal');
-            if (modal && currentMediaTv) {
-                modal.style.display = 'block';
-                document.getElementById('upload-media-btn').dataset.tvId = tvId;
-
-                document.getElementById('media-file').value = '';
-                document.getElementById('media-link').value = '';
-                document.getElementById('text-content').value = '';
-                document.getElementById('image-duration').value = '10';
-                document.getElementById('video-loop').checked = false;
-                document.getElementById('text-color').value = '#ffffff';
-                document.getElementById('text-bg-color').value = '#1a1f3b';
-                document.getElementById('text-size').value = '24';
-                const progressBar = document.querySelector('.progress-bar');
-                if (progressBar) progressBar.style.width = '0%';
-                const preview = document.getElementById('media-preview');
-                if (preview) preview.style.display = 'none';
-
-                const mediaTypeSelect = document.getElementById('media-type');
-                const fileGroup = document.getElementById('file-upload-group');
-                const linkGroup = document.getElementById('link-upload-group');
-                const textGroup = document.getElementById('text-options');
-                const imageOptions = document.getElementById('image-options');
-                const videoOptions = document.getElementById('video-options');
-                const playlistGroup = document.getElementById('playlist-group');
-
-                if (mediaTypeSelect && fileGroup && linkGroup && textGroup && imageOptions && videoOptions && playlistGroup) {
-                    mediaTypeSelect.innerHTML = `
-                        <option value="text">Texto</option>
-                        <option value="image">Imagem</option>
-                        <option value="video">Vídeo</option>
-                        <option value="link">Link</option>
-                        <option value="playlist">Playlist</option>
-                    `;
-
-                    mediaTypeSelect.addEventListener('change', () => {
-                        const type = mediaTypeSelect.value;
-                        fileGroup.style.display = type === 'image' || type === 'video' ? 'block' : 'none';
-                        linkGroup.style.display = type === 'link' ? 'block' : 'none';
-                        textGroup.style.display = type === 'text' ? 'block' : 'none';
-                        imageOptions.style.display = type === 'image' ? 'block' : 'none';
-                        videoOptions.style.display = type === 'video' ? 'block' : 'none';
-                        playlistGroup.style.display = type === 'playlist' ? 'block' : 'none';
-                    });
-
-                    document.getElementById('media-file').addEventListener('change', function(e) {
-                        const file = e.target.files[0];
-                        const preview = document.getElementById('media-preview');
-                        if (file && file.type.startsWith('image/') && preview) {
-                            const reader = new FileReader();
-                            reader.onload = function(event) {
-                                preview.src = event.target.result;
-                                preview.style.display = 'block';
-                            };
-                            reader.readAsDataURL(file);
-                        } else if (preview) {
-                            preview.style.display = 'none';
-                        }
-                    });
-
-                    const playlistFilesInput = document.getElementById('playlist-files');
-                    if (playlistFilesInput) {
-                        playlistFilesInput.addEventListener('change', function(e) {
-                            const files = Array.from(e.target.files);
-                            const preview = document.getElementById('playlist-preview');
-                            if (preview) {
-                                preview.innerHTML = '';
-                                files.forEach(file => {
-                                    if (file.type.startsWith('image/')) {
-                                        const reader = new FileReader();
-                                        reader.onload = function(event) {
-                                            const img = document.createElement('img');
-                                            img.src = event.target.result;
-                                            img.style.maxWidth = '100px';
-                                            img.style.margin = '5px';
-                                            preview.appendChild(img);
-                                        };
-                                        reader.readAsDataURL(file);
-                                    }
-                                });
-                                preview.style.display = 'block';
-                            }
-                        });
-                    }
-                }
-            }
-        }
-    });
-
-    const uploadMediaModalClose = document.querySelector('#upload-media-modal .close-btn');
-    if (uploadMediaModalClose) {
-        uploadMediaModalClose.addEventListener('click', () => {
-            const modal = document.getElementById('upload-media-modal');
-            if (modal) modal.style.display = 'none';
-        });
+  } else if (tv.media) {
+    if (tv.media.type === 'text') {
+      displayTextMessage(tv.media.content, tv.media.color, tv.media.bgColor, tv.media.fontSize);
+    } else if (tv.media.type === 'image') {
+      const img = document.createElement('img');
+      img.src = tv.media.url; img.style.maxWidth = '100%';
+      img.onerror = () => showToast('Erro ao carregar a imagem', 'error');
+      container.appendChild(img);
+    } else if (tv.media.type === 'video') {
+      if (tv.media.url.includes('youtube.com') || tv.media.url.includes('youtu.be')) {
+        const videoId = tv.media.url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)?.[1];
+        if (videoId) {
+          const iframe = document.createElement('iframe');
+          iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=${tv.media.loop?1:0}${tv.media.loop?'&playlist='+videoId:''}`;
+          iframe.style.width = '100%'; iframe.style.height = '400px';
+          iframe.frameBorder = '0'; iframe.allow = 'autoplay; encrypted-media';
+          container.appendChild(iframe);
+        } else showToast('URL do YouTube inválida', 'error');
+      } else {
+        const video = document.createElement('video');
+        video.src = tv.media.url; video.controls = true; video.loop = tv.media.loop || false;
+        video.style.maxWidth = '100%'; video.autoplay = true;
+        video.onerror = () => showToast('Erro ao carregar o vídeo', 'error');
+        video.oncanplay = () => video.play().catch(e => console.error('Erro ao reproduzir:', e));
+        container.appendChild(video);
+      }
     }
-
-    document.addEventListener('click', e => {
-        const viewBtn = e.target.closest('.view-tv-btn');
-        if (viewBtn) {
-            const tvId = viewBtn.dataset.id;
-            showTvMedia(tvId);
-        }
-    });
-    const viewMediaModalClose = document.querySelector('#view-media-modal .close-btn');
-    if (viewMediaModalClose) {
-        viewMediaModalClose.addEventListener('click', () => {
-            const modal = document.getElementById('view-media-modal');
-            if (modal) modal.style.display = 'none';
-        });
-    }
-
-    document.addEventListener('click', e => {
-        const infoBtn = e.target.closest('.info-tv-btn');
-        if (infoBtn) {
-            console.log('Botão de informações clicado');
-            const tvId = infoBtn.dataset.id;
-            const tv = tvs.find(t => t.id === tvId);
-
-            if (!tv) {
-                showToast('TV não encontrada', 'error');
-                return;
-            }
-
-            const modal = document.getElementById('activation-info-modal');
-            if (!modal) return;
-
-            const keyInfo = document.getElementById('activation-key-info');
-            const deviceInfo = document.getElementById('activation-device-info');
-            const lastInfo = document.getElementById('activation-last-info');
-            if (keyInfo && deviceInfo && lastInfo) {
-                keyInfo.textContent = tv.activationKey || 'Não ativada';
-                deviceInfo.textContent = tv.deviceName || 'Desconhecido';
-                lastInfo.textContent = tv.lastActivation ? new Date(tv.lastActivation).toLocaleString() : 'Nunca';
-            }
-
-            const keyContainer = document.getElementById('activation-key-container');
-            if (keyContainer) {
-                keyContainer.innerHTML = '';
-
-                const keyInput = document.createElement('input');
-                keyInput.type = 'text';
-                keyInput.id = 'activation-key-input';
-                keyInput.value = tv.activationKey || '';
-                keyInput.placeholder = 'Cole a nova chave aqui';
-                keyInput.className = 'key-input';
-
-                const saveKeyBtn = document.createElement('button');
-                saveKeyBtn.className = 'btn save-key-btn';
-                saveKeyBtn.textContent = 'Salvar Chave';
-
-                saveKeyBtn.onclick = async () => {
-                    const newKey = keyInput.value.trim();
-
-                    if (!newKey) {
-                        showToast('Digite ou cole uma chave válida', 'error');
-                        return;
-                    }
-
-                    if (!confirm('Tem certeza que deseja atualizar a chave de ativação?')) return;
-
-                    tv.activationKey = newKey;
-                    tv.lastActivation = Date.now();
-                    tv.deviceName = `Dispositivo ${tv.id}`;
-
-                    saveLocalData();
-
-                    if (isOnline()) {
-                        try {
-                            await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
-                                activationKey: newKey,
-                                lastActivation: Date.now(),
-                                deviceName: `Dispositivo ${tv.id}`
-                            });
-
-                            if (newKey) {
-                                await authModule.database.ref('midia/' + newKey).set({
-                                    tipo: 'activation',
-                                    tvData: tv,
-                                    timestamp: Date.now()
-                                });
-                            }
-
-                            showToast('Chave atualizada com sucesso!', 'success');
-                            if (keyInfo) keyInfo.textContent = newKey;
-                            if (deviceInfo) deviceInfo.textContent = `Dispositivo ${tv.id}`;
-                            if (lastInfo) lastInfo.textContent = new Date().toLocaleString();
-                        } catch (error) {
-                            console.error("Erro ao atualizar chave:", error);
-                            showToast('Chave atualizada localmente', 'info');
-                        }
-                    } else {
-                        showToast('Chave atualizada localmente (offline)', 'info');
-                    }
-                };
-
-                keyContainer.appendChild(keyInput);
-                keyContainer.appendChild(saveKeyBtn);
-            }
-
-            modal.style.display = 'block';
-        }
-    });
-
-    const activationInfoModalClose = document.querySelector('#activation-info-modal .close-btn');
-    if (activationInfoModalClose) {
-        activationInfoModalClose.addEventListener('click', () => {
-            const modal = document.getElementById('activation-info-modal');
-            if (modal) modal.style.display = 'none';
-        });
-    }
-
-    document.addEventListener('click', async e => {
-        const deleteBtn = e.target.closest('.delete-tv-btn');
-        if (deleteBtn) {
-            if (!confirm('Tem certeza que deseja excluir esta TV?')) return;
-            const tvId = deleteBtn.dataset.id;
-            console.log('Deletando TV:', tvId);
-
-            tvs = tvs.filter(t => t.id !== tvId);
-            saveLocalData();
-
-            if (isOnline()) {
-                try {
-                    await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).remove();
-                    showToast('TV removida', 'success');
-                } catch (err) {
-                    console.error('Erro ao remover TV no Firebase:', err);
-                    showToast('Removida localmente', 'info');
-                }
-            } else {
-                showToast('Removida localmente', 'info');
-            }
-
-            updateTvGrid();
-        }
-    });
-
-    const logoutLink = document.getElementById('logout-link');
-    if (logoutLink) {
-        logoutLink.addEventListener('click', e => {
-            e.preventDefault();
-            authModule.signOut().then(() => window.location.href = 'index.html');
-        });
-    }
-
-    const supportForm = document.getElementById('support-form');
-    if (supportForm) {
-        supportForm.addEventListener('submit', async e => {
-            e.preventDefault();
-            if (!isOnline()) {
-                showToast('Conecte-se para enviar o chamado', 'error');
-                return;
-            }
-
-            const btn = e.target.querySelector('button[type="submit"]');
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = 'Enviando...';
-            }
-
-            const formData = new FormData(e.target);
-            try {
-                const response = await fetch('https://formspree.io/f/xyzedylg', {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
-                });
-                if (!response.ok) throw new Error('Erro no servidor');
-                const supportMessage = document.getElementById('support-message');
-                if (supportMessage) {
-                    supportMessage.textContent = 'Chamado enviado com sucesso!';
-                    supportMessage.className = 'message success';
-                }
-                e.target.reset();
-                showToast('Chamado enviado!', 'success');
-            } catch (error) {
-                const supportMessage = document.getElementById('support-message');
-                if (supportMessage) {
-                    supportMessage.textContent = `Erro ao enviar: ${error.message}`;
-                    supportMessage.className = 'message error';
-                }
-                showToast('Falha ao enviar chamado', 'error');
-            } finally {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.textContent = 'Enviar Chamado';
-                }
-            }
-        });
-    }
-
-    document.addEventListener('click', e => {
-        const floorBtn = e.target.closest('.floor-btn');
-        if (floorBtn && !e.target.closest('.action-btn')) {
-            selectedCategoryId = floorBtn.dataset.id;
-            console.log('Categoria selecionada:', selectedCategoryId);
-            updateCategoryList();
-            updateTvGrid();
-        }
-    });
-
-    const sendTextBtn = document.getElementById('send-text-btn');
-    if (sendTextBtn) {
-        sendTextBtn.addEventListener('click', async function() {
-            const tvId = this.dataset.tvId;
-            const contentInput = document.getElementById('text-message-content');
-            const message = contentInput ? contentInput.value.trim() : '';
-
-            if (!message) {
-                showToast('Digite uma mensagem!', 'error');
-                return;
-            }
-
-            const messageData = {
-                text: message,
-                color: document.getElementById('text-color')?.value || '#ffffff',
-                bgColor: document.getElementById('bg-color')?.value || '#1a1f3b',
-                fontSize: document.getElementById('text-size')?.value || '24'
-            };
-
-            await sendTextMessage(tvId, messageData);
-            const modal = document.getElementById('text-message-modal');
-            if (modal) modal.style.display = 'none';
-        });
-    }
-
-    /**
-     * Carrega a lista de mídias enviadas para o usuário atual e renderiza no painel.
-     */
-    async function loadMediaList() {
-        const mediaListContainer = document.getElementById('media-list');
-        if (!mediaListContainer) return;
-        mediaListContainer.innerHTML = '';
-        if (!currentUserId || !isOnline()) {
-            showToast('Não foi possível carregar mídias (sem usuário ou offline)', 'error');
-            return;
-        }
-        try {
-            const snapshot = await authModule.database.ref(`users/${currentUserId}/tv_midias`).once('value');
-            const data = snapshot.val() || {};
-            const items = [];
-            for (const tvSlug in data) {
-                const medias = data[tvSlug];
-                for (const mediaName in medias) {
-                    const item = medias[mediaName];
-                    items.push({ keyTvSlug: tvSlug, keyMediaName: mediaName, ...item });
-                }
-            }
-            if (items.length === 0) {
-                mediaListContainer.textContent = 'Nenhuma mídia enviada.';
-                return;
-            }
-            items.sort((a, b) => b.timestamp - a.timestamp);
-            for (const item of items) {
-                const div = document.createElement('div');
-                div.className = 'media-item';
-                const statusColor = item.active ? '#4CAF50' : '#ff5252';
-                div.innerHTML = `
-                    <div class="media-info">
-                        <span class="status-dot" style="background-color:${statusColor}"></span>
-                        <span><strong>${item.tvName}</strong> - ${item.mediaName}</span>
-                    </div>
-                    <div class="actions">
-                        <button class="action-btn rename-media-btn" title="Renomear" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}">✏</button>
-                        <button class="action-btn delete-media-btn" title="Excluir" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}" data-storagepath="${item.storagePath}">🗑</button>
-                    </div>
-                `;
-                mediaListContainer.appendChild(div);
-            }
-        } catch (err) {
-            console.error('Erro ao carregar mídias:', err);
-            showToast('Erro ao carregar mídias', 'error');
-        }
-    }
-
-    /**
-     * Exclui uma mídia específica do database e do storage.
-     */
-    async function deleteMedia(tvSlug, mediaName, storagePath) {
-        if (!currentUserId) return;
-        try {
-            // Remove do database
-            await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${mediaName}`).remove();
-        // Remove do storage se o caminho for fornecido
-        if (storagePath) {
-            // É mais seguro usar child() para obter uma referência ao objeto
-            await authModule.storage.ref().child(storagePath).delete().catch(() => {});
-        }
-            showToast('Mídia excluída', 'success');
-            await loadMediaList();
-        } catch (err) {
-            console.error('Erro ao excluir mídia:', err);
-            showToast('Erro ao excluir mídia', 'error');
-        }
-    }
-
-    /**
-     * Renomeia uma mídia no banco de dados (não altera o arquivo de storage).
-     */
-    async function renameMedia(tvSlug, oldMediaName) {
-        const newName = prompt('Novo nome para a mídia:', oldMediaName);
-        if (!newName || newName.trim() === oldMediaName) return;
-        const sanitized = newName.trim().replace(/\s+/g, '_');
-        try {
-            const snap = await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${oldMediaName}`).once('value');
-            const data = snap.val();
-            if (!data) {
-                showToast('Mídia não encontrada', 'error');
-                return;
-            }
-            // Atualiza o nome exibido (mediaName) e recria a entrada com a nova chave
-            data.mediaName = sanitized;
-            await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${sanitized}`).set(data);
-            await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${oldMediaName}`).remove();
-            showToast('Mídia renomeada', 'success');
-            await loadMediaList();
-        } catch (err) {
-            console.error('Erro ao renomear mídia:', err);
-            showToast('Erro ao renomear mídia', 'error');
-        }
-    }
-
-    /**
-     * Remove mídias que estão inativas há mais de dois dias.
-     */
-    async function cleanupOldMedia() {
-        if (!currentUserId || !isOnline()) return;
-        try {
-            const snapshot = await authModule.database.ref(`users/${currentUserId}/tv_midias`).once('value');
-            const data = snapshot.val() || {};
-            const now = Date.now();
-            const twoDaysMs = 2 * 24 * 60 * 60 * 1000;
-            for (const tvSlug in data) {
-                for (const mediaName in data[tvSlug]) {
-                    const item = data[tvSlug][mediaName];
-                    if (!item.active && item.lastActive && now - item.lastActive > twoDaysMs) {
-                        // Remove do storage
-                        if (item.storagePath) {
-                            await authModule.storage.ref(item.storagePath).delete().catch(() => {});
-                        }
-                        // Remove da base
-                        await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${mediaName}`).remove();
-                    }
-                }
-            }
-        } catch (err) {
-            console.error('Erro ao limpar mídias antigas:', err);
-        }
-    }
-
-    // Event delegation for actions (rename/delete) na lista de mídias
-    const mediaListContainer = document.getElementById('media-list');
-    if (mediaListContainer) {
-        mediaListContainer.addEventListener('click', async (e) => {
-            const renameBtn = e.target.closest('.rename-media-btn');
-            if (renameBtn) {
-                const tvSlug = renameBtn.dataset.tvslug;
-                const mediaName = renameBtn.dataset.medianame;
-                await renameMedia(tvSlug, mediaName);
-                return;
-            }
-            const deleteBtn = e.target.closest('.delete-media-btn');
-            if (deleteBtn) {
-                const tvSlug = deleteBtn.dataset.tvslug;
-                const mediaName = deleteBtn.dataset.medianame;
-                const storagePath = deleteBtn.dataset.storagepath;
-                if (confirm('Tem certeza que deseja excluir esta mídia?')) {
-                    await deleteMedia(tvSlug, mediaName, storagePath);
-                }
-                return;
-            }
-        });
-    }
-
-    const textMessageModalClose = document.querySelector('#text-message-modal .close-btn');
-    if (textMessageModalClose) {
-        textMessageModalClose.addEventListener('click', () => {
-            const modal = document.getElementById('text-message-modal');
-            if (modal) modal.style.display = 'none';
-        });
-    }
-
-    // Botão para exibir a lista de mídias no perfil
-    const mediaButton = document.getElementById('media-button');
-    if (mediaButton) {
-        mediaButton.addEventListener('click', async () => {
-            const mediaListContainer = document.getElementById('media-list');
-            if (!mediaListContainer) return;
-            if (mediaListContainer.style.display === 'none') {
-                // Carrega e exibe a lista
-                await loadMediaList();
-                mediaListContainer.style.display = 'block';
-            } else {
-                mediaListContainer.style.display = 'none';
-            }
-        });
-    }
-});
-// --- Navegação da sidebar moderna (pills) ---
-(function initSidebarPills(){
-  const pills = document.querySelectorAll('.sidebar-modern .pill');
-  const titleEl = document.getElementById('section-title');
-
-  function activate(sectionId, pillBtn){
-    // atualizar título
-    if (titleEl) titleEl.textContent = pillBtn?.querySelector('span')?.textContent || 'Dashboard';
-    // ativa seção
-    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-    const section = document.getElementById(sectionId);
-    if (section) section.classList.add('active');
-    // ativa visual do botão
-    pills.forEach(p => p.classList.remove('active'));
-    pillBtn?.classList.add('active');
+  } else {
+    showToast('Nenhuma mídia ou playlist enviada', 'error');
   }
 
-  pills.forEach(btn=>{
-    const sectionId = btn.dataset.section;
-    if (sectionId){
-      btn.addEventListener('click', ()=> activate(sectionId, btn));
+  modal.style.display = 'block';
+}
+
+// ===== Upload Midia (botão do modal) =====
+window.uploadMidia = async function() {
+  try {
+    if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+
+    const tvId = document.getElementById('upload-media-btn')?.dataset.tvId;
+    const mediaType = document.getElementById('media-type')?.value;
+    const tv = tvs.find(t => t.id === tvId);
+    if (!tv || !mediaType) { showToast('TV ou tipo inválido', 'error'); return; }
+
+    let mediaData = {};
+
+    if (mediaType === 'text') {
+      const content = document.getElementById('text-content')?.value.trim();
+      if (!content) { showToast('Digite o conteúdo do texto', 'error'); return; }
+      mediaData = {
+        type:'text',
+        content, color: document.getElementById('text-color')?.value || '#ffffff',
+        bgColor: document.getElementById('text-bg-color')?.value || '#1a1f3b',
+        fontSize: document.getElementById('text-size')?.value || '24',
+        timestamp: Date.now()
+      };
+
+    } else if (mediaType === 'image' || mediaType === 'video') {
+      const fileInput = document.getElementById('media-file');
+      const file = fileInput?.files[0];
+      if (!file) { showToast('Selecione um arquivo', 'error'); return; }
+      if (file.size > 190 * 1024 * 1024) { showToast('Arquivo muito grande (máx. 190MB)', 'error'); return; }
+      const uploadResult = await uploadMediaToStorage(file, tv);
+      const mediaUrl = uploadResult.url;
+      const uploadedFileName = uploadResult.fileName;
+      mediaData = { type: mediaType, url: mediaUrl, timestamp: Date.now() };
+      if (mediaType === 'image') mediaData.duration = parseInt(document.getElementById('image-duration')?.value) || 10;
+      if (mediaType === 'video') mediaData.loop = document.getElementById('video-loop')?.checked || false;
+
+      const regResult = await registerMediaInDB(tv, uploadedFileName, mediaData);
+      if (regResult) { tv.activeMediaNames = [regResult.mediaName]; await updateActiveMediaStatus(regResult.tvNameSlug, tv.activeMediaNames); }
+
+    } else if (mediaType === 'link') {
+      const mediaUrl = document.getElementById('media-link')?.value.trim();
+      if (!mediaUrl) { showToast('Digite uma URL válida', 'error'); return; }
+      const isVideo = mediaUrl.match(/\.(mp4|webm|ogg|mov|avi)$/i) || mediaUrl.includes('youtube.com') || mediaUrl.includes('vimeo.com');
+      mediaData = { type: isVideo?'video':'image', url: mediaUrl, timestamp: Date.now() };
+      if (isVideo) mediaData.loop = document.getElementById('video-loop')?.checked || false;
+
+    } else if (mediaType === 'playlist') {
+      const fileInput = document.getElementById('playlist-files');
+      const files = fileInput?.files;
+      if (!files || files.length === 0) { showToast('Selecione arquivos', 'error'); return; }
+      const playlistItems = [];
+      const mediaNamesForPlaylist = [];
+      for (const file of Array.from(files)) {
+        if (file.size > 190 * 1024 * 1024) { showToast(`Arquivo ${file.name} excede 190MB`, 'error'); continue; }
+        const uploadResult = await uploadMediaToStorage(file, tv);
+        const url = uploadResult.url; const uploadedFileName = uploadResult.fileName;
+        const type = file.type.startsWith('video/') ? 'video' : file.type === 'image/gif' ? 'gif' : 'image';
+        const playlistItem = { url, type, duration: type==='video'?null:10, order: playlistItems.length };
+        playlistItems.push(playlistItem);
+        const regResult = await registerMediaInDB(tv, uploadedFileName, { type, url, duration: playlistItem.duration, timestamp: Date.now() });
+        if (regResult) mediaNamesForPlaylist.push(regResult.mediaName);
+      }
+      tv.playlist = playlistItems;
+      await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({ playlist: playlistItems, lastUpdate: Date.now() });
+      if (tv.activationKey) {
+        await authModule.database.ref('midia/' + tv.activationKey).set({ tipo:'playlist', items: playlistItems, timestamp: Date.now() });
+      }
+      const tvNameSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+      tv.activeMediaNames = mediaNamesForPlaylist;
+      await updateActiveMediaStatus(tvNameSlug, tv.activeMediaNames);
+      showToast('Playlist enviada!', 'success');
+      document.getElementById('upload-media-modal').style.display = 'none';
+      return;
+    }
+
+    await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({ media: mediaData, lastUpdate: Date.now() });
+    if (tv.activationKey) {
+      await authModule.database.ref('midia/' + tv.activationKey).set({
+        tipo: mediaData.type, url: mediaData.url, content: mediaData.content || null,
+        color: mediaData.color || null, bgColor: mediaData.bgColor || null, fontSize: mediaData.fontSize || null,
+        duration: mediaData.duration || null, loop: mediaData.loop || false, timestamp: Date.now()
+      });
+    }
+    showToast('Conteúdo enviado!', 'success');
+    const modal = document.getElementById('upload-media-modal'); if (modal) modal.style.display = 'none';
+    const fileInput = document.getElementById('media-file'); if (fileInput) fileInput.value = '';
+
+  } catch (error) {
+    console.error("Erro no envio:", error);
+    showToast('Falha no envio', 'error');
+  }
+};
+
+// ===== DOM =====
+document.addEventListener('DOMContentLoaded', () => {
+  updateConnectionStatus();
+  window.addEventListener('online',  () => { updateConnectionStatus(); syncWithFirebase(); });
+  window.addEventListener('offline', () => { updateConnectionStatus(); });
+
+  // Sidebar
+  (function initSidebarPills(){
+    const pills = document.querySelectorAll('.sidebar-modern .pill');
+    const titleEl = document.getElementById('section-title');
+    function activate(sectionId, pillBtn){
+      if (titleEl) titleEl.textContent = pillBtn?.querySelector('span')?.textContent || 'Dashboard';
+      document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+      const section = document.getElementById(sectionId);
+      if (section) section.classList.add('active');
+      pills.forEach(p => p.classList.remove('active'));
+      pillBtn?.classList.add('active');
+    }
+    pills.forEach(btn=>{
+      const sectionId = btn.dataset.section;
+      if (sectionId){ btn.addEventListener('click', ()=> activate(sectionId, btn)); }
+    });
+    const dskeyBtn = document.getElementById('pill-dskey');
+    if (dskeyBtn){ dskeyBtn.addEventListener('click', (e)=>{ e.preventDefault(); window.open('https://tvdsigner.com.br/', '_blank'); }); }
+    const logout = document.getElementById('logout-link');
+    if (logout){ logout.addEventListener('click', (e)=>{ e.preventDefault(); authModule.signOut().then(()=> window.location.href='index.html'); }); }
+  })();
+
+  // Auth
+  authModule.onAuthStateChanged(user => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    currentUserId = user.uid;
+    const userEmail = document.getElementById('user-email'); if (userEmail) userEmail.textContent = user.email;
+    const supportEmail = document.getElementById('support-email'); if (supportEmail) supportEmail.value = user.email;
+    if (isOnline()) { (async () => { await syncWithFirebase(); })(); }
+    else { showToast('Sem conexão: conecte-se para carregar dados', 'error'); updateCategoryList(); updateTvGrid(); }
+  });
+
+  // FAB toggle
+  (function initFab(){
+    const fab = document.querySelector('.fab-container');
+    const fabBtn = fab?.querySelector('.fab-main');
+    if (!fab || !fabBtn) return;
+    fabBtn.addEventListener('click', (e) => { e.stopPropagation(); fab.classList.toggle('open'); });
+    document.addEventListener('click', (e) => { if (!fab.contains(e.target)) fab.classList.remove('open'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fab.classList.remove('open'); });
+  })();
+
+  // Abrir modais via botões (todas instâncias das classes)
+  const categoryModal = document.getElementById('category-modal');
+  document.querySelectorAll('.select-categories-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+      if (categoryModal) categoryModal.style.display = 'block';
+      updateCategoryList();
+    });
+  });
+  const categoryModalClose = document.querySelector('#category-modal .close-btn');
+  if (categoryModalClose) { categoryModalClose.addEventListener('click', () => { if (categoryModal) categoryModal.style.display = 'none'; }); }
+
+  const addTvModal = document.getElementById('add-tv-modal');
+  document.querySelectorAll('.add-tv-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+      if (addTvModal) addTvModal.style.display = 'block';
+      updateCategoryList();
+    });
+  });
+  const addTvModalClose = document.querySelector('#add-tv-modal .close-btn');
+  if (addTvModalClose) { addTvModalClose.addEventListener('click', () => { if (addTvModal) addTvModal.style.display = 'none'; }); }
+
+  // Adicionar Andar
+  const addCategoryBtn = document.getElementById('add-category-btn');
+  if (addCategoryBtn) {
+    addCategoryBtn.addEventListener('click', async () => {
+      if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+      const nameInput = document.getElementById('new-category-name');
+      const name = nameInput ? nameInput.value.trim() : '';
+      if (!name) { showToast('Digite um nome para o andar', 'error'); return; }
+      const newId = (categories.length ? Math.max(...categories.map(c => parseInt(c.id))) + 1 : 1).toString();
+      const newCategory = { id: newId, name, status: 'active' };
+      await authModule.database.ref(`users/${currentUserId}/categories/${newId}`).set(newCategory);
+      showToast('Andar adicionado com sucesso', 'success');
+      nameInput.value = '';
+      if (categoryModal) categoryModal.style.display = 'none';
+      await syncWithFirebase();
+    });
+  }
+
+  // Editar Andar (abrir modal)
+  document.addEventListener('click', e => {
+    const editBtn = e.target.closest('.edit-floor-btn');
+    if (editBtn) {
+      const catId = editBtn.dataset.id;
+      const category = categories.find(c => c.id === catId);
+      const modal = document.getElementById('edit-floor-modal');
+      const nameInput = document.getElementById('edit-floor-name');
+      if (modal && nameInput && category) {
+        nameInput.value = category.name;
+        document.getElementById('save-floor-btn').dataset.id = catId;
+        modal.style.display = 'block';
+      }
+    }
+  });
+  const editFloorModalClose = document.querySelector('#edit-floor-modal .close-btn');
+  if (editFloorModalClose) { editFloorModalClose.addEventListener('click', () => { const modal = document.getElementById('edit-floor-modal'); if (modal) modal.style.display = 'none'; }); }
+
+  // Salvar Andar
+  const saveFloorBtn = document.getElementById('save-floor-btn');
+  if (saveFloorBtn) {
+    saveFloorBtn.addEventListener('click', async () => {
+      if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+      const catId = saveFloorBtn.dataset.id;
+      const nameInput = document.getElementById('edit-floor-name');
+      const newName = nameInput ? nameInput.value.trim() : '';
+      if (!newName) { showToast('Digite um nome válido', 'error'); return; }
+      await authModule.database.ref(`users/${currentUserId}/categories/${catId}`).update({ name: newName });
+      showToast('Andar atualizado', 'success');
+      const modal = document.getElementById('edit-floor-modal'); if (modal) modal.style.display = 'none';
+      await syncWithFirebase();
+    });
+  }
+
+  // Excluir Andar
+  document.addEventListener('click', async e => {
+    const deleteBtn = e.target.closest('.delete-floor-btn');
+    if (deleteBtn) {
+      if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+      if (!confirm('Tem certeza que deseja excluir este andar? Todas as TVs serão removidas.')) return;
+      const catId = deleteBtn.dataset.id;
+      await authModule.database.ref(`users/${currentUserId}/categories/${catId}`).remove();
+      // Remove TVs do andar
+      const tvsToDelete = tvs.filter(tv => tv.categoryId === catId);
+      for (const tv of tvsToDelete) {
+        await authModule.database.ref(`users/${currentUserId}/tvs/${tv.id}`).remove();
+      }
+      showToast('Andar e TVs removidos', 'success');
+      await syncWithFirebase();
     }
   });
 
-  // dskey (botão especial)
-  const dskeyBtn = document.getElementById('pill-dskey');
-  if (dskeyBtn){
-    dskeyBtn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      window.open('https://tvdsigner.com.br/', '_blank');
+  // Adicionar TV
+  const addTvSubmitBtn = document.getElementById('add-tv-submit-btn');
+  if (addTvSubmitBtn) {
+    addTvSubmitBtn.addEventListener('click', async () => {
+      if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+      const nameInput = document.getElementById('tv-name');
+      const categorySelect = document.getElementById('tv-category');
+      const keyInput = document.getElementById('tv-activation-key');
+      const name = nameInput ? nameInput.value.trim() : '';
+      const categoryId = categorySelect ? categorySelect.value : '';
+      const activationKey = keyInput ? keyInput.value.trim() : '';
+      if (!name || !categoryId) { showToast('Preencha os campos obrigatórios', 'error'); return; }
+
+      const newId = (tvs.length ? Math.max(...tvs.map(t => parseInt(t.id))) + 1 : 1).toString();
+      const newTv = { id:newId, name, categoryId, status:'on', activationKey: activationKey || null, deviceName: activationKey ? `Dispositivo ${newId}` : null, lastActivation: activationKey ? Date.now() : null };
+      await authModule.database.ref(`users/${currentUserId}/tvs/${newId}`).set(newTv);
+      showToast('TV adicionada!', 'success');
+
+      if (activationKey) {
+        await authModule.database.ref('midia/' + activationKey).set({ tipo:'activation', tvData:newTv, timestamp: Date.now() });
+      }
+
+      nameInput.value=''; keyInput.value='';
+      const modal = document.getElementById('add-tv-modal'); if (modal) modal.style.display='none';
+      await syncWithFirebase();
     });
   }
 
-  // botão “Sair” (logout)
-  const logout = document.getElementById('logout-link');
-  if (logout){
-    logout.addEventListener('click', (e)=>{
-      e.preventDefault();
-      authModule.signOut().then(()=> window.location.href='index.html');
+  // Alternar TV ligar/desligar
+  document.addEventListener('click', async e => {
+    const toggleBtn = e.target.closest('.toggle-tv-btn');
+    if (!toggleBtn) return;
+    if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+
+    const tvId = toggleBtn.dataset.id;
+    const tv = tvs.find(t => t.id === tvId);
+    if (!tv) return;
+
+    const turningOn = tv.status === 'off';
+    tv.status = turningOn ? 'on' : 'off';
+
+    if (!turningOn) {
+      tv.lastMedia = tv.media ? JSON.parse(JSON.stringify(tv.media)) : null;
+      tv.lastPlaylist = tv.playlist ? JSON.parse(JSON.stringify(tv.playlist)) : null;
+      tv.media = { type:'image', url: BLACK_IMAGE_URL, duration:null };
+      tv.playlist = null;
+      const tvSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+      tv.savedActiveMediaNames = tv.activeMediaNames ? [...tv.activeMediaNames] : [];
+      tv.activeMediaNames = [];
+      await updateActiveMediaStatus(tvSlug, []);
+    } else {
+      if (tv.lastMedia) { tv.media = tv.lastMedia; tv.lastMedia = null; }
+      if (tv.lastPlaylist) { tv.playlist = tv.lastPlaylist; tv.lastPlaylist = null; }
+      const tvSlug = tv.name.replace(/\s+/g, '_').toLowerCase();
+      if (tv.savedActiveMediaNames) {
+        tv.activeMediaNames = [...tv.savedActiveMediaNames];
+        await updateActiveMediaStatus(tvSlug, tv.activeMediaNames);
+        tv.savedActiveMediaNames = [];
+      }
+    }
+
+    const updates = { status: tv.status };
+    if (tv.media) updates.media = tv.media;
+    if (tv.playlist) updates.playlist = tv.playlist;
+    await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update(updates);
+
+    if (tv.activationKey) {
+      if (!turningOn) {
+        await authModule.database.ref('midia/' + tv.activationKey).set({ tipo:'image', url: BLACK_IMAGE_URL, timestamp: Date.now() });
+      } else {
+        if (tv.playlist && tv.playlist.length > 0) {
+          await authModule.database.ref('midia/' + tv.activationKey).set({ tipo:'playlist', items: tv.playlist, timestamp: Date.now() });
+        } else if (tv.media) {
+          const m = tv.media;
+          await authModule.database.ref('midia/' + tv.activationKey).set({
+            tipo:m.type, url:m.url || null, content:m.content || null, color:m.color || null, bgColor:m.bgColor || null,
+            fontSize:m.fontSize || null, duration:m.duration || null, loop:m.loop || false, timestamp: Date.now()
+          });
+        }
+      }
+    }
+    showToast(`TV ${tv.status === 'off' ? 'desligada' : 'ligada'}`, 'success');
+    await syncWithFirebase();
+  });
+
+  // Upload modal open
+  document.addEventListener('click', e => {
+    const uploadBtn = e.target.closest('.upload-tv-btn');
+    if (!uploadBtn) return;
+    if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+
+    const tvId = uploadBtn.dataset.id;
+    currentMediaTv = tvs.find(t => t.id === tvId);
+    const modal = document.getElementById('upload-media-modal');
+    if (modal && currentMediaTv) {
+      modal.style.display = 'block';
+      document.getElementById('upload-media-btn').dataset.tvId = tvId;
+
+      document.getElementById('media-file').value = '';
+      document.getElementById('media-link').value = '';
+      document.getElementById('text-content').value = '';
+      document.getElementById('image-duration').value = '10';
+      document.getElementById('video-loop').checked = false;
+      document.getElementById('text-color').value = '#ffffff';
+      document.getElementById('text-bg-color').value = '#1a1f3b';
+      document.getElementById('text-size').value = '24';
+      const progressBar = document.querySelector('.progress-bar'); if (progressBar) progressBar.style.width = '0%';
+      const preview = document.getElementById('media-preview'); if (preview) preview.style.display = 'none';
+
+      const mediaTypeSelect = document.getElementById('media-type');
+      const fileGroup = document.getElementById('file-upload-group');
+      const linkGroup = document.getElementById('link-upload-group');
+      const textGroup = document.getElementById('text-options');
+      const imageOptions = document.getElementById('image-options');
+      const videoOptions = document.getElementById('video-options');
+      const playlistGroup = document.getElementById('playlist-group');
+
+      if (mediaTypeSelect && fileGroup && linkGroup && textGroup && imageOptions && videoOptions && playlistGroup) {
+        mediaTypeSelect.innerHTML = `
+          <option value="text">Texto</option>
+          <option value="image">Imagem</option>
+          <option value="video">Vídeo</option>
+          <option value="link">Link</option>
+          <option value="playlist">Playlist</option>
+        `;
+        mediaTypeSelect.addEventListener('change', () => {
+          const type = mediaTypeSelect.value;
+          fileGroup.style.display = type === 'image' || type === 'video' ? 'block' : 'none';
+          linkGroup.style.display = type === 'link' ? 'block' : 'none';
+          textGroup.style.display = type === 'text' ? 'block' : 'none';
+          imageOptions.style.display = type === 'image' ? 'block' : 'none';
+          videoOptions.style.display = type === 'video' ? 'block' : 'none';
+          playlistGroup.style.display = type === 'playlist' ? 'block' : 'none';
+        });
+
+        document.getElementById('media-file').addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          const preview = document.getElementById('media-preview');
+          if (file && file.type.startsWith('image/') && preview) {
+            const reader = new FileReader();
+            reader.onload = function(event) { preview.src = event.target.result; preview.style.display = 'block'; };
+            reader.readAsDataURL(file);
+          } else if (preview) { preview.style.display = 'none'; }
+        });
+
+        const playlistFilesInput = document.getElementById('playlist-files');
+        if (playlistFilesInput) {
+          playlistFilesInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            const preview = document.getElementById('playlist-preview');
+            if (preview) {
+              preview.innerHTML = '';
+              files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                  const reader = new FileReader();
+                  reader.onload = function(event) {
+                    const img = document.createElement('img');
+                    img.src = event.target.result; img.style.maxWidth = '100px'; img.style.margin = '5px';
+                    preview.appendChild(img);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              });
+              preview.style.display = 'block';
+            }
+          });
+        }
+      }
+    }
+  });
+
+  // Fechar modais
+  const uploadMediaModalClose = document.querySelector('#upload-media-modal .close-btn');
+  if (uploadMediaModalClose) uploadMediaModalClose.addEventListener('click', () => { const modal = document.getElementById('upload-media-modal'); if (modal) modal.style.display = 'none'; });
+  const viewMediaModalClose = document.querySelector('#view-media-modal .close-btn');
+  if (viewMediaModalClose) viewMediaModalClose.addEventListener('click', () => { const modal = document.getElementById('view-media-modal'); if (modal) modal.style.display = 'none'; });
+  const activationInfoModalClose = document.querySelector('#activation-info-modal .close-btn');
+  if (activationInfoModalClose) activationInfoModalClose.addEventListener('click', () => { const modal = document.getElementById('activation-info-modal'); if (modal) modal.style.display = 'none'; });
+
+  // Ver mídia
+  document.addEventListener('click', e => {
+    const viewBtn = e.target.closest('.view-tv-btn');
+    if (viewBtn) { showTvMedia(viewBtn.dataset.id); }
+  });
+
+  // Informações da TV
+  document.addEventListener('click', e => {
+    const infoBtn = e.target.closest('.info-tv-btn');
+    if (!infoBtn) return;
+    const tvId = infoBtn.dataset.id;
+    const tv = tvs.find(t => t.id === tvId);
+    if (!tv) { showToast('TV não encontrada', 'error'); return; }
+
+    const modal = document.getElementById('activation-info-modal');
+    if (!modal) return;
+    const keyInfo = document.getElementById('activation-key-info');
+    const deviceInfo = document.getElementById('activation-device-info');
+    const lastInfo = document.getElementById('activation-last-info');
+    if (keyInfo && deviceInfo && lastInfo) {
+      keyInfo.textContent = tv.activationKey || 'Não ativada';
+      deviceInfo.textContent = tv.deviceName || 'Desconhecido';
+      lastInfo.textContent = tv.lastActivation ? new Date(tv.lastActivation).toLocaleString() : 'Nunca';
+    }
+
+    const keyContainer = document.getElementById('activation-key-container');
+    if (keyContainer) {
+      keyContainer.innerHTML = '';
+      const keyInput = document.createElement('input');
+      keyInput.type = 'text'; keyInput.id = 'activation-key-input';
+      keyInput.value = tv.activationKey || ''; keyInput.placeholder = 'Cole a nova chave aqui';
+      keyInput.className = 'key-input';
+
+      const saveKeyBtn = document.createElement('button');
+      saveKeyBtn.className = 'btn save-key-btn'; saveKeyBtn.textContent = 'Salvar Chave';
+
+      saveKeyBtn.onclick = async () => {
+        if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+        const newKey = keyInput.value.trim();
+        if (!newKey) { showToast('Digite ou cole uma chave válida', 'error'); return; }
+        if (!confirm('Tem certeza que deseja atualizar a chave de ativação?')) return;
+
+        tv.activationKey = newKey;
+        tv.lastActivation = Date.now();
+        tv.deviceName = `Dispositivo ${tv.id}`;
+
+        try {
+          await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
+            activationKey: newKey, lastActivation: Date.now(), deviceName: `Dispositivo ${tv.id}`
+          });
+          if (newKey) {
+            await authModule.database.ref('midia/' + newKey).set({ tipo:'activation', tvData: tv, timestamp: Date.now() });
+          }
+          showToast('Chave atualizada!', 'success');
+          if (keyInfo) keyInfo.textContent = newKey;
+          if (deviceInfo) deviceInfo.textContent = `Dispositivo ${tv.id}`;
+          if (lastInfo) lastInfo.textContent = new Date().toLocaleString();
+        } catch (error) {
+          console.error("Erro ao atualizar chave:", error);
+          showToast('Erro ao atualizar chave', 'error');
+        }
+      };
+
+      keyContainer.appendChild(keyInput);
+      keyContainer.appendChild(saveKeyBtn);
+    }
+    modal.style.display = 'block';
+  });
+
+  // Excluir TV
+  document.addEventListener('click', async e => {
+    const deleteBtn = e.target.closest('.delete-tv-btn');
+    if (!deleteBtn) return;
+    if (!isOnline()) { showToast('Sem internet', 'error'); return; }
+    if (!confirm('Tem certeza que deseja excluir esta TV?')) return;
+    const tvId = deleteBtn.dataset.id;
+    await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).remove();
+    showToast('TV removida', 'success');
+    await syncWithFirebase();
+  });
+
+  // Selecionar categoria
+  document.addEventListener('click', e => {
+    const floorBtn = e.target.closest('.floor-btn');
+    if (floorBtn && !e.target.closest('.action-btn')) {
+      selectedCategoryId = floorBtn.dataset.id;
+      updateCategoryList(); updateTvGrid();
+    }
+  });
+
+  // Perfil: carregar lista de mídias
+  async function loadMediaList() {
+    const mediaListContainer = document.getElementById('media-list');
+    if (!mediaListContainer) return;
+    mediaListContainer.innerHTML = '';
+    if (!currentUserId || !isOnline()) { showToast('Sem internet', 'error'); return; }
+    try {
+      const snapshot = await authModule.database.ref(`users/${currentUserId}/tv_midias`).once('value');
+      const data = snapshot.val() || {};
+      const items = [];
+      for (const tvSlug in data) {
+        const medias = data[tvSlug];
+        for (const mediaName in medias) {
+          const item = medias[mediaName];
+          items.push({ keyTvSlug: tvSlug, keyMediaName: mediaName, ...item });
+        }
+      }
+      if (items.length === 0) { mediaListContainer.textContent = 'Nenhuma mídia enviada.'; return; }
+      items.sort((a,b)=> b.timestamp - a.timestamp);
+      for (const item of items) {
+        const div = document.createElement('div');
+        div.className = 'media-item';
+        const statusColor = item.active ? '#4CAF50' : '#ff5252';
+        div.innerHTML = `
+          <div class="media-info">
+            <span class="status-dot" style="background-color:${statusColor}"></span>
+            <span><strong>${item.tvName}</strong> - ${item.mediaName}</span>
+          </div>
+          <div class="actions">
+            <button class="action-btn rename-media-btn" title="Renomear" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}">✏</button>
+            <button class="action-btn delete-media-btn" title="Excluir" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}" data-storagepath="${item.storagePath}">🗑</button>
+          </div>`;
+        mediaListContainer.appendChild(div);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar mídias:', err);
+      showToast('Erro ao carregar mídias', 'error');
+    }
+  }
+
+  async function deleteMedia(tvSlug, mediaName, storagePath) {
+    if (!currentUserId) return;
+    try {
+      await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${mediaName}`).remove();
+      if (storagePath) await authModule.storage.ref().child(storagePath).delete().catch(() => {});
+      showToast('Mídia excluída', 'success');
+      await loadMediaList();
+    } catch (err) {
+      console.error('Erro ao excluir mídia:', err);
+      showToast('Erro ao excluir mídia', 'error');
+    }
+  }
+
+  async function renameMedia(tvSlug, oldMediaName) {
+    const newName = prompt('Novo nome para a mídia:', oldMediaName);
+    if (!newName || newName.trim() === oldMediaName) return;
+    const sanitized = newName.trim().replace(/\s+/g, '_');
+    try {
+      const snap = await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${oldMediaName}`).once('value');
+      const data = snap.val();
+      if (!data) { showToast('Mídia não encontrada', 'error'); return; }
+      data.mediaName = sanitized;
+      await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${sanitized}`).set(data);
+      await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${oldMediaName}`).remove();
+      showToast('Mídia renomeada', 'success');
+      await loadMediaList();
+    } catch (err) {
+      console.error('Erro ao renomear mídia:', err);
+      showToast('Erro ao renomear mídia', 'error');
+    }
+  }
+
+  // Perfil: abrir/fechar lista de mídias
+  const mediaButton = document.getElementById('media-button');
+  if (mediaButton) {
+    mediaButton.addEventListener('click', async () => {
+      const mediaListContainer = document.getElementById('media-list');
+      if (!mediaListContainer) return;
+      if (mediaListContainer.style.display === 'none') { await loadMediaList(); mediaListContainer.style.display = 'block'; }
+      else { mediaListContainer.style.display = 'none'; }
     });
   }
-})();
+
+  const mediaListContainer = document.getElementById('media-list');
+  if (mediaListContainer) {
+    mediaListContainer.addEventListener('click', async (e) => {
+      const renameBtn = e.target.closest('.rename-media-btn');
+      if (renameBtn) { await renameMedia(renameBtn.dataset.tvslug, renameBtn.dataset.medianame); return; }
+      const deleteBtn = e.target.closest('.delete-media-btn');
+      if (deleteBtn) {
+        const tvSlug = deleteBtn.dataset.tvslug;
+        const mediaName = deleteBtn.dataset.medianame;
+        const storagePath = deleteBtn.dataset.storagepath;
+        if (confirm('Tem certeza que deseja excluir esta mídia?')) await deleteMedia(tvSlug, mediaName, storagePath);
+        return;
+      }
+    });
+  }
+});
+// ======================== /Painel.js ==========================
