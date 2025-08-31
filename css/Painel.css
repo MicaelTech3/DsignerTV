@@ -1,3 +1,4 @@
+/* ========================== css/Painel.css ========================== */
 /* ========= RESET/BASE ========= */ 
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Arial',sans-serif}
 body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
@@ -81,7 +82,19 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
 .floor-btn{width:100%;padding:10px;background:#0a0f2b;color:#fff;border:1px solid #00d4ff;border-radius:5px;cursor:pointer;font-size:16px;text-align:left;transition:all .3s;display:flex;justify-content:space-between;align-items:center}
 .floor-btn:hover,.floor-btn.active{background:#32728f77;box-shadow:0 0 10px rgba(0,212,255,.3)}
 .floor-btn span{flex-grow:1}
-.floor-actions{display:flex;gap:5px;margin-left:auto}
+/* AÇÕES: padrão oculto */
+.floor-actions{
+  display:flex;
+  gap:5px;
+  margin-left:auto;
+  opacity:0;
+  visibility:hidden;
+  transition:opacity .2s ease, visibility .2s ease;
+}
+/* Visível no hover OU quando aberta por JS (classe) */
+.floor-btn:hover .floor-actions{opacity:1;visibility:visible}
+.floor-btn.show-actions .floor-actions{opacity:1;visibility:visible}
+
 .action-btn{background:none;border:none;cursor:pointer;transition:all .3s;width:24px;height:24px;border-radius:50%}
 .action-btn:hover{background:rgba(0,212,255,.1);transform:scale(1.1)}
 .delete-btn:hover{background:rgb(177,54,54)}
@@ -244,3 +257,4 @@ body.offline .add-tv-btn{pointer-events:none;opacity:.6;filter:grayscale(.2)}
 .tv-action-btn img,.tv-action-btn svg{width:16px;height:16px;filter:brightness(0) invert(1)}
 .tv-action-btn:hover{transform:scale(1.08);background:rgba(255,255,255,.15);border-color:#00d4ff;box-shadow:0 0 0 3px rgba(0,212,255,.15),0 6px 18px rgba(0,0,0,.45)}
 .tv-action-btn:focus{outline:none;box-shadow:0 0 0 3px #ffffff}
+/* ======================== /css/Painel.css ======================== */

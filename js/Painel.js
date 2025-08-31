@@ -1,4 +1,3 @@
-// ========================== Painel.js ==========================
 const authModule = window.authModule;
 
 // Ícone play (thumb de vídeo)
@@ -10,6 +9,9 @@ let tvs = [];
 let selectedCategoryId = null;
 let currentMediaTv = null;
 let currentUserId = null;
+
+// NOVO: controla painel de ações aberto no andar
+let openActionsCategoryId = null;
 
 // Imagem preta (1x1) para desligar TV
 const BLACK_IMAGE_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAADUlEQVR4nGP4//8/AwAI/AL+27iEAAAAAElFTkSuQmCC';
@@ -77,7 +79,6 @@ const syncWithFirebase = async () => {
       ? Object.entries(tvsSnapshot.val()).map(([id, data]) => ({ id, ...data }))
       : [];
 
-    // 🚫 sem merge com arrays locais
     categories = remoteCategories;
     tvs        = remoteTvs;
 
@@ -96,6 +97,11 @@ const syncWithFirebase = async () => {
         const name = getMediaNameFromUrl(tv.name, tv.media.url);
         if (name) tv.activeMediaNames = [name];
       }
+    }
+
+    // Se a categoria selecionada não existe mais, limpa seleção
+    if (selectedCategoryId && !categories.find(c => c.id === selectedCategoryId)) {
+      selectedCategoryId = null;
     }
 
     updateCategoryList();
@@ -155,29 +161,45 @@ const updateCategoryList = () => {
   if (button) floorList.appendChild(button);
 
   categories.forEach(category => {
+    const isActive = selectedCategoryId === category.id;
+    const isOpen = openActionsCategoryId === category.id;
+
     const floorItem = document.createElement('div');
     floorItem.className = 'floor-item';
     floorItem.dataset.categoryId = category.id;
+
     floorItem.innerHTML = `
-  <div class="floor-btn ${selectedCategoryId === category.id ? 'active' : ''}"
-       data-id="${category.id}" role="button" tabindex="0">
-    <span>${category.name}</span>
-    <div class="floor-actions">
-      <button class="action-btn edit-floor-btn" data-id="${category.id}" title="Editar">
-        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTMgMTcuMjVWMjFiMy43NUwxNy44MSA5Ljk0bC0zLjc1LTMuNzVMMyAxNy4yNXpNMjAuNzEgNy4wNGMuMzktLjM5LjM5LTEuMDIgMC0xLjQxbC0yLjM0LTIuMzRjLS4zOS0uMzktMS4wMi0uMzktMS40MSAwbC0xLjgzIDEuODMgMy43NSAzLjc1IDEuODMtMS44M3oiLz48L3N2Zz4=" width="14" height="14" alt="Editar">
-      </button>
-      <button class="action-btn delete-btn delete-floor-btn" data-id="${category.id}" title="Excluir">
-        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTYgMTlhMiAyIDAgMCAwIDIgMmg4YTIgMiAwIDAgMCAyLTJWN0g2djEyTTE5IDRIMTUuNWwtMS0xaC05bC0xIDFINHYyaDE2VjR6Ii8+PC9zdmc+" width="14" height="14" alt="Excluir">
-      </button>
-    </div>
-  </div>
-`;
+      <div class="floor-btn ${isActive ? 'active' : ''} ${isOpen ? 'show-actions' : ''}"
+           data-id="${category.id}" role="button" tabindex="0">
+        <span>${category.name}</span>
+        <div class="floor-actions">
+          <button class="action-btn edit-floor-btn" data-id="${category.id}" title="Editar" aria-label="Editar andar">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </button>
+          <button class="action-btn delete-btn delete-floor-btn" data-id="${category.id}" title="Excluir" aria-label="Excluir andar">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+              <path d="M10 11v6"></path>
+              <path d="M14 11v6"></path>
+              <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
     floorList.insertBefore(floorItem, button);
   });
 
+  // Mantém o select de categoria atualizado
   const tvCategorySelect = document.getElementById('tv-category');
   if (tvCategorySelect) {
+    const current = tvCategorySelect.value;
     tvCategorySelect.innerHTML = categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+    if (current && categories.find(c => c.id === current)) tvCategorySelect.value = current;
   }
 };
 
@@ -443,7 +465,7 @@ function showTvMedia(tvId) {
         showToast('Erro ao atualizar', 'error');
       }
     });
-
+    
   } else if (tv.media) {
     if (tv.media.type === 'text') {
       displayTextMessage(tv.media.content, tv.media.color, tv.media.bgColor, tv.media.fontSize);
@@ -971,13 +993,43 @@ document.addEventListener('DOMContentLoaded', () => {
     await syncWithFirebase();
   });
 
+  // === NOVO: Revelar/ocultar ações (editar/excluir) ao clicar no nome do andar ===
+  document.addEventListener('click', (e) => {
+    const nameEl = e.target.closest('.floor-btn > span');
+    if (!nameEl) return;
+
+    // Evita que a seleção de categoria dispare
+    e.stopPropagation();
+    e.preventDefault();
+
+    const btn = nameEl.closest('.floor-btn');
+    if (!btn) return;
+
+    const thisActions = btn.querySelector('.floor-actions');
+    if (!thisActions) return;
+
+    // Fecha todos os outros painéis abertos
+    document.querySelectorAll('.floor-actions').forEach(el => {
+      if (el !== thisActions) el.style.display = 'none';
+    });
+
+    // Alterna este
+    thisActions.style.display = (thisActions.style.display === 'none' || thisActions.style.display === '') ? 'flex' : 'none';
+  });
+
   // Selecionar categoria
   document.addEventListener('click', e => {
     const floorBtn = e.target.closest('.floor-btn');
-    if (floorBtn && !e.target.closest('.action-btn')) {
-      selectedCategoryId = floorBtn.dataset.id;
-      updateCategoryList(); updateTvGrid();
-    }
+    if (!floorBtn) return;
+
+    // Se clicou em uma action interna, ignora seleção
+    if (e.target.closest('.action-btn')) return;
+
+    // Se clicou no span (nome), quem cuida é o handler acima; não selecionar categoria aqui
+    if (e.target.closest('.floor-btn > span')) return;
+
+    selectedCategoryId = floorBtn.dataset.id;
+    updateCategoryList(); updateTvGrid();
   });
 
   // Perfil: carregar lista de mídias
