@@ -67,7 +67,6 @@
       <section id="tvs-section" class="content-section active">
         <div class="tvs-layout">
           <div class="floor-list">
-            <!-- botão "Gerenciar Andares" escondido (use o do FAB) -->
             <button class="select-categories-btn" style="display:none;">Gerenciar Andares</button>
           </div>
           <div class="content-grid">
@@ -76,7 +75,6 @@
               <div class="grid-actions"></div>
             </div>
             <div class="grid" id="tv-grid"></div>
-            <!-- botão "Adicionar TV" escondido (use o do FAB) -->
             <button class="add-tv-btn" style="display:none;">Adicionar TV</button>
           </div>
         </div>
@@ -187,70 +185,110 @@
     </div>
   </div>
 
+  <!-- MODAL DE ENVIO: Arquivo/Link + Playlist -->
   <div class="modal" id="upload-media-modal">
     <div class="modal-content container-neon">
       <span class="close-btn">×</span>
       <h2>Enviar Mídia</h2>
-      <div class="form-group">
-        <label for="media-type">Tipo de Mídia:</label>
-        <select id="media-type">
-          <option value="text">Texto</option>
-          <option value="image">Imagem</option>
-          <option value="video">Vídeo</option>
-          <option value="link">Link Externo</option>
-          <option value="playlist">Playlist</option>
-        </select>
+
+      <!-- Abas -->
+      <div class="upload-tabs">
+        <button class="tab-btn active" id="tab-file" data-mode="file">Arquivo</button>
+        <button class="tab-btn" id="tab-link" data-mode="link">Link URL</button>
       </div>
-      <div class="form-group" id="file-upload-group" style="display:none;">
-        <label for="media-file">Arquivo (máx. 190MB):</label>
-        <input type="file" id="media-file" accept="image/*,video/*"/>
+
+      <!-- Toggle Playlist -->
+      <div class="playlist-toggle">
+        <span style="min-width:82px;">Playlist:</span>
+        <div id="playlist-switch" class="switch" role="switch" aria-checked="false" tabindex="0"></div>
+        <small class="link-hint">Ative para enviar várias mídias por vez</small>
+      </div>
+
+      <!-- Modo Arquivo (Dropzone) -->
+      <div id="file-mode">
+        <div class="dz-container" id="dz">
+          <div class="dz-header" id="dz-header">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 10V9C7 6.24 9.24 4 12 4s5 2.24 5 5v1c2.21 0 4 1.79 4 4 0 1.48-.8 2.81-2 3.5M7 10C4.79 10 3 11.79 3 14c0 1.48.8 2.81 2 3.5M7 10c.43 0 .85.07 1.24.2M12 12v9m0-9l3 3m-3-3l-3 3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Arraste arquivos aqui<br><small>(imagem, GIF, ou vídeo MP4)</small></p>
+          </div>
+
+          <label for="dz-file" class="dz-footer" id="dz-footer">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M15.331 6H8.5v20h15V14.154h-8.169z"></path><path d="M18.153 6h-.009v5.342H23.5v-.002z"></path></svg>
+            <p id="dz-file-label">Nenhum arquivo selecionado</p>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5.166 10.153C5.076 8.992 5.995 8 7.16 8h9.68c1.165 0 2.084.992 1.995 2.153l-.692 9c-.08 1.042-.948 1.847-1.993 1.847H7.852c-1.045 0-1.914-.805-1.994-1.847l-.692-9Z" stroke="currentColor" stroke-width="2" fill="none"></path>
+              <path d="M19.5 5H4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+              <path d="M10 3c0-.552.448-1 1-1h2a1 1 0 0 1 1 1v2h-4V3Z" stroke="currentColor" stroke-width="2" fill="none"></path>
+            </svg>
+          </label>
+
+          <input id="dz-file" type="file" accept="image/*,video/mp4,.gif" />
+        </div>
+
         <div class="upload-progress"><div class="progress-bar"></div></div>
-        <img id="media-preview" class="media-preview" alt="Pré-visualização"/>
+        <div id="dz-preview-wrap" class="dz-preview-wrap" style="display:none;">
+          <img id="dz-preview" class="media-preview" alt="Pré-visualização" />
+          <ul id="dz-list" class="dz-list"></ul>
+        </div>
       </div>
-      <div class="form-group" id="link-upload-group" style="display:none;">
-        <label for="media-link">URL:</label>
-        <input type="text" id="media-link" placeholder="https://exemplo.com/imagem.jpg"/>
+
+      <!-- Modo Link -->
+      <div id="link-mode" class="hidden">
+        <div class="link-fields">
+          <div class="form-group">
+            <label for="link-url">URL da mídia:</label>
+            <input type="url" id="link-url" placeholder="https://... (imagem, GIF ou vídeo MP4)"/>
+            <div class="link-hint">Use links diretos (acesso público). Para Storage com token público também funciona.</div>
+          </div>
+
+          <div class="link-inline">
+            <div class="form-group">
+              <label for="link-type">Tipo:</label>
+              <select id="link-type">
+                <option value="image">Imagem</option>
+                <option value="gif">GIF</option>
+                <option value="video">Vídeo (MP4)</option>
+              </select>
+            </div>
+            <div class="form-group" id="link-duration-wrap">
+              <label for="link-duration">Duração (s):</label>
+              <input type="number" id="link-duration" min="1" value="10"/>
+            </div>
+          </div>
+
+          <div class="form-group hidden" id="link-loop-wrap">
+            <label><input type="checkbox" id="link-loop"/> Repetir vídeo (loop)</label>
+          </div>
+        </div>
       </div>
-      <div id="image-options" class="form-group" style="display:none;">
-        <label for="image-duration">Duração (segundos):</label>
-        <input type="number" id="image-duration" value="10" min="1"/>
-      </div>
-      <div id="video-options" class="form-group" style="display:none;">
-        <label><input type="checkbox" id="video-loop"/> Repetir vídeo</label>
-      </div>
-      <div id="text-options" class="form-group" style="display:none;">
-        <label for="text-content">Texto:</label>
-        <textarea id="text-content" rows="4"></textarea>
-        <label for="text-color">Cor do Texto:</label>
-        <input type="color" id="text-color" value="#ffffff"/>
-        <label for="text-bg-color">Cor de Fundo:</label>
-        <input type="color" id="text-bg-color" value="#1a1f3b"/>
-        <label for="text-size">Tamanho da Fonte:</label>
-        <select id="text-size">
-          <option value="16">Pequeno</option>
-          <option value="24" selected>Médio</option>
-          <option value="32">Grande</option>
-          <option value="48">Extra Grande</option>
-        </select>
-      </div>
-      <div id="playlist-group" class="form-group" style="display:none;">
-        <label for="playlist-files">Arquivos da Playlist:</label>
-        <input type="file" id="playlist-files" accept="image/*,video/mp4,.gif" multiple/>
-        <div id="playlist-preview" class="media-preview"></div>
-      </div>
+
       <button id="upload-media-btn" class="btn" onclick="uploadMidia()">Enviar</button>
       <div id="upload-status" class="message"></div>
     </div>
   </div>
 
+  <!-- MODAL: INFORMAÇÕES / ATIVAÇÃO -->
   <div class="modal" id="activation-info-modal">
     <div class="modal-content container-neon">
       <span class="close-btn">×</span>
       <h2>Informações de Ativação</h2>
+
       <div class="form-group">
         <label>Chave de Ativação:</label>
-        <div id="activation-key-container"><span id="activation-key-info"></span></div>
+        <div class="key-row">
+          <input type="text" id="activation-key-display" class="key-input" readonly />
+          <button class="btn-secondary" id="btn-copy-key" title="Copiar">Copiar</button>
+          <button class="btn" id="btn-edit-key" title="Editar">Editar</button>
+        </div>
+        <div class="key-row" id="key-edit-row" style="display:none; gap:8px;">
+          <input type="text" id="activation-key-input" class="key-input" placeholder="Cole a nova chave aqui" />
+          <button class="btn" id="btn-save-key">Salvar</button>
+          <button class="btn-secondary" id="btn-cancel-key">Cancelar</button>
+        </div>
       </div>
+
       <div class="form-group">
         <label>Nome do Dispositivo:</label>
         <div class="device-info-value" id="activation-device-info"></div>

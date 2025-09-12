@@ -1,0 +1,344 @@
+<!-- ========================== Playlist UI (HTML+CSS+JS) ========================== -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Playlist UI – D’signer</title>
+<style>
+  :root{
+    --bg:#0c1022;
+    --card:#0f1a37;
+    --ink:#eaf6ff;
+    --muted:#9fc8ffcc;
+    --brand:#00d4ff;
+    --brand-2:#14c2ff;
+    --error:#ff5f76;
+    --ok:#33e29a;
+    --stroke:#1a2a56;
+    --chip:#12224b;
+  }
+  html,body{height:100%} body{
+    margin:0; background:linear-gradient(180deg,#070b18,#0b1024 60%,#070b18);
+    color:var(--ink); font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;
+  }
+  /* Backdrop + Modal */
+  .backdrop{
+    position:fixed; inset:0; background:#0007; display:grid; place-items:center;
+  }
+  .playlist-modal{
+    width:min(860px,92vw); max-height:86vh; overflow:auto;
+    background:var(--card); border:1px solid #0c2144; border-radius:18px;
+    box-shadow: 0 0 0 1px #00d4ff55 inset, 0 16px 80px #001b3a88, 0 0 40px #00d4ff22;
+    padding:22px 22px 18px 22px; position:relative;
+  }
+  .playlist-modal h2{
+    margin:0 0 6px 0; font-weight:700; letter-spacing:.2px; text-align:center;
+  }
+  .subtitle{ text-align:center; color:var(--muted); font-size:.9rem; margin-bottom:16px }
+  .close-x{
+    position:absolute; top:10px; right:12px; background:#12254b; color:#cfeaff;
+    border:1px solid #1e376e; width:34px; height:34px; display:grid; place-items:center;
+    border-radius:8px; cursor:pointer;
+  }
+  .grid{
+    display:grid; grid-template-columns:260px 1fr; gap:18px;
+  }
+  /* Dropzone (estagia SEM enviar) */
+  .dropzone{
+    border:2px dashed #2a4c90; background:#0a1533; border-radius:16px; padding:18px;
+    display:flex; align-items:center; justify-content:center; text-align:center; min-height:200px;
+    box-shadow:0 0 0 1px #00d4ff22 inset;
+    transition:150ms ease;
+  }
+  .dropzone.dragover{ border-color:var(--brand); background:#0a1739; box-shadow:0 0 0 2px #00d4ff55 inset; }
+  .dropzone .dz-inner{pointer-events:none}
+  .dz-icon{ width:64px; height:64px; margin:4px auto 8px; opacity:.9 }
+  .dz-title{ font-weight:700 }
+  .dz-help{ color:var(--muted); font-size:.9rem }
+
+  /* Items (cards) */
+  .items{
+    display:grid; gap:12px;
+  }
+  .item{
+    display:grid; grid-template-columns:96px 1fr; gap:12px;
+    background:#0b1736; border:1px solid #163267; border-radius:14px; padding:10px;
+    box-shadow:0 0 0 1px #00d4ff1f inset;
+  }
+  .thumb{
+    width:96px; height:96px; border-radius:10px; background:#08142c; border:1px solid #123065;
+    display:grid; place-items:center; overflow:hidden;
+  }
+  .thumb img,.thumb video{ width:100%; height:100%; object-fit:cover }
+  .thumb .playchip{
+    width:44px; height:44px; border-radius:999px; display:grid; place-items:center;
+    background:#091737; border:1px solid #13407a;
+  }
+  .meta{ display:grid; grid-template-columns:1fr auto; gap:6px 10px; align-items:center }
+  .title{ font-weight:700; letter-spacing:.2px }
+  .badges{ display:flex; gap:6px; align-items:center; justify-content:flex-start; }
+  .badge{
+    padding:4px 8px; font-size:.72rem; border-radius:999px; background:var(--chip);
+    border:1px solid #1b366f; color:#bfe2ff;
+  }
+  .badge.ok{ border-color:#1b6f58; background:#0e2e2a; color:#cff9ea }
+  .badge.pending{ border-color:#6f5b1b; background:#2e230e; color:#ffe8b0 }
+  .controls{ display:flex; gap:8px; align-items:center; justify-content:flex-end }
+  .btn-ghost{
+    background:#0e1d40; border:1px solid #1a356a; color:#cfeaff; height:34px; padding:0 10px;
+    border-radius:8px; cursor:pointer;
+  }
+  .iconbtn{
+    width:34px; height:34px; border-radius:8px; display:grid; place-items:center; cursor:pointer;
+    background:#0d1a3b; border:1px solid #1a356a; color:#bde4ff;
+  }
+  .iconbtn[disabled]{ opacity:.5; cursor:not-allowed }
+  .danger{ border-color:#5a2232; background:#2a0e18; color:#ffc8d2 }
+  .num{
+    width:74px; height:34px; background:#0a1736; border:1px solid #1a356a; color:#dff2ff;
+    border-radius:8px; text-align:center;
+  }
+  .footer{
+    display:flex; gap:10px; justify-content:center; margin-top:16px;
+  }
+  .btn{
+    height:40px; padding:0 16px; border-radius:10px; border:1px solid #0ea7d6; cursor:pointer;
+    background:linear-gradient(180deg,#05cfff,#09b7ff); color:#041021; font-weight:800;
+    box-shadow:0 8px 28px #00d4ff38, 0 0 0 1px #00d4ff66 inset;
+  }
+  .btn.secondary{
+    background:#0e254f; color:#e5f6ff; border-color:#15407d; box-shadow:none;
+  }
+
+  .hint{ text-align:center; color:var(--muted); font-size:.86rem; margin-top:10px }
+  .tools-row{ display:flex; gap:10px; margin-top:10px }
+  input[type="file"]{ display:none }
+</style>
+</head>
+<body>
+
+<div class="backdrop" id="backdrop">
+  <section class="playlist-modal" role="dialog" aria-modal="true">
+    <button class="close-x" id="closeX" aria-label="Fechar">✕</button>
+    <h2>Mídia da TV</h2>
+    <div class="subtitle">Gerencie sua <strong>Playlist</strong>: arraste arquivos, edite a duração e reordene. O upload só acontece quando você salvar.</div>
+
+    <div class="grid">
+      <!-- Dropzone -->
+      <div class="dropzone" id="dropzone">
+        <div class="dz-inner">
+          <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 3v12" stroke-width="2" stroke-linecap="round"/>
+            <path d="M8 9l4-4 4 4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="4" y="15" width="16" height="6" rx="2" stroke-width="2"/>
+          </svg>
+          <div class="dz-title">Solte a mídia aqui</div>
+          <div class="dz-help">ou</div>
+          <label class="btn secondary" for="fileInput">Selecionar arquivo</label>
+          <input id="fileInput" type="file" accept="image/*,video/mp4,.gif"/>
+        </div>
+      </div>
+
+      <!-- Lista de Itens -->
+      <div>
+        <div class="items" id="items"></div>
+        <div class="tools-row">
+          <button class="btn secondary" id="clearStaged">Limpar pendentes</button>
+          <button class="btn" id="saveBtn">Atualizar Playlist</button>
+        </div>
+        <p class="hint">Dica: Itens marcados como <span class="badge pending">pendente</span> ainda não foram enviados.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  // ========================= State =========================
+  const itemsEl  = document.getElementById('items');
+  const dropzone = document.getElementById('dropzone');
+  const fileInput= document.getElementById('fileInput');
+  const clearBtn = document.getElementById('clearStaged');
+  const saveBtn  = document.getElementById('saveBtn');
+  const closeX   = document.getElementById('closeX');
+  const backdrop = document.getElementById('backdrop');
+
+  // Mock inicial (2 existentes da nuvem)
+  /** Estrutura: {type:'image'|'video'|'gif', url?:string, previewUrl?:string, file?:File, duration:number|null, order:number, pending?:boolean} */
+  let playlist = [
+    { type:'image', url:'https://placehold.co/300x300/png?text=D%60S', duration:10, order:0, pending:false },
+    { type:'image', url:'https://placehold.co/300x300/png?text=Logo',  duration:10, order:1, pending:false }
+  ];
+
+  // ========================= Utils =========================
+  const isVideo = (fileOrType) =>
+    typeof fileOrType === 'string'
+      ? fileOrType.startsWith('video/')
+      : fileOrType && fileOrType.type && fileOrType.type.startsWith('video/');
+
+  function addFileToPlaylist(file){
+    if (!file) return;
+    if (file.size > 190 * 1024 * 1024){
+      alert('Arquivo excede 190MB'); return;
+    }
+    const type = isVideo(file) ? 'video' : (file.type === 'image/gif' ? 'gif' : 'image');
+    const objURL = type === 'image' ? URL.createObjectURL(file) : null;
+    playlist.push({
+      type, file, previewUrl: objURL, url: null,
+      duration: type === 'video' ? null : 10,
+      order: playlist.length,
+      pending: true
+    });
+    render();
+  }
+
+  function move(index, dir){
+    const j = index + dir;
+    if (j < 0 || j >= playlist.length) return;
+    [playlist[index], playlist[j]] = [playlist[j], playlist[index]];
+    playlist.forEach((it,i)=> it.order = i);
+    render();
+  }
+
+  function removeAt(index){
+    const it = playlist[index];
+    if (it?.previewUrl) URL.revokeObjectURL(it.previewUrl);
+    playlist.splice(index,1);
+    playlist.forEach((it,i)=> it.order = i);
+    render();
+  }
+
+  // ========================= Render =========================
+  function render(){
+    itemsEl.innerHTML = '';
+    if (!playlist.length){
+      itemsEl.innerHTML = '<div style="opacity:.7">Nenhum item na playlist.</div>';
+      return;
+    }
+
+    playlist.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = 'item';
+
+      // Thumb
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      if (item.type === 'video'){
+        // chip de vídeo
+        const chip = document.createElement('div');
+        chip.className = 'playchip';
+        chip.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+        thumb.appendChild(chip);
+      } else {
+        const img = document.createElement('img');
+        img.src = item.previewUrl || item.url || 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+        img.alt = item.type;
+        thumb.appendChild(img);
+      }
+
+      // Meta
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+
+      const title = document.createElement('div');
+      title.className = 'title';
+      title.textContent = `Tipo: ${item.type}`;
+
+      const badges = document.createElement('div');
+      badges.className = 'badges';
+      badges.innerHTML = item.pending
+        ? `<span class="badge pending">pendente</span>`
+        : `<span class="badge ok">sincronizado</span>`;
+
+      const left = document.createElement('div');
+      left.appendChild(title);
+      left.appendChild(badges);
+
+      const controls = document.createElement('div');
+      controls.className = 'controls';
+
+      // duração (somente imagens/gif)
+      const dur = document.createElement('input');
+      dur.type = 'number'; dur.min = 1; dur.value = item.duration ?? 10;
+      dur.className = 'num';
+      dur.disabled = (item.type === 'video');
+      dur.addEventListener('input', () => {
+        const v = parseInt(dur.value,10);
+        if (!Number.isNaN(v) && v>=1) item.duration = v;
+      });
+
+      const up   = document.createElement('button');
+      up.className = 'iconbtn'; up.innerHTML = '▲'; up.disabled = (idx===0);
+      up.title = 'Mover para cima'; up.onclick = ()=> move(idx,-1);
+
+      const down = document.createElement('button');
+      down.className = 'iconbtn'; down.innerHTML = '▼'; down.disabled = (idx===playlist.length-1);
+      down.title = 'Mover para baixo'; down.onclick = ()=> move(idx,+1);
+
+      const del = document.createElement('button');
+      del.className = 'iconbtn danger'; del.innerHTML = '✖';
+      del.title = 'Remover'; del.onclick = ()=> removeAt(idx);
+
+      controls.append(dur, up, down, del);
+
+      meta.append(left, controls);
+      card.append(thumb, meta);
+      itemsEl.appendChild(card);
+    });
+  }
+
+  // ========================= DnD & Inputs =========================
+  ;['dragenter','dragover'].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('dragover'); })
+  );
+  ;['dragleave','drop'].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('dragover'); })
+  );
+  dropzone.addEventListener('drop', e => {
+    const f = e.dataTransfer?.files?.[0]; if (!f) return; addFileToPlaylist(f);
+  });
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files?.[0]; if (!f) return; addFileToPlaylist(f); fileInput.value = '';
+  });
+
+  clearBtn.addEventListener('click', () => {
+    playlist = playlist.filter(it => !it.pending);
+    render();
+  });
+
+  // ========================= Persist (mock) =========================
+  async function fakeUpload(file){
+    // Mock de upload: “gera” uma URL pública após 600ms
+    await new Promise(r => setTimeout(r, 600));
+    return URL.createObjectURL(file); // substitua por URL real da storage
+  }
+
+  saveBtn.addEventListener('click', async () => {
+    // 1) Envia apenas pendentes
+    for (const it of playlist){
+      if (it.pending && it.file){
+        const publicUrl = await fakeUpload(it.file); // << integre com seu upload real
+        it.url = publicUrl;
+        if (it.previewUrl){ URL.revokeObjectURL(it.previewUrl); delete it.previewUrl; }
+        delete it.file; it.pending = false;
+      }
+    }
+    // 2) Recalcula ordem e "salva" (aqui apenas loga)
+    playlist.forEach((x,i)=> x.order=i);
+    console.log('Playlist pronta para persistir:', playlist);
+    // Aqui você pode chamar seu backend/Firebase:
+    // await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({ playlist });
+
+    render();
+    alert('Playlist atualizada!');
+  });
+
+  // Fechar demo
+  closeX.addEventListener('click', () => backdrop.remove());
+
+  // start
+  render();
+</script>
+</body>
+</html>
+<!-- ======================== /Playlist UI (HTML+CSS+JS) ======================== -->
