@@ -559,10 +559,8 @@ function setUploadMode(mode){
 
   // Resets visuais
   if (mode === 'file'){
-    // Limpa campos de link
     const url = document.getElementById('link-url'); if (url) url.value = '';
   } else {
-    // Limpa DZ
     dzSelectedFiles = [];
     const dzLabel = document.getElementById('dz-file-label'); if (dzLabel) dzLabel.textContent = 'Nenhum arquivo selecionado';
     const dzPreviewWrap = document.getElementById('dz-preview-wrap'); if (dzPreviewWrap) dzPreviewWrap.style.display = 'none';
@@ -577,7 +575,6 @@ function setPlaylistState(enabled){
     sw.classList.toggle('active', enabled);
     sw.setAttribute('aria-checked', enabled ? 'true' : 'false');
   }
-  // Impacto em input de arquivo
   const dzFile = document.getElementById('dz-file');
   if (dzFile){
     if (enabled){ dzFile.setAttribute('multiple','multiple'); }
@@ -601,7 +598,6 @@ window.uploadMidia = async function(){
       const loopEl = document.getElementById('link-loop');
       if (!url){ showToast('Informe a URL da mídia', 'error'); return; }
 
-      // Monta item
       const isVideo = type === 'video';
       let duration = null, loop = false;
       if (!isVideo){
@@ -614,7 +610,6 @@ window.uploadMidia = async function(){
       const oneItem = { url, type, duration: isVideo ? null : duration, loop: isVideo ? loop : false };
 
       if (playlistEnabled){
-        // Playlist com 1 item (permite acumular depois na tela "Ver Mídia")
         const playlistItems = [ { ...oneItem, order: 0 } ];
         tv.playlist = playlistItems;
         tv.media = null;
@@ -623,11 +618,9 @@ window.uploadMidia = async function(){
         if (tv.activationKey){
           await authModule.database.ref('midia/' + tv.activationKey).set({ tipo:'playlist', items: playlistItems, timestamp: Date.now() });
         }
-        // ActiveNames por URL externa não vai para tv_midias (sem storage), então só limpa/ajusta estado local
-        tv.activeMediaNames = []; // sem registro local para link externo
+        tv.activeMediaNames = []; // links externos não entram em tv_midias
         showToast('Playlist (link) enviada!', 'success');
       } else {
-        // Mídia única por link
         const mediaData = { type, url, timestamp: Date.now() };
         if (!isVideo) mediaData.duration = duration;
         if (isVideo) mediaData.loop = loop;
@@ -642,7 +635,7 @@ window.uploadMidia = async function(){
             duration: mediaData.duration || null, loop: mediaData.loop || false, timestamp: Date.now()
           });
         }
-        tv.activeMediaNames = []; // links externos não entram em tv_midias
+        tv.activeMediaNames = [];
         showToast('Link enviado!', 'success');
       }
 
@@ -654,7 +647,7 @@ window.uploadMidia = async function(){
     const files = dzSelectedFiles;
     if (!files || files.length === 0){ showToast('Selecione ou arraste arquivos', 'error'); return; }
 
-    // playlist automática se >1 arquivo OU se switch playlist ON
+    // playlist automática
     if (playlistEnabled || files.length > 1){
       if (!playlistEnabled && files.length > 1){ showToast('Ative "Playlist" para enviar vários arquivos', 'error'); return; }
 
@@ -694,7 +687,7 @@ window.uploadMidia = async function(){
     const isVideo = file.type.startsWith('video/');
     const type = isVideo ? 'video' : (file.type === 'image/gif' ? 'gif' : 'image');
     const mediaData = { type, url: mediaUrl, timestamp: Date.now() };
-    if (!isVideo) mediaData.duration = 10; // padrão
+    if (!isVideo) mediaData.duration = 10;
     if (isVideo) mediaData.loop = false;
 
     const regResult = await registerMediaInDB(tv, uploadedFileName, mediaData);
@@ -757,6 +750,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isOnline()){ (async () => { await syncWithFirebase(); })(); }
     else { showToast('Sem conexão: conecte-se para carregar dados', 'error'); updateCategoryList(); updateTvGrid(); }
   });
+
+  // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  // Seleção de ANDAR (filtra TVs) — clique e teclado (Enter/Espaço)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.floor-btn');
+    if (!btn) return;
+    const catId = btn.dataset.id;
+    selectedCategoryId = (selectedCategoryId === catId) ? null : catId;
+    updateCategoryList();
+    updateTvGrid();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const btn = e.target.closest('.floor-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const catId = btn.dataset.id;
+    selectedCategoryId = (selectedCategoryId === catId) ? null : catId;
+    updateCategoryList();
+    updateTvGrid();
+  });
+  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   // FAB toggle
   (function initFab(){
@@ -958,7 +973,6 @@ document.addEventListener('DOMContentLoaded', () => {
       modal.style.display = 'block';
       document.getElementById('upload-media-btn').dataset.tvId = tvId;
 
-      // reset visual (DZ)
       const progressBar = document.querySelector('.progress-bar'); if (progressBar) progressBar.style.width = '0%';
       const label = document.getElementById('dz-file-label'); if (label) label.textContent = 'Nenhum arquivo selecionado';
       const dzPreviewWrap = document.getElementById('dz-preview-wrap'); if (dzPreviewWrap) dzPreviewWrap.style.display = 'none';
@@ -966,19 +980,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const dzList = document.getElementById('dz-list'); if (dzList) dzList.innerHTML = '';
       dzSelectedFiles = [];
 
-      // reset (Link)
       const linkUrl = document.getElementById('link-url'); if (linkUrl) linkUrl.value = '';
       const linkType = document.getElementById('link-type'); if (linkType) linkType.value = 'image';
       const linkDuration = document.getElementById('link-duration'); if (linkDuration) linkDuration.value = 10;
       const linkLoop = document.getElementById('link-loop'); if (linkLoop) linkLoop.checked = false;
-      // mostrar/ocultar campos dependentes
+
       document.getElementById('link-duration-wrap')?.classList.remove('hidden');
       document.getElementById('link-loop-wrap')?.classList.add('hidden');
 
-      // garante dropzone ativa
       initDropzone();
 
-      // estado inicial do modal: aba Arquivo e playlist OFF
       setUploadMode('file');
       setPlaylistState(false);
     }
