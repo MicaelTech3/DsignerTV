@@ -689,6 +689,8 @@ body.offline .add-tv-btn{pointer-events:none;opacity:.6;filter:grayscale(.2)}
 }
 .link-hint{ color:#9fc8ffcc; font-size:12px; margin-top:-4px; }
 
+
+/* ======================== /css/Painel.css ======================== */
 /* ========================== GALERIA DE MÍDIAS ========================== */
 
 /* Filtros */
@@ -837,5 +839,3 @@ body.offline .add-tv-btn{pointer-events:none;opacity:.6;filter:grayscale(.2)}
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
 }
-
-/* ======================== /css/Painel.css ======================== */

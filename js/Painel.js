@@ -20,17 +20,9 @@ let dzSelectedFiles = [];
 let uploadMode = 'file';           // 'file' | 'link'
 let playlistEnabled = false;       // switch de playlist
 
-// Novo: estado da galeria (opcional)
-let mediaGalleryItems = [];        // itens carregados do DB (achatados)
-let mediaGalleryFiltered = [];     // itens filtrados para render
-let mediaGalleryIndexByKey = new Map(); // chave `${tvSlug}|${mediaName}` -> item
-
 // ===== Helpers =====
 const isOnline = () => navigator.onLine;
 function tvSlugFromName(name){ return name.replace(/\s+/g,'_').toLowerCase(); }
-
-// Gera chave única para lookup na galeria
-function galleryKey(tvSlug, mediaName){ return `${tvSlug}|${mediaName}`; }
 
 // ===== TOASTS =====
 function showToast(message, type = 'info') {
@@ -1079,154 +1071,12 @@ document.addEventListener('DOMContentLoaded', () => {
   closeModal('#view-media-modal .close-btn');
   closeModal('#activation-info-modal .close-btn');
 
-  // ===================== PERFIL / GALERIA DE MÍDIAS (novo com fallback) =====================
-
-  // Renderiza a galeria se existir #media-gallery no HTML; senão usa o #media-list antigo
-  function setupMediaGallery(items){
-    const gallery = document.getElementById('media-gallery');
-    if (!gallery){
-      // Fallback para a lista antiga
-      renderLegacyMediaList(items);
-      return;
-    }
-
-    // Index auxiliar para filtros
-    mediaGalleryItems = items.map(it => {
-      const tv = tvs.find(t => tvSlugFromName(t.name) === it.keyTvSlug);
-      const cat = tv ? categories.find(c => c.id === tv.categoryId) : null;
-      return {
-        ...it,
-        tvId: tv?.id || null,
-        categoryId: tv?.categoryId || null,
-        categoryName: cat?.name || 'Sem categoria',
-        _qtext: `${(it.mediaName||'').toLowerCase()} ${(it.tvName||'').toLowerCase()} ${(cat?.name||'').toLowerCase()}`
-      };
-    });
-
-    mediaGalleryIndexByKey.clear();
-    for (const it of mediaGalleryItems){
-      mediaGalleryIndexByKey.set(galleryKey(it.keyTvSlug, it.keyMediaName), it);
-    }
-
-    // Popular filtros, se existirem
-    const floorSelect = document.getElementById('gallery-filter-floor');
-    const tvSelect = document.getElementById('gallery-filter-tv');
-    if (floorSelect){
-      const uniqueCats = Array.from(new Set(mediaGalleryItems.map(i => `${i.categoryId}::${i.categoryName}`)));
-      floorSelect.innerHTML = `<option value="">Todos os andares</option>` +
-        uniqueCats.map(c => {
-          const [id, name] = c.split('::');
-          return `<option value="${id}">${name}</option>`;
-        }).join('');
-    }
-    if (tvSelect){
-      const uniqueTvs = Array.from(new Set(mediaGalleryItems.map(i => `${i.tvId}::${i.tvName}`))).filter(s => s !== 'null::undefined');
-      tvSelect.innerHTML = `<option value="">Todas as TVs</option>` +
-        uniqueTvs.map(t => {
-          const [id, name] = t.split('::');
-          return `<option value="${id}">${name}</option>`;
-        }).join('');
-    }
-
-    applyGalleryFilters(); // primeira render
-  }
-
-  function applyGalleryFilters(){
-    const gallery = document.getElementById('media-gallery');
-    if (!gallery){ return; }
-
-    const floorSelect = document.getElementById('gallery-filter-floor');
-    const tvSelect = document.getElementById('gallery-filter-tv');
-    const searchInput = document.getElementById('gallery-search');
-
-    const floorVal = floorSelect?.value || '';
-    const tvVal = tvSelect?.value || '';
-    const q = (searchInput?.value || '').trim().toLowerCase();
-
-    mediaGalleryFiltered = mediaGalleryItems.filter(it => {
-      if (floorVal && `${it.categoryId}` !== floorVal) return false;
-      if (tvVal && `${it.tvId}` !== tvVal) return false;
-      if (q && !it._qtext.includes(q)) return false;
-      return true;
-    });
-
-    renderMediaGallery(mediaGalleryFiltered);
-    const countEl = document.getElementById('gallery-count');
-    if (countEl){ countEl.textContent = `${mediaGalleryFiltered.length} item(ns)`; }
-  }
-
-  function thumbForItem(item){
-    if (!item?.url) return PLAY_ICON;
-    const isVideo = (item.mediaType === 'video') || /\.mp4(\?|$)/i.test(item.url);
-    return isVideo ? PLAY_ICON : item.url;
-  }
-
-  function renderMediaGallery(list){
-    const gallery = document.getElementById('media-gallery');
-    if (!gallery){ return; }
-    if (!Array.isArray(list) || list.length === 0){
-      gallery.innerHTML = `<div class="no-items">Nenhuma mídia encontrada.</div>`;
-      return;
-    }
-    gallery.innerHTML = '';
-    const frag = document.createDocumentFragment();
-    list.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'mg-card';
-      card.dataset.tvslug = item.keyTvSlug;
-      card.dataset.medianame = item.keyMediaName;
-      card.innerHTML = `
-        <div class="mg-thumb">
-          <img src="${thumbForItem(item)}" alt="${item.mediaType || 'media'}">
-        </div>
-        <div class="mg-meta">
-          <div class="mg-title" title="${item.mediaName}">${item.mediaName}</div>
-          <div class="mg-sub">${item.tvName} <span class="sep">•</span> ${item.categoryName}</div>
-        </div>
-        <div class="mg-actions">
-          <button class="action-btn mg-rename-btn" title="Renomear">✏</button>
-          <button class="action-btn mg-delete-btn" title="Excluir">🗑</button>
-        </div>
-      `;
-      frag.appendChild(card);
-    });
-    gallery.appendChild(frag);
-  }
-
-  // Fallback antigo para <div id="media-list">
-  function renderLegacyMediaList(items){
+  // Perfil: carregar lista de mídias
+  async function loadMediaList(){
     const mediaListContainer = document.getElementById('media-list');
     if (!mediaListContainer) return;
     mediaListContainer.innerHTML = '';
-    if (!items.length){ mediaListContainer.textContent = 'Nenhuma mídia enviada.'; return; }
-    items.sort((a,b)=> b.timestamp - a.timestamp);
-    for (const item of items){
-      const div = document.createElement('div');
-      div.className = 'media-item';
-      const statusColor = item.active ? '#4CAF50' : '#ff5252';
-      div.innerHTML = `
-        <div class="media-info">
-          <span class="status-dot" style="background-color:${statusColor}"></span>
-          <span><strong>${item.tvName}</strong> - ${item.mediaName}</span>
-        </div>
-        <div class="actions">
-          <button class="action-btn rename-media-btn" title="Renomear" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}">✏</button>
-          <button class="action-btn delete-media-btn" title="Excluir" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}" data-storagepath="${item.storagePath}">🗑</button>
-        </div>`;
-      mediaListContainer.appendChild(div);
-    }
-  }
-
-  // Perfil: carregar lista de mídias (detecta galeria ou fallback)
-  async function loadMediaList(){
-    const mediaListContainer = document.getElementById('media-list');
-    const gallery = document.getElementById('media-gallery');
-    if (!currentUserId || !isOnline()){
-      showToast('Sem internet', 'error');
-      if (mediaListContainer) mediaListContainer.innerHTML = '';
-      if (gallery) gallery.innerHTML = '<div class="no-items">Conecte-se para carregar mídias.</div>';
-      return;
-    }
+    if (!currentUserId || !isOnline()){ showToast('Sem internet', 'error'); return; }
     try{
       const snapshot = await authModule.database.ref(`users/${currentUserId}/tv_midias`).once('value');
       const data = snapshot.val() || {};
@@ -1238,12 +1088,22 @@ document.addEventListener('DOMContentLoaded', () => {
           items.push({ keyTvSlug: tvSlug, keyMediaName: mediaName, ...item });
         }
       }
-
-      // Se existir galeria -> usa nova UI; caso contrário, render antigo
-      if (gallery){
-        setupMediaGallery(items);
-      } else if (mediaListContainer){
-        renderLegacyMediaList(items);
+      if (items.length === 0){ mediaListContainer.textContent = 'Nenhuma mídia enviada.'; return; }
+      items.sort((a,b)=> b.timestamp - a.timestamp);
+      for (const item of items){
+        const div = document.createElement('div');
+        div.className = 'media-item';
+        const statusColor = item.active ? '#4CAF50' : '#ff5252';
+        div.innerHTML = `
+          <div class="media-info">
+            <span class="status-dot" style="background-color:${statusColor}"></span>
+            <span><strong>${item.tvName}</strong> - ${item.mediaName}</span>
+          </div>
+          <div class="actions">
+            <button class="action-btn rename-media-btn" title="Renomear" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}">✏</button>
+            <button class="action-btn delete-media-btn" title="Excluir" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}" data-storagepath="${item.storagePath}">🗑</button>
+          </div>`;
+        mediaListContainer.appendChild(div);
       }
     } catch (err){
       console.error('Erro ao carregar mídias:', err);
@@ -1251,7 +1111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Excluir mídia com STOP (reutilizado pela galeria e pela lista antiga)
+  // Excluir mídia com STOP
   async function deleteMedia(tvSlug, mediaName, storagePath){
     if (!currentUserId) return;
     try{
@@ -1309,7 +1169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Perfil: abrir/fechar lista de mídias (botão antigo) -> mantém compatibilidade
+  // Perfil: abrir/fechar lista de mídias
   const mediaButton = document.getElementById('media-button');
   if (mediaButton){
     mediaButton.addEventListener('click', async () => {
@@ -1321,7 +1181,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Interações da lista antiga
   const mediaListContainer = document.getElementById('media-list');
   if (mediaListContainer){
     mediaListContainer.addEventListener('click', async (e) => {
@@ -1336,39 +1195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
     });
-  }
-
-  // Interações da nova galeria (se existir)
-  const gallery = document.getElementById('media-gallery');
-  if (gallery){
-    // Filtros
-    document.getElementById('gallery-filter-floor')?.addEventListener('change', applyGalleryFilters);
-    document.getElementById('gallery-filter-tv')?.addEventListener('change', applyGalleryFilters);
-    document.getElementById('gallery-search')?.addEventListener('input', applyGalleryFilters);
-
-    // Ações dos cards
-    gallery.addEventListener('click', async (e) => {
-      const card = e.target.closest('.mg-card');
-      if (!card) return;
-      const tvSlug = card.dataset.tvslug;
-      const mediaName = card.dataset.medianame;
-      const item = mediaGalleryIndexByKey.get(galleryKey(tvSlug, mediaName));
-
-      if (e.target.closest('.mg-delete-btn')){
-        if (!item) return;
-        const ok = confirm(`Excluir "${item.mediaName}" de ${item.tvName}?`);
-        if (ok){ await deleteMedia(tvSlug, mediaName, item.storagePath); }
-        return;
-      }
-
-      if (e.target.closest('.mg-rename-btn')){
-        // Mantido como opcional (requer lógica de mover/renomear no DB+Storage que pode quebrar referências)
-        showToast('Renomear disponível futuramente', 'info');
-      }
-    });
-
-    // Carrega de cara a galeria se existir
-    loadMediaList().catch(()=>{});
   }
 
   // ===== Handlers das Abas (Arquivo / Link) =====
@@ -1396,5 +1222,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-
 // ======================== /Painel.js ==========================

@@ -1,3 +1,4 @@
+<!-- ========================== index.html ========================== -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -93,26 +94,13 @@
         </div>
       </section>
 
-      <!-- PERFIL (ajustado) -->
+      <!-- PERFIL -->
       <section id="perfil-section" class="content-section">
         <div class="profile-content container-neon">
           <h2>Meu Perfil</h2>
           <p><strong>Email:</strong> <span id="user-email"></span></p>
-
-          <!-- Filtros -->
-          <div class="media-filters">
-            <select id="filter-floor">
-              <option value="">Todos os Andares</option>
-            </select>
-            <select id="filter-tv">
-              <option value="">Todas as TVs</option>
-            </select>
-          </div>
-
-          <!-- Galeria de mídias -->
-          <div id="media-gallery" class="media-gallery">
-            <!-- Cards serão renderizados via JS -->
-          </div>
+          <button id="media-button" class="btn">Mídia</button>
+          <div id="media-list" class="media-list container-neon" style="display:none; margin-top:15px;"></div>
         </div>
       </section>
 
