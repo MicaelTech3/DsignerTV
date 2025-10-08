@@ -928,3 +928,106 @@ body.offline .add-tv-btn{pointer-events:none;opacity:.6;filter:grayscale(.2)}
 .painel-menu a:hover, .painel-menu a.active,
 .logout:hover { color: var(--brand) !important; box-shadow: 0 0 10px rgba(0,255,136,.30) !important; }
 
+.app-downloads {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  padding: 20px 0;
+}
+
+/* --- Card estilo verde --- */
+.card {
+  --bg-card: #0a0f2b;
+  --primary: #00ff88;
+  --primary-dark: #00c66b;
+  --light: #eaf6ff;
+  --shadow: rgba(0,255,136,.2);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 220px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--bg-card);
+  box-shadow: 0 0 20px var(--shadow), inset 0 0 10px rgba(0,255,136,.05);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 25px rgba(16, 160, 52, 0.979);
+}
+
+.image_container {
+  width: 100%;
+  height: 104px;
+  background: #fafafa;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+}
+.image_container .image { width: 65px; fill: var(--light); opacity: 0.9; }
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--light);
+  text-align: center;
+  margin-top: 10px;
+}
+
+.size {
+  color: var(--light);
+  text-align: center;
+  font-size: .8rem;
+  margin: 8px 0;
+}
+
+.list-size {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.item-list-button {
+  background: #0f1636;
+  border: 1px solid var(--primary);
+  color: var(--light);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: .75rem;
+  cursor: pointer;
+  transition: .2s;
+}
+.item-list-button:hover {
+  background: var(--primary);
+  color: #0a0f2b;
+}
+
+/* Botão Download */
+.download-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--primary);
+  background: #267797;
+  color: #fcfcfc;
+  font-weight: 300;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all .25s ease;
+}
+.download-button:hover {
+  background: var(--primary-dark);
+  color: var(--light);
+  box-shadow: 0 0 20px rgba(2, 216, 95, 0.911);
+  transform: scale(1.03);
+}
+
+
+
