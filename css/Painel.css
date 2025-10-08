@@ -839,3 +839,92 @@ body.offline .add-tv-btn{pointer-events:none;opacity:.6;filter:grayscale(.2)}
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
 }
+
+/* === Overrides tema VERDE === */
+:root{
+  --brand:#00ff88;
+  --brand-strong:#00d977;
+  --brand-utility:#22c55e;
+}
+
+/* Títulos e realces principais */
+.sidebar-modern .brand,
+.topbar h2,
+.content-grid h3,
+.header-title h1 { color: var(--brand) !important; }
+
+/* Pills e itens ativos/hover */
+.pill:hover { color: var(--brand) !important; box-shadow: 0 8px 20px rgba(0,255,136,.15) !important; }
+.pill.active{
+  color: var(--brand-strong) !important;
+  border-color: var(--brand-strong) !important;
+  box-shadow: 0 10px 24px rgba(0,255,136,.22), inset 0 0 18px rgba(0,255,136,.08) !important;
+}
+
+/* Botões borda e navegação */
+.dskey-btn-nav,
+.logout-btn,
+.select-categories-btn,
+.add-tv-btn,
+.btn-secondary,
+.container-neon,
+.media-item,
+.form-group label,
+.device-info-value,
+.modal-content {
+  border-color: var(--brand) !important;
+  color: #eaf6ff;
+}
+.dskey-btn-nav,
+.logout-btn,
+.select-categories-btn,
+.add-tv-btn,
+.btn-secondary {
+  color: var(--brand) !important;
+}
+.dskey-btn-nav:hover,
+.logout-btn:hover,
+.select-categories-btn:hover,
+.add-tv-btn:hover,
+.btn-secondary:hover {
+  box-shadow: 0 0 10px rgba(0,255,136,.30) !important;
+}
+
+/* Botão primário */
+.btn { background: var(--brand) !important; color:#0a0f2b !important; }
+.btn:hover { background: var(--brand-strong) !important; }
+
+/* Floor buttons / bordas */
+.floor-btn { border-color: var(--brand) !important; }
+.floor-btn:hover, .floor-btn.active { box-shadow: 0 0 10px rgba(0,255,136,.30) !important; }
+
+/* Ações TV / hover */
+.tv-action-btn { border-color: rgba(0,255,136,.35) !important; }
+.tv-action-btn:hover { border-color: var(--brand) !important; box-shadow: 0 0 0 3px rgba(0,255,136,.15), 0 6px 18px rgba(0,0,0,.45) !important; }
+
+/* Toasts e estados utilitários */
+.toast-card { border-color: var(--brand-utility) !important; }
+.toast-success { border-color: #22c55e !important; }
+.toast-info { border-color: var(--brand-utility) !important; }
+
+/* Dropzone e tabs de upload */
+.dz-header { border-color: var(--brand-utility) !important; }
+.dz-footer svg { fill: var(--brand-utility) !important; }
+.upload-tabs .tab-btn { border-color: #1f8a5a !important; color: #bfffe6 !important; }
+.upload-tabs .tab-btn.active {
+  color: var(--brand) !important;
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px rgba(0,255,136,.12) inset !important;
+}
+
+/* Switch/Toggle playlist */
+.switch { border-color: var(--brand) !important; }
+.switch::after { background: var(--brand) !important; }
+
+/* Progresso e barras */
+.progress-bar { background: var(--brand) !important; }
+
+/* Links em menus antigos */
+.painel-menu a:hover, .painel-menu a.active,
+.logout:hover { color: var(--brand) !important; box-shadow: 0 0 10px rgba(0,255,136,.30) !important; }
+

@@ -1,46 +1,45 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>D`Signer - Login</title>
-  <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="css/login.css"/>
+
+  <!-- Firebase v8 (carregar UMA vez só) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 </head>
 <body>
-  <div class="container">
-    <div class="heading">D`Signer</div>
-    <form id="login-form" class="form">
-      <input required class="input" type="email" name="email" id="email" placeholder="E-mail">
-      <input required class="input" type="password" name="password" id="password" placeholder="Password">
-      <button type="submit" class="login-button">Entrar</button>
-      <p id="login-message"></p>
-    </form>
-
-    <div class="social-account-container">
-      <span class="title">Ou entre com</span>
-      <div class="social-accounts">
-        <button class="social-button google">
-          <svg class="svg" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 488 512">
-            <path d="M488 261.8C488 403.3..."></path>
-          </svg>
-        </button>
-        <button class="social-button apple">
-          <svg class="svg" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512">
-            <path d="M318.7 268.7c-.2-36.7..."></path>
-          </svg>
-        </button>
-        <button class="social-button twitter">
-          <svg class="svg" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
-            <path d="M389.2 48h70.6L305.6..."></path>
-          </svg>
-        </button>
+  <div class="main-login">
+    <!-- Lado esquerdo -->
+    <div class="left-login">
+      <div class="left-content">
+        <h1>D'SignerTV</h1>
+        <img src="css/dsdesenho.svg" class="left-login-image" alt="Desenho D'SignerTV" />
       </div>
     </div>
-    <span class="agreement"><a href="#">Termos de uso</a></span>
-  </div>
 
+    <!-- Card de login -->
+    <div class="card-login">
+  <h1>LOGIN</h1>
+
+  <form id="login-form" class="form">
+    <div class="textfield">
+      <input type="email" id="email" placeholder="Seu e-mail" required />
+    </div>
+    <div class="textfield">
+      <input type="password" id="password" placeholder="Sua senha" required />
+    </div>
+    <button type="submit" class="btn-login">Entrar</button>
+    <p id="login-message" class="signup-link"></p>
+  </form>
+</div>
+
+
+  <!-- Scripts do projeto (depois do HTML) -->
   <script src="js/auth.js"></script>
   <script src="js/login.js"></script>
 </body>
