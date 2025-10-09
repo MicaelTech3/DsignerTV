@@ -1139,3 +1139,15 @@ body.offline .add-tv-btn{pointer-events:none;opacity:.6;filter:grayscale(.2)}
 .key-input{ flex:1; min-width:180px; padding:8px 10px; border-radius:8px; border:1px solid #334155; background:#0b1324; color:#e5e7eb; }
 .device-info-value{ padding:8px 10px; background:#0b1324; border:1px solid #334155; border-radius:8px; }
 
+.pill-icon {
+  width: 22px;
+  height: 22px;
+  filter: brightness(0) invert(1); /* deixa branco, igual ao SVG */
+  opacity: 0.8;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.pill:hover .pill-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
