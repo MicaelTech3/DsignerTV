@@ -18,7 +18,7 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
   border-radius:14px;display:flex;align-items:center;gap:12px;padding:0 14px;transition:.25s ease;
   box-shadow:0 0 0 rgba(0,212,255,0)
 }
-.pill svg{fill:currentColor}
+.pill image {width:24px;height:24px;object-fit:contain}
 .pill span{font-size:.95rem;letter-spacing:.2px}
 .pill:hover{transform:translateY(-1px);color:#00d4ff;box-shadow:0 8px 20px rgba(0,212,255,.15)}
 .pill.active{color:#00b7ff;border-color:#00b7ff;box-shadow:0 10px 24px rgba(0,212,255,.22), inset 0 0 18px rgba(0,212,255,.08)}
@@ -48,13 +48,13 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
 /* ========= Antigo header some ========= */
 .painel-header{display:none}
 
-/* ========= STATUS FIXO (override p/ bolinha ✓) ========= */
+/* ========= STATUS FIXO (override p/ bolinha ✓) ========= 
 #connection-status{
   position:fixed;right:20px;bottom:20px;z-index:1000;
   width:36px;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;
   font-weight:900;font-size:18px;background:#22c55e;color:#081427;box-shadow:0 6px 18px rgba(0,0,0,.25);
   pointer-events:none
-}
+} */
 
 /* ========= RESTANTE ========= */
 .painel-header{background-color:#0a0f2b;padding:10px 20px;border-bottom:2px solid #bbbbbb;position:relative}
@@ -481,8 +481,9 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
 }
 
 .fab-main{
-  width:var(--fab-size);height:var(---fab-size);border-radius:50%;
+  
   background:linear-gradient(135deg,#0a0f2b,#172053);
+  font-size: 9px;
   border:1px solid #00d4ff;color:#00d4ff;
   display:flex;align-items:center;justify-content:center;cursor:pointer;
   box-shadow:0 8px 24px rgba(0,212,255,.15);
@@ -1028,6 +1029,79 @@ body.offline .add-tv-btn{pointer-events:none;opacity:.6;filter:grayscale(.2)}
   box-shadow: 0 0 20px rgba(2, 216, 95, 0.911);
   transform: scale(1.03);
 }
+
+/* === Indicador de rede (topbar, discreto) === */
+.net-indicator{
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  border:1px solid #00ff8855;
+  background:#0a0f2b;
+  box-shadow:0 2px 10px rgba(0,0,0,.25);
+  z-index: 1001;
+}
+.net-indicator .wifi-on,
+.net-indicator .wifi-off{ display: none; }
+.net-indicator.online .wifi-on{ display: block; color:#22c55e; }   /* verde */
+.net-indicator.offline .wifi-off{ display: block; color:#ef4444; }  /* vermelho */
+
+/* Esconde componentes antigos de status/banners, se existirem */
+#connection-status, #offline-banner { display:none !important; }
+
+/* === Grid de downloads (App) === */
+.app-downloads{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+/* === Galeria de mídias (aba Mídias) === */
+.media-gallery{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top:10px;
+}
+.media-card{
+  background:#0f142f;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  overflow:hidden;
+  display:flex; flex-direction:column;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.media-card:hover{ transform: translateY(-3px); box-shadow:0 8px 24px rgba(0,255,136,.2); }
+.media-thumb{ width:100%; height:140px; display:flex; align-items:center; justify-content:center; background:#172053; overflow:hidden; }
+.media-thumb img, .media-thumb video{ width:100%; height:100%; object-fit:cover; }
+.media-info{ padding:12px; display:flex; flex-direction:column; gap:6px; }
+.media-title{ font-size:14px; font-weight:700; color:#fff; word-break:break-word; }
+.media-meta{ display:flex; align-items:center; justify-content:space-between; font-size:12px; color:#9fc8ffcc; }
+.media-actions{ display:flex; gap:8px; margin-top:8px; }
+.media-actions button{
+  flex:1; padding:6px; border:none; border-radius:6px; cursor:pointer;
+  font-size:13px; font-weight:700; transition:.2s; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.btn-rename{ background:#0a0f2b; color:#00ff88; border:1px solid #00ff88; }
+.btn-rename:hover{ background:#113a2a; box-shadow:0 0 10px rgba(0,255,136,.3); }
+.btn-delete{ background:#1e1b1b; color:#ef4444; border:1px solid #ef4444; }
+.btn-delete:hover{ background:#3a1010; box-shadow:0 0 10px rgba(239,68,68,.3); }
+
+/* input de rename inline */
+.media-rename{
+  display:none; margin-top:6px; gap:6px;
+}
+.media-card.renaming .media-rename{ display:flex; }
+.media-card.renaming .media-title{ display:none; }
+.media-rename input{
+  flex:1; background:#0a0f2b; border:1px solid #00ff88; color:#fff; border-radius:6px; padding:6px 8px;
+}
+.media-rename .save-rename{ background:#00ff88; color:#0a0f2b; border:none; border-radius:6px; padding:6px 10px; font-weight:800; }
+.media-rename .cancel-rename{ background:#0a0f2b; color:#00ff88; border:1px solid #00ff88; border-radius:6px; padding:6px 10px; font-weight:700; }
+
 
 
 

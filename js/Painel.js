@@ -70,32 +70,20 @@ function showToast(message, type = 'info') {
   container.appendChild(wrap);
 }
 
-// ===== Banner offline + status minimalista =====
-const ensureOfflineBanner = () => {
-  let b = document.getElementById('offline-banner');
-  if (!b){
-    b = document.createElement('div');
-    b.id = 'offline-banner';
-    b.textContent = 'Sem internet. Ações desativadas até reconectar.';
-    document.body.appendChild(b);
-  }
-  return b;
-};
-const updateConnectionStatus = () => {
-  let el = document.getElementById('connection-status');
-  if (!el){ el = document.createElement('div'); el.id='connection-status'; el.textContent='✓'; document.body.appendChild(el); }
-  if (isOnline()){
-    el.style.backgroundColor = '#f0f0f0ff';
-    el.style.color = '#081427';
+// ===== Net indicator (topo) =====
+function updateNetIndicator(){
+  const el = document.getElementById('net-indicator');
+  if (!el) return;
+  if (navigator.onLine){
+    el.classList.add('online'); el.classList.remove('offline');
+    el.setAttribute('aria-label','Conectado'); el.title='Conectado';
     document.body.classList.remove('offline');
-    const b = document.getElementById('offline-banner'); if (b) b.remove();
   } else {
-    el.style.backgroundColor = '#ef4444';
-    el.style.color = '#ffffff';
+    el.classList.add('offline'); el.classList.remove('online');
+    el.setAttribute('aria-label','Sem conexão'); el.title='Sem conexão';
     document.body.classList.add('offline');
-    ensureOfflineBanner();
   }
-};
+}
 
 // ===== Firebase sync =====
 const syncWithFirebase = async () => {
@@ -715,26 +703,34 @@ window.uploadMidia = async function(){
 
 // ===== DOM =====
 document.addEventListener('DOMContentLoaded', () => {
-  updateConnectionStatus();
-  window.addEventListener('online',  () => { updateConnectionStatus(); syncWithFirebase(); });
-  window.addEventListener('offline', () => { updateConnectionStatus(); });
+  updateNetIndicator();
+  window.addEventListener('online',  () => { updateNetIndicator(); syncWithFirebase(); });
+  window.addEventListener('offline', () => { updateNetIndicator(); });
 
   // Sidebar
   (function initSidebarPills(){
     const pills = document.querySelectorAll('.sidebar-modern .pill');
     const titleEl = document.getElementById('section-title');
-    function activate(sectionId, pillBtn){
+
+    async function activate(sectionId, pillBtn){
       if (titleEl) titleEl.textContent = pillBtn?.querySelector('span')?.textContent || 'Dashboard';
       document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
       const section = document.getElementById(sectionId);
       if (section) section.classList.add('active');
       pills.forEach(p => p.classList.remove('active'));
       pillBtn?.classList.add('active');
+
+      // >>> Quando a aba MÍDIAS é aberta, renderiza a lista
+      if (sectionId === 'midias-section') {
+        await loadMidiasView();
+      }
     }
+
     pills.forEach(btn=>{
       const sectionId = btn.dataset.section;
       if (sectionId){ btn.addEventListener('click', ()=> activate(sectionId, btn)); }
     });
+
     const dskeyBtn = document.getElementById('pill-dskey');
     if (dskeyBtn){ dskeyBtn.addEventListener('click', (e)=>{ e.preventDefault(); window.open('https://tvdsigner.com.br/', '_blank'); }); }
     const logout = document.getElementById('logout-link');
@@ -823,6 +819,35 @@ document.addEventListener('DOMContentLoaded', () => {
       await syncWithFirebase();
     });
   }
+
+  // Deletar TV
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.delete-tv-btn');
+    if (!btn) return;
+    if (!isOnline()){ showToast('Sem internet', 'error'); return; }
+
+    const tvId = btn.dataset.id;
+    const tv = tvs.find(t => t.id === tvId);
+    if (!tv){ showToast('TV não encontrada', 'error'); return; }
+
+    if (!confirm(`Excluir a TV "${tv.name}"? Isso remove a TV e todas as mídias registradas nela.`)) return;
+
+    try {
+      if (tv.activationKey){
+        await authModule.database.ref('midia/' + tv.activationKey).set({ tipo:'stop', timestamp: Date.now() }).catch(()=>{});
+        await authModule.database.ref('midia/' + tv.activationKey).remove().catch(()=>{});
+      }
+      const tvSlug = tvSlugFromName(tv.name);
+      await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}`).remove().catch(()=>{});
+      await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).remove();
+
+      showToast('TV excluída', 'success');
+      await syncWithFirebase();
+    } catch (err){
+      console.error(err);
+      showToast('Erro ao excluir TV', 'error');
+    }
+  });
 
   // Editar Andar (abrir modal)
   document.addEventListener('click', e => {
@@ -1013,6 +1038,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const keyDisplay = document.getElementById('activation-key-display');
     const deviceInfo = document.getElementById('activation-device-info');
+    thelast = document.getElementById('activation-last-info'); // eslint-disable-line no-undef
     const lastInfo = document.getElementById('activation-last-info');
     const keyInput = document.getElementById('activation-key-input');
     const keyEditRow = document.getElementById('key-edit-row');
@@ -1071,131 +1097,175 @@ document.addEventListener('DOMContentLoaded', () => {
   closeModal('#view-media-modal .close-btn');
   closeModal('#activation-info-modal .close-btn');
 
-  // Perfil: carregar lista de mídias
-  async function loadMediaList(){
-    const mediaListContainer = document.getElementById('media-list');
-    if (!mediaListContainer) return;
-    mediaListContainer.innerHTML = '';
-    if (!currentUserId || !isOnline()){ showToast('Sem internet', 'error'); return; }
+  // ======== ABA MÍDIAS ========
+  async function loadMidiasView(){
+    const grid = document.getElementById('media-list');
+    const empty = document.getElementById('media-empty');
+    const filterTv = document.getElementById('filter-tv');
+    const filterStatus = document.getElementById('filter-status');
+
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    if (!currentUserId){
+      grid.innerHTML = '<div class="no-items">Faça login para ver suas mídias.</div>';
+      return;
+    }
+    if (!navigator.onLine){
+      showToast('Sem internet', 'error');
+      return;
+    }
+
     try{
-      const snapshot = await authModule.database.ref(`users/${currentUserId}/tv_midias`).once('value');
-      const data = snapshot.val() || {};
+      const snap = await authModule.database.ref(`users/${currentUserId}/tv_midias`).once('value');
+      const data = snap.val() || {};
       const items = [];
+      const tvNamesBySlug = {};
+
       for (const tvSlug in data){
-        const medias = data[tvSlug];
+        const medias = data[tvSlug] || {};
         for (const mediaName in medias){
           const item = medias[mediaName];
-          items.push({ keyTvSlug: tvSlug, keyMediaName: mediaName, ...item });
+          items.push({ tvSlug, mediaName, ...item });
+          tvNamesBySlug[tvSlug] = item.tvName || tvSlug;
         }
       }
-      if (items.length === 0){ mediaListContainer.textContent = 'Nenhuma mídia enviada.'; return; }
-      items.sort((a,b)=> b.timestamp - a.timestamp);
-      for (const item of items){
-        const div = document.createElement('div');
-        div.className = 'media-item';
-        const statusColor = item.active ? '#4CAF50' : '#ff5252';
-        div.innerHTML = `
-          <div class="media-info">
-            <span class="status-dot" style="background-color:${statusColor}"></span>
-            <span><strong>${item.tvName}</strong> - ${item.mediaName}</span>
-          </div>
-          <div class="actions">
-            <button class="action-btn rename-media-btn" title="Renomear" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}">✏</button>
-            <button class="action-btn delete-media-btn" title="Excluir" data-tvslug="${item.keyTvSlug}" data-medianame="${item.keyMediaName}" data-storagepath="${item.storagePath}">🗑</button>
-          </div>`;
-        mediaListContainer.appendChild(div);
+
+      if (filterTv && !filterTv.dataset.populated){
+        filterTv.innerHTML = '<option value="">Todas as TVs</option>' +
+          Object.entries(tvNamesBySlug)
+            .map(([slug,name]) => `<option value="${slug}">${name}</option>`)
+            .join('');
+        filterTv.dataset.populated = '1';
       }
+
+      let filtered = items.slice();
+      const tvSel = filterTv ? filterTv.value : '';
+      const stSel = filterStatus ? filterStatus.value : '';
+      if (tvSel) filtered = filtered.filter(i => i.tvSlug === tvSel);
+      if (stSel === 'active')   filtered = filtered.filter(i => i.active);
+      if (stSel === 'inactive') filtered = filtered.filter(i => !i.active);
+
+      if (filtered.length === 0){
+        grid.innerHTML = '';
+        if (empty) empty.style.display = 'block';
+        return;
+      } else {
+        if (empty) empty.style.display = 'none';
+      }
+
+      filtered.sort((a,b)=> b.timestamp - a.timestamp);
+
+      for (const item of filtered){
+        const kind = item.mediaType || item.type || 'image';
+        const thumb = kind === 'video' ? PLAY_ICON : (item.url || '');
+        const statusDot = item.active ? 'status-active' : 'status-offline';
+        const displayName = item.displayName || item.mediaName;
+
+        const card = document.createElement('div');
+        card.className = 'media-card';
+        card.dataset.tvslug = item.tvSlug;
+        card.dataset.medianame = item.mediaName;
+        card.dataset.storagepath = item.storagePath || '';
+
+        card.innerHTML = `
+          <div class="media-thumb">
+            ${kind === 'video'
+              ? `<img src="${thumb}" alt="Vídeo" />`
+              : `<img src="${thumb}" alt="Imagem" onerror="this.src='${thumb}'" />`}
+          </div>
+          <div class="media-info">
+            <div class="media-title" title="${displayName}">${displayName}</div>
+            <div class="media-meta">
+              <span>${item.tvName || item.tvSlug}</span>
+              <span><span class="status-dot ${statusDot}"></span>${item.active ? 'Ativa' : 'Inativa'}</span>
+            </div>
+
+            <div class="media-rename">
+              <input type="text" class="rename-input" value="${displayName}" />
+              <button class="save-rename">Salvar</button>
+              <button class="cancel-rename">Cancelar</button>
+            </div>
+
+            <div class="media-actions">
+              <button class="btn-rename rename-media-btn">Renomear</button>
+              <button class="btn-delete delete-media-btn">Excluir</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      }
+
     } catch (err){
       console.error('Erro ao carregar mídias:', err);
       showToast('Erro ao carregar mídias', 'error');
     }
   }
 
-  // Excluir mídia com STOP
-  async function deleteMedia(tvSlug, mediaName, storagePath){
-    if (!currentUserId) return;
-    try{
-      await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${mediaName}`).remove();
-      if (storagePath) await authModule.storage.ref().child(storagePath).delete().catch(() => {});
+  // Delegação de eventos para Renomear/Excluir (aba Mídias)
+  document.addEventListener('click', async (e) => {
+    const card = e.target.closest('.media-card');
+    if (!card) return;
 
-      const tv = tvs.find(t => tvSlugFromName(t.name) === tvSlug);
-      if (tv){
-        let changed = false;
-        if (Array.isArray(tv.playlist) && tv.playlist.length){
-          const newPlaylist = tv.playlist.filter(item => {
-            try{
-              const name = item.url ? getMediaNameFromUrl(tv.name, item.url) : null;
-              return name !== mediaName;
-            } catch { return true; }
-          });
-          if (newPlaylist.length !== tv.playlist.length){ tv.playlist = newPlaylist; changed = true; }
-        }
-        if (tv.media && tv.media.url){
-          try{
-            const name = getMediaNameFromUrl(tv.name, tv.media.url);
-            if (name === mediaName){ tv.media = null; changed = true; }
-          } catch {}
-        }
-        const tvNameSlug = tvSlugFromName(tv.name);
-        const activeNames = [];
-        if (tv.playlist && tv.playlist.length){
-          for (const item of tv.playlist){
-            try{
-              const name = item.url ? getMediaNameFromUrl(tv.name, item.url) : null;
-              if (name) activeNames.push(name);
-            } catch {}
-          }
-        } else if (tv.media && tv.media.url){
-          try{
-            const name = getMediaNameFromUrl(tv.name, tv.media.url);
-            if (name) activeNames.push(name);
-          } catch {}
-        }
-        tv.activeMediaNames = activeNames;
-        await updateActiveMediaStatus(tvNameSlug, activeNames);
-
-        await authModule.database.ref(`users/${currentUserId}/tvs/${tv.id}`).update({
-          media: tv.media || null, playlist: tv.playlist || null, lastUpdate: Date.now()
-        });
-
-        if (wasMediaActiveOnTv(tv, mediaName)){ await sendStopToTv(tv); }
-      }
-
-      showToast('Mídia excluída', 'success');
-      await loadMediaList();
-    } catch (err){
-      console.error('Erro ao excluir mídia:', err);
-      showToast('Erro ao excluir mídia', 'error');
+    if (e.target.closest('.rename-media-btn')){
+      card.classList.add('renaming');
+      const input = card.querySelector('.rename-input');
+      input?.focus();
+      return;
     }
-  }
 
-  // Perfil: abrir/fechar lista de mídias
-  const mediaButton = document.getElementById('media-button');
-  if (mediaButton){
-    mediaButton.addEventListener('click', async () => {
-      const mediaListContainer = document.getElementById('media-list');
-      if (!mediaListContainer) return;
-      if (mediaListContainer.style.display === 'none' || mediaListContainer.style.display === ''){
-        await loadMediaList(); mediaListContainer.style.display = 'block';
-      } else { mediaListContainer.style.display = 'none'; }
-    });
-  }
+    if (e.target.closest('.cancel-rename')){
+      card.classList.remove('renaming');
+      return;
+    }
 
-  const mediaListContainer = document.getElementById('media-list');
-  if (mediaListContainer){
-    mediaListContainer.addEventListener('click', async (e) => {
-      const renameBtn = e.target.closest('.rename-media-btn');
-      if (renameBtn){ /* renomear opcional */ return; }
-      const deleteBtn = e.target.closest('.delete-media-btn');
-      if (deleteBtn){
-        const tvSlug = deleteBtn.dataset.tvslug;
-        const mediaName = deleteBtn.dataset.medianame;
-        const storagePath = deleteBtn.dataset.storagepath;
-        if (confirm('Tem certeza que deseja excluir esta mídia?')) await deleteMedia(tvSlug, mediaName, storagePath);
-        return;
+    if (e.target.closest('.save-rename')){
+      if (!navigator.onLine){ showToast('Sem internet', 'error'); return; }
+      const tvSlug = card.dataset.tvslug;
+      const mediaName = card.dataset.medianame;
+      const input = card.querySelector('.rename-input');
+      const newName = (input?.value || '').trim();
+      if (!newName){ showToast('Digite um nome válido', 'error'); return; }
+
+      try{
+        await authModule.database
+          .ref(`users/${currentUserId}/tv_midias/${tvSlug}/${mediaName}`)
+          .update({ displayName: newName });
+
+        const titleEl = card.querySelector('.media-title');
+        if (titleEl){ titleEl.textContent = newName; titleEl.title = newName; }
+        card.classList.remove('renaming');
+        showToast('Nome atualizado!', 'success');
+      } catch (err){
+        console.error(err);
+        showToast('Falha ao renomear', 'error');
       }
-    });
-  }
+      return;
+    }
+
+    if (e.target.closest('.delete-media-btn')){
+      const tvSlug = card.dataset.tvslug;
+      const mediaName = card.dataset.medianame;
+      const storagePath = card.dataset.storagepath;
+      if (confirm('Tem certeza que deseja excluir esta mídia?')){
+        await deleteMedia(tvSlug, mediaName, storagePath);
+        card.remove();
+        const grid = document.getElementById('media-list');
+        if (grid && grid.children.length === 0){
+          const empty = document.getElementById('media-empty');
+          if (empty) empty.style.display = 'block';
+        }
+      }
+      return;
+    }
+  });
+
+  // Filtros (aba Mídias)
+  document.addEventListener('change', async (e) => {
+    if (e.target?.id === 'filter-tv' || e.target?.id === 'filter-status'){
+      await loadMidiasView();
+    }
+  });
 
   // ===== Handlers das Abas (Arquivo / Link) =====
   const tabFile = document.getElementById('tab-file');
@@ -1222,4 +1292,84 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// ========== FUNÇÃO QUE TINHA SUMIDO (usada na aba Mídias) ==========
+async function deleteMedia(tvSlug, mediaName, storagePath){
+  if (!currentUserId) return;
+  try{
+    // remove do DB + Storage
+    await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${mediaName}`).remove();
+    if (storagePath){
+      await authModule.storage.ref().child(storagePath).delete().catch(()=>{});
+    }
+
+    // Atualiza TVs afetadas: tirar da playlist/única mídia; atualizar ativos; mandar STOP se estava em uso
+    const allTvsSnap = await authModule.database.ref(`users/${currentUserId}/tvs`).once('value');
+    const allTvs = allTvsSnap.val() || {};
+    for (const tvId in allTvs){
+      const tv = allTvs[tvId];
+      const slug = tvSlugFromName(tv.name || '');
+      if (slug !== tvSlug) continue;
+
+      let changed = false;
+      let wasActive = false;
+
+      // playlist
+      if (Array.isArray(tv.playlist) && tv.playlist.length){
+        const before = tv.playlist.length;
+        tv.playlist = tv.playlist.filter(item => {
+          const name = item?.url ? getMediaNameFromUrl(tv.name, item.url) : null;
+          if (name === mediaName) wasActive = true;
+          return name !== mediaName;
+        });
+        if (tv.playlist.length !== before) changed = true;
+      }
+
+      // mídia única
+      if (tv.media && tv.media.url){
+        const name = getMediaNameFromUrl(tv.name, tv.media.url);
+        if (name === mediaName){
+          wasActive = true;
+          tv.media = null;
+          changed = true;
+        }
+      }
+
+      // recalcula activeMediaNames
+      const active = [];
+      if (tv.playlist && tv.playlist.length){
+        for (const item of tv.playlist){
+          const name = item?.url ? getMediaNameFromUrl(tv.name, item.url) : null;
+          if (name) active.push(name);
+        }
+      } else if (tv.media && tv.media.url){
+        const n = getMediaNameFromUrl(tv.name, tv.media.url);
+        if (n) active.push(n);
+      }
+
+      await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}`).update(
+        Object.fromEntries(active.map(a => [a, { active: true, lastActive: Date.now() }]))
+      ).catch(()=>{});
+
+      // aplica mudanças na TV
+      if (changed){
+        await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
+          media: tv.media || null,
+          playlist: tv.playlist || null,
+          lastUpdate: Date.now()
+        });
+      }
+
+      // manda STOP pro player se a mídia deletada estava ativa
+      if (wasActive && tv.activationKey){
+        await authModule.database.ref('midia/' + tv.activationKey).set({ tipo:'stop', timestamp: Date.now() }).catch(()=>{});
+      }
+    }
+
+    showToast('Mídia excluída', 'success');
+  } catch (err){
+    console.error('Erro ao excluir mídia:', err);
+    showToast('Erro ao excluir mídia', 'error');
+  }
+}
 // ======================== /Painel.js ==========================

@@ -8,10 +8,19 @@
   <link rel="stylesheet" href="css/Painel.css"/>
 </head>
 <body>
-  <!-- Indicador de conexão (o JS muda a cor/estado) -->
-  <div id="connection-status">✓</div>
+  <!-- Indicador de rede (topo, discreto) -->
+  <div id="net-indicator" class="net-indicator" aria-label="Conectado" title="Conectado">
+    <!-- Wi-Fi ON -->
+    <svg class="wifi-on" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M15.384 6.115a.485.485 0 0 0-.047-.736A12.444 12.444 0 0 0 8 3C5.259 3 2.723 3.882.663 5.379a.485.485 0 0 0-.048.736.518.518 0 0 0 .668.05A11.448 11.448 0 0 1 8 4c2.507 0 4.827.802 6.716 2.164.205.148.49.13.668-.049z"></path>
+      <path d="M13.229 8.271a.482.482 0 0 0-.063-.745A9.455 9.455 0 0 0 8 6c-1.905 0-3.68.56-5.166 1.526a.48.48 0 0 0-.063.745.525.525 0 0 0 .652.065A8.46 8.46 0 0 1 8 7a8.46 8.46 0 0 1 4.576 1.336c.206.132.48.108.653-.065zm-2.183 2.183c.226-.226.185-.605-.1-.75A6.473 6.473 0 0 0 8 9c-1.06 0-2.062.254-2.946.704-.285.145-.326.524-.1.75l.015.015c.16.16.407.19.611.09A5.478 5.478 0 0 1 8 10c.868 0 1.69.201 2.42.56.203.1.45.07.61-.091l.016-.015zM9.06 12.44c.196-.196.198-.52-.04-.66A1.99 1.99 0 0 0 8 11.5a1.99 1.99 0 0 0-1.02.28c-.238.14-.236.464-.04.66l.706.706a.5.5 0 0 0 .707 0l.707-.707z"></path>
+    </svg>
+    <!-- Wi-Fi OFF -->
+    <svg class="wifi-off" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M10.706 3.294A12.545 12.545 0 0 0 8 3C5.259 3 2.723 3.882.663 5.379a.485.485 0 0 0-.048.736.518.518 0 0 0 .668.05A11.448 11.448 0 0 1 8 4c.63 0 1.249.05 1.852.148l.854-.854zM8 6c-1.905 0-3.68.56-5.166 1.526a.48.48 0 0 0-.063.745.525.525 0 0 0 .652.065 8.448 8.448 0 0 1 3.51-1.27L8 6zm2.596 1.404.785-.785c.63.24 1.227.545 1.785.907a.482.482 0 0 1 .063.745.525.525 0 0 1-.652.065 8.462 8.462 0 0 0-1.98-.932zM8 10l.933-.933a6.455 6.455 0 0 1 2.013.637c.285.145.326.524.1.75l-.015.015a.532.532 0 0 1-.611.09A5.478 5.478 0 0 0 8 10zm4.905-4.905.747-.747c.59.3 1.153.645 1.685 1.03a.485.485 0 0 1 .047.737.518.518 0 0 1-.668.05 11.493 11.493 0 0 0-1.811-1.07zM9.02 11.78c.238.14.236.464.04.66l-.707.706a.5.5 0 0 1-.707 0l-.707-.707c-.195-.195-.197-.518.04-.66A1.99 1.99 0 0 1 8 11.5c.374 0 .723.102 1.021.28zm4.355-9.905a.53.53 0 0 1 .75.75l-10.75 10.75a.53.53 0 0 1-.75-.75l10.75-10.75z"></path>
+    </svg>
+  </div>
 
-  <!-- Layout geral -->
   <div class="dashboard">
     <!-- SIDEBAR -->
     <aside class="sidebar sidebar-modern">
@@ -23,6 +32,13 @@
             <path d="M4 13h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1zm-1 7a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v4zm10 0a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v7zm1-10h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1z"/>
           </svg>
           <span>Dashboard</span>
+        </button>
+
+        <button class="pill" data-section="midias-section" title="Mídias">
+          <svg viewBox="0 0 24 2" width="24" height="24">
+            <path d="M4 4h16v14H4zM7 7l4 4 3-3 3 3v3H7z"></path>
+          </svg>
+          <span>Mídias</span>
         </button>
 
         <button class="pill" data-section="app-section" title="App">
@@ -57,13 +73,13 @@
       <button id="logout-link" class="logout-btn" title="Sair">Sair</button>
     </aside>
 
-    <!-- Conteúdo principal -->
+    <!-- MAIN -->
     <main class="main-content">
       <header class="topbar">
         <h2 id="section-title">Dashboard</h2>
       </header>
 
-      <!-- TVS -->
+      <!-- ===== DASHBOARD ===== -->
       <section id="tvs-section" class="content-section active">
         <div class="tvs-layout">
           <div class="floor-list">
@@ -80,98 +96,108 @@
         </div>
       </section>
 
-     <!-- ===== ABA APP (downloads) ===== -->
-<section id="app-section" class="content-section">
-  <h2 style="color:#00ff88; text-align:center; margin-bottom:20px;">Downloads do Aplicativo</h2>
+      <!-- ===== MÍDIAS (nova aba) ===== -->
+      <section id="midias-section" class="content-section">
+        <div class="container-neon">
+          <h2 style="margin-bottom:12px;color:#00ff88">Minhas Mídias</h2>
 
-  <div class="app-downloads">
-    <!-- Card 1 -->
-    <div class="card">
-      <div class="image_container">
-        <!-- ícone -->
-         <img src="imagens/androibaixar.svg" alt="Ícone do app" class="image">
-          <path d="M20 5H4V19L13.2923 9.70649C13.6828 9.31595 14.3159 9.31591 14.7065 9.70641L20 15.0104V5Z"/>
-        </svg>
-      </div>
-      <div class="title"><span>DSKEY TV</span></div>
-      <div class="size">
-        <span>CLIQUE PARA BAIXAR</span>
-      </div>
-      <div class="action">
-        <a href="https://seulink1.com" class="download-button" target="_blank" rel="noopener"> 
-          <span class="button-text">DOWNLOAD</span>
-          <span class="button-icon">
-            <svg viewBox="0 0 35 35" class="download-svg" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"/>
-              <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"/>
-              <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,0,1,2.5,0v8.738a.815.815,0,0,0,.814.814H31.436a.815.815,0,0,0,.814-.814V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"/>
-            </svg>
-          </span>
-        </a>
-      </div>
-    </div>
+          <!-- filtros simples (opcional) -->
+          <div class="media-filters">
+            <select id="filter-tv">
+              <option value="">Todas as TVs</option>
+            </select>
+            <select id="filter-status">
+              <option value="">Todos status</option>
+              <option value="active">Ativas</option>
+              <option value="inactive">Inativas</option>
+            </select>
+          </div>
 
-    <!-- Card 2 -->
-    <div class="card">
-      <div class="image_container">
-      <img src="imagens/winbaixar.svg" alt="Ícone do app" class="image">
-          <path d="M20 5H4V19L13.2923 9.70649C13.6828 9.31595 14.3159 9.31591 14.7065 9.70641L20 15.0104V5Z"/>
-        </svg>
-      </div>
-      <div class="title"><span>DSKEY PC</span></div>
-      <div class="size">
-        <span>CLIQUE PARA BAIXAR</span>
-      </div>
-      <div class="action">
-        <a href="https://seulink2.com" class="download-button" target="_blank" rel="noopener">
-          <span class="button-text">DOWNLOAD</span>
-          <span class="button-icon">
-            <svg viewBox="0 0 35 35" class="download-svg" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"/>
-              <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"/>
-              <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,0,1,2.5,0v8.738a.815.815,0,0,0,.814.814H31.436a.815.815,0,0,0,.814-.814V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"/>
-            </svg>
-          </span>
-        </a>
-      </div>
-    </div>
+          <!-- galeria/cards -->
+          <div id="media-list" class="media-gallery"></div>
+          <div id="media-empty" class="no-items" style="display:none;">Nenhuma mídia enviada.</div>
+        </div>
+      </section>
 
-    <!-- Card 3 -->
-    <div class="card">
-      <div class="image_container">
-        <img src="imagens/linux.png" alt="Ícone do app" class="image">
-          <path d="M20 5H4V19L13.2923 9.70649C13.6828 9.31595 14.3159 9.31591 14.7065 9.70641L20 15.0104V5Z"/>
-        </svg>
-      </div>
-      <div class="title"><span>LINUX</span></div>
-      <div class="size"><span>CLIQUE PARA BAIXAR</span></div>
-      <div class="action">
-        <a href="https://seulink3.com" class="download-button" target="_blank" rel="noopener">
-          <span class="button-text">DOWNLOAD</span>
-          <span class="button-icon">
-            <svg viewBox="0 0 35 35" class="download-svg" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"/>
-              <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"/>
-              <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,0,1,2.5,0v8.738a.815.815,0,0,0,.814.814H31.436a.815.815,0,0,0,.814-.814V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"/>
-            </svg>
-          </span>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
+      <!-- ===== APP (downloads) ===== -->
+      <section id="app-section" class="content-section">
+        <h2 style="color:#00ff88; text-align:center; margin-bottom:20px;">Downloads do Aplicativo</h2>
 
-      <!-- PERFIL -->
+        <div class="app-downloads">
+          <!-- Card 1 - Android/TV -->
+          <div class="card">
+            <div class="image_container">
+              <img src="imagens/androibaixar.svg" alt="Android / TV" class="image">
+            </div>
+            <div class="title"><span>DSKEY TV</span></div>
+            <div class="size"><span>CLIQUE PARA BAIXAR</span></div>
+            <div class="action">
+              <a href="https://seulink1.com" class="download-button" target="_blank" rel="noopener">
+                <span class="button-text">DOWNLOAD</span>
+                <span class="button-icon">
+                  <svg viewBox="0 0 35 35" class="download-svg" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"/>
+                    <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"/>
+                    <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,0,1,2.5,0v8.738a.815.815,0,0,0,.814.814H31.436a.815.815,0,0,0,.814-.814V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"/>
+                  </svg>
+                </span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 2 - Windows -->
+          <div class="card">
+            <div class="image_container">
+              <img src="imagens/winbaixar.svg" alt="Windows" class="image">
+            </div>
+            <div class="title"><span>DSKEY PC</span></div>
+            <div class="size"><span>CLIQUE PARA BAIXAR</span></div>
+            <div class="action">
+              <a href="https://seulink2.com" class="download-button" target="_blank" rel="noopener">
+                <span class="button-text">DOWNLOAD</span>
+                <span class="button-icon">
+                  <svg viewBox="0 0 35 35" class="download-svg" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"/>
+                    <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"/>
+                    <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"/>
+                  </svg>
+                </span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 3 - Linux -->
+          <div class="card">
+            <div class="image_container">
+              <img src="imagens/linux.png" alt="Linux" class="image">
+            </div>
+            <div class="title"><span>LINUX</span></div>
+            <div class="size"><span>CLIQUE PARA BAIXAR</span></div>
+            <div class="action">
+              <a href="https://seulink3.com" class="download-button" target="_blank" rel="noopener">
+                <span class="button-text">DOWNLOAD</span>
+                <span class="button-icon">
+                  <svg viewBox="0 0 35 35" class="download-svg" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"/>
+                    <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"/>
+                    <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"/>
+                  </svg>
+                </span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PERFIL (sem mídias) ===== -->
       <section id="perfil-section" class="content-section">
         <div class="profile-content container-neon">
           <h2>Meu Perfil</h2>
           <p><strong>Email:</strong> <span id="user-email"></span></p>
-          <button id="media-button" class="btn">Mídia</button>
-          <div id="media-list" class="media-list container-neon" style="display:none; margin-top:15px;"></div>
         </div>
       </section>
 
-      <!-- SUPORTE -->
+      <!-- ===== SUPORTE ===== -->
       <section id="support-section" class="content-section">
         <div class="support-content container-neon">
           <h2>Suporte Técnico</h2>
@@ -196,7 +222,7 @@
     </main>
   </div>
 
-  <!-- Modais -->
+  <!-- Modais (mantidos) -->
   <div class="modal" id="category-modal">
     <div class="modal-content container-neon">
       <span class="close-btn">×</span>
@@ -252,7 +278,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE ENVIO: Arquivo/Link + Playlist -->
+  <!-- MODAL DE ENVIO: Arquivo/Link + Playlist (mantido) -->
   <div class="modal" id="upload-media-modal">
     <div class="modal-content container-neon">
       <span class="close-btn">×</span>
@@ -336,38 +362,7 @@
     </div>
   </div>
 
-  <!-- MODAL: INFORMAÇÕES / ATIVAÇÃO -->
-  <div class="modal" id="activation-info-modal">
-    <div class="modal-content container-neon">
-      <span class="close-btn">×</span>
-      <h2>Informações de Ativação</h2>
-
-      <div class="form-group">
-        <label>Chave de Ativação:</label>
-        <div class="key-row">
-          <input type="text" id="activation-key-display" class="key-input" readonly />
-          <button class="btn-secondary" id="btn-copy-key" title="Copiar">Copiar</button>
-          <button class="btn" id="btn-edit-key" title="Editar">Editar</button>
-        </div>
-        <div class="key-row" id="key-edit-row" style="display:none; gap:8px;">
-          <input type="text" id="activation-key-input" class="key-input" placeholder="Cole a nova chave aqui" />
-          <button class="btn" id="btn-save-key">Salvar</button>
-          <button class="btn-secondary" id="btn-cancel-key">Cancelar</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Nome do Dispositivo:</label>
-        <div class="device-info-value" id="activation-device-info"></div>
-      </div>
-      <div class="form-group">
-        <label>Última Ativação:</label>
-        <div class="device-info-value" id="activation-last-info"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FAB de ações -->
+  <!-- FAB -->
   <div class="fab-container">
     <button class="fab-main" aria-label="Ações">
       <span style="font-size:33px;line-height:1">+</span>
