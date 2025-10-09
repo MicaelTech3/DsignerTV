@@ -1027,66 +1027,125 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Informações da TV (modal fixo com copy/editar/salvar)
-  document.addEventListener('click', e => {
-    const infoBtn = e.target.closest('.info-tv-btn');
-    if (!infoBtn) return;
-    const tvId = infoBtn.dataset.id;
-    const tv = tvs.find(t => t.id === tvId);
-    if (!tv){ showToast('TV não encontrada', 'error'); return; }
-    const modal = document.getElementById('activation-info-modal');
-    if (!modal) return;
+ // Informações da TV (modal fixo com copy/editar/salvar)
+// Informações da TV (modal fixo com copy/editar/salvar)
+document.addEventListener('click', e => {
+  const infoBtn = e.target.closest('.info-tv-btn');
+  if (!infoBtn) return;
 
-    const keyDisplay = document.getElementById('activation-key-display');
-    const deviceInfo = document.getElementById('activation-device-info');
-    thelast = document.getElementById('activation-last-info'); // eslint-disable-line no-undef
-    const lastInfo = document.getElementById('activation-last-info');
-    const keyInput = document.getElementById('activation-key-input');
-    const keyEditRow = document.getElementById('key-edit-row');
+  const tvId = infoBtn.dataset.id;
+  const tv = tvs.find(t => t.id === tvId);
+  if (!tv){ showToast('TV não encontrada', 'error'); return; }
 
-    if (keyDisplay) keyDisplay.value = tv.activationKey || '';
-    if (deviceInfo) deviceInfo.textContent = tv.deviceName || 'Desconhecido';
-    if (lastInfo) lastInfo.textContent = tv.lastActivation ? new Date(tv.lastActivation).toLocaleString() : 'Nunca';
-    if (keyInput) keyInput.value = tv.activationKey || '';
-    if (keyEditRow) keyEditRow.style.display = 'none';
+  // garante que o modal exista
+  const modal      = ensureActivationModal();
+  const keyDisplay = document.getElementById('activation-key-display');
+  const deviceInfo = document.getElementById('activation-device-info');
+  const lastInfo   = document.getElementById('activation-last-info');
+  const keyInput   = document.getElementById('activation-key-input');
+  const keyEditRow = document.getElementById('key-edit-row');
 
-    const btnCopy = document.getElementById('btn-copy-key');
-    const btnEdit = document.getElementById('btn-edit-key');
-    const btnSave = document.getElementById('btn-save-key');
-    const btnCancel = document.getElementById('btn-cancel-key');
+  // preenche
+  if (keyDisplay) keyDisplay.value = tv.activationKey || '';
+  if (deviceInfo) deviceInfo.textContent = tv.deviceName || 'Desconhecido';
+  if (lastInfo)   lastInfo.textContent   = tv.lastActivation ? new Date(tv.lastActivation).toLocaleString() : 'Nunca';
+  if (keyInput)   keyInput.value         = tv.activationKey || '';
+  if (keyEditRow) keyEditRow.style.display = 'none';
 
-    btnCopy.onclick = async () => {
-      try{ await navigator.clipboard.writeText(keyDisplay.value || ''); showToast('Chave copiada!', 'success'); }
-      catch { showToast('Falha ao copiar', 'error'); }
-    };
-    btnEdit.onclick = () => { if (keyEditRow) keyEditRow.style.display = 'flex'; if (keyInput) keyInput.focus(); };
-    btnCancel.onclick = () => { if (keyEditRow) keyEditRow.style.display = 'none'; if (keyInput) keyInput.value = tv.activationKey || ''; };
-    btnSave.onclick = async () => {
-      if (!isOnline()){ showToast('Sem internet', 'error'); return; }
-      const newKey = (keyInput.value || '').trim();
-      if (!newKey){ showToast('Digite ou cole uma chave válida', 'error'); return; }
-      if (!confirm('Tem certeza que deseja atualizar a chave de ativação?')) return;
+  // ações
+  const btnCopy   = document.getElementById('btn-copy-key');
+  const btnEdit   = document.getElementById('btn-edit-key');
+  const btnSave   = document.getElementById('btn-save-key');
+  const btnCancel = document.getElementById('btn-cancel-key');
 
-      tv.activationKey = newKey;
-      tv.lastActivation = Date.now();
-      tv.deviceName = tv.deviceName || `Dispositivo ${tv.id}`;
-      try{
-        await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
-          activationKey: newKey, lastActivation: tv.lastActivation, deviceName: tv.deviceName
-        });
-        await authModule.database.ref('midia/' + newKey).set({ tipo:'activation', tvData: tv, timestamp: Date.now() });
-        if (keyDisplay) keyDisplay.value = newKey;
-        if (deviceInfo) deviceInfo.textContent = tv.deviceName;
-        if (lastInfo) lastInfo.textContent = new Date(tv.lastActivation).toLocaleString();
-        if (keyEditRow) keyEditRow.style.display = 'none';
-        showToast('Chave atualizada!', 'success');
-      } catch (error){
-        console.error("Erro ao atualizar chave:", error);
-        showToast('Erro ao atualizar chave', 'error');
-      }
-    };
+  if (btnCopy) btnCopy.onclick = async () => {
+    try { await navigator.clipboard.writeText(keyDisplay?.value || ''); showToast('Chave copiada!', 'success'); }
+    catch { showToast('Falha ao copiar', 'error'); }
+  };
+  if (btnEdit) btnEdit.onclick = () => { if (keyEditRow) keyEditRow.style.display = 'flex'; keyInput?.focus(); };
+  if (btnCancel) btnCancel.onclick = () => { if (keyEditRow) keyEditRow.style.display = 'none'; if (keyInput) keyInput.value = tv.activationKey || ''; };
 
-    modal.style.display = 'block';
+  if (btnSave) btnSave.onclick = async () => {
+    if (!isOnline()){ showToast('Sem internet', 'error'); return; }
+    const newKey = (keyInput?.value || '').trim();
+    if (!newKey){ showToast('Digite ou cole uma chave válida', 'error'); return; }
+    if (!confirm('Tem certeza que deseja atualizar a chave de ativação?')) return;
+
+    tv.activationKey  = newKey;
+    tv.lastActivation = Date.now();
+    tv.deviceName     = tv.deviceName || `Dispositivo ${tv.id}`;
+
+    try {
+      await authModule.database.ref(`users/${currentUserId}/tvs/${tvId}`).update({
+        activationKey: newKey, lastActivation: tv.lastActivation, deviceName: tv.deviceName
+      });
+      await authModule.database.ref('midia/' + newKey).set({ tipo:'activation', tvData: tv, timestamp: Date.now() });
+      if (keyDisplay) keyDisplay.value = newKey;
+      if (deviceInfo) deviceInfo.textContent = tv.deviceName;
+      if (lastInfo)   lastInfo.textContent   = new Date(tv.lastActivation).toLocaleString();
+      if (keyEditRow) keyEditRow.style.display = 'none';
+      showToast('Chave atualizada!', 'success');
+    } catch (error){
+      console.error(error);
+      showToast('Erro ao atualizar chave', 'error');
+    }
+  };
+
+  modal.style.display = 'flex';
+});
+
+// === cria o modal de informações se não existir ===
+function ensureActivationModal(){
+  let modal = document.getElementById('activation-info-modal');
+  if (modal) return modal;
+
+  modal = document.createElement('div');
+  modal.id = 'activation-info-modal';
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content container-neon">
+      <span class="close-btn" aria-label="Fechar">×</span>
+      <h2>Informações de Ativação</h2>
+
+      <div class="form-group">
+        <label>Chave de Ativação:</label>
+        <div class="key-row">
+          <input type="text" id="activation-key-display" class="key-input" readonly />
+          <button class="btn-secondary" id="btn-copy-key"  title="Copiar">Copiar</button>
+          <button class="btn"           id="btn-edit-key"  title="Editar">Editar</button>
+        </div>
+        <div class="key-row" id="key-edit-row" style="display:none; gap:8px;">
+          <input type="text" id="activation-key-input" class="key-input" placeholder="Cole a nova chave aqui"/>
+          <button class="btn"           id="btn-save-key">Salvar</button>
+          <button class="btn-secondary" id="btn-cancel-key">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Nome do Dispositivo:</label>
+        <div class="device-info-value" id="activation-device-info"></div>
+      </div>
+      <div class="form-group">
+        <label>Última Ativação:</label>
+        <div class="device-info-value" id="activation-last-info"></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // fechar modal (X ou clique fora)
+  modal.addEventListener('click', (ev)=>{
+    if (ev.target.id === 'activation-info-modal') modal.style.display = 'none';
   });
+  modal.querySelector('.close-btn').addEventListener('click', ()=>{
+    modal.style.display = 'none';
+  });
+
+  return modal;
+}
+
+
+
 
   // Fechar modais
   const closeModal = (sel) => {

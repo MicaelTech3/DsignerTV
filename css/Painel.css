@@ -18,7 +18,7 @@ body{background-color:#1a1f3b;color:#ffffff;min-height:100vh}
   border-radius:14px;display:flex;align-items:center;gap:12px;padding:0 14px;transition:.25s ease;
   box-shadow:0 0 0 rgba(0,212,255,0)
 }
-.pill image {width:24px;height:24px;object-fit:contain}
+.pill svg{fill:currentColor}
 .pill span{font-size:.95rem;letter-spacing:.2px}
 .pill:hover{transform:translateY(-1px);color:#00d4ff;box-shadow:0 8px 20px rgba(0,212,255,.15)}
 .pill.active{color:#00b7ff;border-color:#00b7ff;box-shadow:0 10px 24px rgba(0,212,255,.22), inset 0 0 18px rgba(0,212,255,.08)}
@@ -1104,4 +1104,38 @@ body.offline .add-tv-btn{pointer-events:none;opacity:.6;filter:grayscale(.2)}
 
 
 
+.modal { z-index: 9999; }
+
+/* Modal base */
+.modal{
+  position: fixed;
+  inset: 0;
+  display: none;           /* abre com display:flex no JS */
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.55);
+  z-index: 9999;           /* acima de tudo */
+}
+.modal .modal-content{
+  width: min(560px, 92vw);
+  background: #0f172a;     /* combine com seu tema */
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.35);
+  position: relative;
+}
+.modal .close-btn{
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  font-size: 22px;
+  cursor: pointer;
+  color: #9ca3af;
+}
+.modal .close-btn:hover{ color:#fff; }
+
+.key-row{ display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap; }
+.key-input{ flex:1; min-width:180px; padding:8px 10px; border-radius:8px; border:1px solid #334155; background:#0b1324; color:#e5e7eb; }
+.device-info-value{ padding:8px 10px; background:#0b1324; border:1px solid #334155; border-radius:8px; }
 
