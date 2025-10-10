@@ -130,7 +130,7 @@ body{
 .activation-badge{position:absolute;top:6px;left:6px;background:var(--success);color:#0b1426;font-size:10px;padding:2px 6px;border-radius:6px}
 .tv-actions{position:absolute;bottom:8px;right:8px;display:flex;gap:6px}
 .tv-action-btn{
-  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:50%;
+  background:rgba(255, 255, 255, 0.685);border:1px solid rgba(255,255,255,.12);border-radius:50%;
   width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;
 }
 .tv-action-btn:hover{background:#22314f;border-color:var(--accent)}
