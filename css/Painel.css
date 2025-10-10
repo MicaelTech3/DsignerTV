@@ -455,4 +455,82 @@ body{
   margin-top: 12px;
 }
 
+
+/* ===== App: layout com “sitezinho” lateral ===== */
+.app-wrapper{
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr;  /* downloads | guia */
+  gap: 18px;
+  align-items: start;
+}
+
+/* Painel guia */
+.app-guide{
+  position: sticky;
+  top: 12px;                 /* fica visível ao rolar */
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+
+.guide-head h3{ margin: 0 0 6px; color: var(--ink) }
+.guide-sub{ color: var(--ink-dim); margin: 0 0 10px; }
+.guide-download{ display:inline-block; margin-bottom: 12px; }
+
+.guide-hero{
+  margin: 8px 0 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.guide-hero img{ width: 100%; display: block; }
+.guide-hero figcaption{ font-size: 12px; color: var(--ink-dim); padding: 6px 10px }
+
+.steps{
+  counter-reset: step;
+  display: grid; gap: 8px;
+  margin: 10px 0 12px; padding-left: 18px;
+}
+.steps li{
+  color: var(--ink);
+}
+.steps li::marker{ color: var(--accent) }
+
+.guide-screens{
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 12px;
+}
+.guide-screens img{
+  width: 100%; aspect-ratio: 16/10; object-fit: cover;
+  background: #1a253d; border: 1px solid var(--line); border-radius: var(--radius-sm);
+}
+
+/* FAQs / code */
+.faq{ margin: 6px 0; }
+.faq > summary{
+  cursor: pointer; padding: 8px 10px; border-radius: var(--radius-sm);
+  background: var(--panel); border: 1px solid var(--line); color: var(--ink);
+}
+.faq[open] > summary{ border-color: var(--accent) }
+
+.code{
+  margin: 8px 0 0; padding: 10px;
+  background: var(--bg-soft);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.4;
+}
+
+.note{ color: var(--ink-dim); font-size: 13px; margin-top: 8px }
+
+/* Responsivo */
+@media (max-width: 980px){
+  .app-wrapper{ grid-template-columns: 1fr; }
+  .app-guide{ position: static; }
+}
+
 /* ====================== /css/Painel.css (refatorado) ====================== */

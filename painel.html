@@ -119,74 +119,110 @@
       </section>
 
       <!-- ===== APP (downloads) ===== -->
-      <section id="app-section" class="content-section" aria-labelledby="title-downloads">
-        <h2 id="title-downloads" class="section-title--accent" style="text-align:center; margin-bottom:20px;">Downloads do Aplicativo</h2>
+    <section id="app-section" class="content-section">
+      <h2 style="color:var(--accent); text-align:center; margin-bottom:16px;">Downloads do Aplicativo</h2>
 
+      <div class="app-wrapper">
+        <!-- Coluna esquerda: cards de download (mantém seus cards atuais) -->
         <div class="app-downloads">
-          <!-- Card 1 - Android/TV -->
+          <!-- APK -->
           <div class="card">
             <div class="image_container">
-              <img src="imagens/androibaixar.svg" alt="Android / TV" class="image" loading="lazy" decoding="async">
+              <img src="imagens/androibaixar.svg" alt="Android / TV" a class="image" href="apps/dsignerTV.apk">
+
             </div>
             <div class="title"><span>APK</span></div>
             <div class="size"><span>CLIQUE PARA BAIXAR</span></div>
             <div class="action">
               <a href="https://seulink1.com" class="download-button" target="_blank" rel="noopener">
                 <span class="button-text">DOWNLOAD</span>
-                <span class="button-icon" aria-hidden="true">
-                  <svg viewBox="0 0 35 35" class="download-svg" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"/>
-                    <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"/>
-                    <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,0,1,2.5,0v8.738a.815.815,0,0,0,.814.814H31.436a.815.815,0,0,0,.814-.814V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"/>
-                  </svg>
-                </span>
               </a>
             </div>
           </div>
 
-          <!-- Card 2 - Windows -->
+          <!-- WINDOWS -->
           <div class="card">
             <div class="image_container">
-              <img src="imagens/winbaixar.svg" alt="Windows" class="image" loading="lazy" decoding="async">
+              <img src="imagens/winbaixar.svg" alt="Windows" class="image">
             </div>
             <div class="title"><span>WINDOWS</span></div>
             <div class="size"><span>CLIQUE PARA BAIXAR</span></div>
             <div class="action">
               <a href="https://seulink2.com" class="download-button" target="_blank" rel="noopener">
                 <span class="button-text">DOWNLOAD</span>
-                <span class="button-icon" aria-hidden="true">
-                  <svg viewBox="0 0 35 35" class="download-svg" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"/>
-                    <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"/>
-                    <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"/>
-                  </svg>
-                </span>
               </a>
             </div>
           </div>
 
-          <!-- Card 3 - Linux -->
+          <!-- LINUX -->
           <div class="card">
             <div class="image_container">
-              <img src="imagens/linux.png" alt="Linux" class="image" loading="lazy" decoding="async">
+              <img src="imagens/linux.png" alt="Linux" class="image">
             </div>
             <div class="title"><span>LINUX</span></div>
             <div class="size"><span>CLIQUE PARA BAIXAR</span></div>
             <div class="action">
               <a href="https://seulink3.com" class="download-button" target="_blank" rel="noopener">
                 <span class="button-text">DOWNLOAD</span>
-                <span class="button-icon" aria-hidden="true">
-                  <svg viewBox="0 0 35 35" class="download-svg" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"/>
-                    <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"/>
-                    <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"/>
-                  </svg>
-                </span>
               </a>
             </div>
           </div>
         </div>
-      </section>
+
+        <!-- Coluna direita: guia/“sitezinho” -->
+        <aside class="app-guide container-neon">
+          <header class="guide-head">
+            <h3>Instalar o D`Signer TV</h3>
+            <p class="guide-sub">Passo a passo rápido + comandos ADB.</p>
+            <a class="btn btn-primary guide-download"
+              href="software.py"
+              target="_blank" rel="noopener">
+              Baixar Software para PC
+            </a>
+          </header>
+
+          <figure class="guide-hero">
+            <img src="software/Captura de tela 2025-10-10 085725.png" alt="Ilustração instalação" />
+            <figcaption>imagem real do software.</figcaption>
+          </figure>
+
+          <ol class="steps">
+            <li><strong>Baixe</strong> o instalador para PC e o <strong>APK</strong> acima.</li>
+            <li>Na TV Box, ative <em>Opções do desenvolvedor</em> → <em>Depuração USB/ADB</em>.</li>
+            <li>Conecte a TV Box ao PC por USB (ou ADB over Wi-Fi).</li>
+            <li>Abra o software <strong>DsignerTV</strong> no PC e clique <em>“INSTALAR ADB”</em> (se necessário).</li>
+            <li>Use <em>“ATIVAR Dsigner”</em> para instalar o APK e definir como launcher.</li>
+          </ol>
+
+          <div class="guide-screens">
+            <img src="imagens/placeholder-1.png" alt="Tela 1" />
+            <img src="imagens/placeholder-2.png" alt="Tela 2" />
+          </div>
+
+          <details class="faq">
+            <summary>Instalar via ADB (manual, opcional)</summary>
+            <pre class="code">
+    adb devices
+    adb install -t -r com.tv.play.apk
+    adb shell cmd package set-home-activity com.tv.play/.MainActivity
+            </pre>
+          </details>
+
+          <details class="faq">
+            <summary>Restaurar launcher original</summary>
+            <pre class="code">
+    adb shell pm enable com.google.android.tvlauncher
+    adb shell pm disable-user --user 0 com.tv.play
+            </pre>
+          </details>
+
+          <p class="note">
+            Dúvidas? Use a aba <strong>Suporte</strong> para falar com a gente.
+          </p>
+        </aside>
+      </div>
+    </section>
+
 
       <!-- ===== PERFIL ===== -->
       <section id="perfil-section" class="content-section" aria-labelledby="title-perfil">
