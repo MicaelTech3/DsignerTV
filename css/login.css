@@ -3,12 +3,12 @@
 /* =============== TEMA =============== */
 /* Verde (seu atual) */
 :root{
-  --bg:#201b2c;
+  --bg:#0f1524;
   --card:#2f2841;
   --ink:#ffffff;
   --muted:#b0b0b0;
-  --brand:#00ff88;
-  --brand-strong:#00c66b;
+  --brand:#6aa3fb;
+  --brand-strong:#6aa3fb;
   --field:#3b3354;
   --stroke: #4a4261;
   --glow: rgba(0,255,136,.32);
