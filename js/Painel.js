@@ -212,19 +212,19 @@ const updateCategoryList = () => {
            data-id="${category.id}" role="button" tabindex="0">
         <span>${category.name}</span>
         <div class="floor-actions">
-          <button class="action-btn edit-floor-btn" data-id="${category.id}" title="Editar" aria-label="Editar andar">
+          <button class="action-btn edit-floor-btn" data-id="${category.id}" title="Editar" aria-label="Editar grupo">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 20h9"></path>
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
           </button>
-          <button class="action-btn delete-btn delete-floor-btn" data-id="${category.id}" title="Excluir" aria-label="Excluir andar">
+          <button class="action-btn delete-btn delete-floor-btn" data-id="${category.id}" title="Excluir" aria-label="Excluir grupo">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="3 6 5 6 21 6"></polyline>
               <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
               <path d="M10 11v6"></path>
               <path d="M14 11v6"></path>
-              <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+              <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"></path>
             </svg>
           </button>
         </div>
@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  // Seleção de ANDAR (filtra TVs) — clique e teclado (Enter/Espaço)
+  // Seleção de GRUPO (filtra TVs) — clique e teclado (Enter/Espaço)
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.floor-btn');
     if (!btn) return;
@@ -779,7 +779,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fab.classList.remove('open'); });
   })();
 
-  // Abrir modais Andar/TV
+  // Abrir modais Grupo/TV
   const categoryModal = document.getElementById('category-modal');
   document.querySelectorAll('.select-categories-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -802,18 +802,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const addTvModalClose = document.querySelector('#add-tv-modal .close-btn');
   if (addTvModalClose){ addTvModalClose.addEventListener('click', () => { if (addTvModal) addTvModal.style.display = 'none'; }); }
 
-  // Adicionar Andar
+  // Adicionar Grupo
   const addCategoryBtn = document.getElementById('add-category-btn');
   if (addCategoryBtn){
     addCategoryBtn.addEventListener('click', async () => {
       if (!isOnline()){ showToast('Sem internet', 'error'); return; }
       const nameInput = document.getElementById('new-category-name');
       const name = nameInput ? nameInput.value.trim() : '';
-      if (!name){ showToast('Digite um nome para o andar', 'error'); return; }
+      if (!name){ showToast('Digite um nome para o grupo', 'error'); return; }
       const newId = (categories.length ? Math.max(...categories.map(c => parseInt(c.id))) + 1 : 1).toString();
       const newCategory = { id: newId, name, status: 'active' };
       await authModule.database.ref(`users/${currentUserId}/categories/${newId}`).set(newCategory);
-      showToast('Andar adicionado com sucesso', 'success');
+      showToast('Grupo adicionado com sucesso', 'success');
       nameInput.value = '';
       if (categoryModal) categoryModal.style.display = 'none';
       await syncWithFirebase();
@@ -849,7 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Editar Andar (abrir modal)
+  // Editar Grupo (abrir modal)
   document.addEventListener('click', e => {
     const editBtn = e.target.closest('.edit-floor-btn');
     if (editBtn){
@@ -867,7 +867,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const editFloorModalClose = document.querySelector('#edit-floor-modal .close-btn');
   if (editFloorModalClose){ editFloorModalClose.addEventListener('click', () => { const modal = document.getElementById('edit-floor-modal'); if (modal) modal.style.display = 'none'; }); }
 
-  // Salvar Andar
+  // Salvar Grupo
   const saveFloorBtn = document.getElementById('save-floor-btn');
   if (saveFloorBtn){
     saveFloorBtn.addEventListener('click', async () => {
@@ -877,25 +877,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const newName = nameInput ? nameInput.value.trim() : '';
       if (!newName){ showToast('Digite um nome válido', 'error'); return; }
       await authModule.database.ref(`users/${currentUserId}/categories/${catId}`).update({ name: newName });
-      showToast('Andar atualizado', 'success');
+      showToast('Grupo atualizado', 'success');
       const modal = document.getElementById('edit-floor-modal'); if (modal) modal.style.display = 'none';
       await syncWithFirebase();
     });
   }
 
-  // Excluir Andar
+  // Excluir Grupo
   document.addEventListener('click', async e => {
     const deleteBtn = e.target.closest('.delete-floor-btn');
     if (deleteBtn){
       if (!isOnline()){ showToast('Sem internet', 'error'); return; }
-      if (!confirm('Tem certeza que deseja excluir este andar? Todas as TVs serão removidas.')) return;
+      if (!confirm('Tem certeza que deseja excluir este grupo? Todas as TVs serão removidas.')) return;
       const catId = deleteBtn.dataset.id;
       await authModule.database.ref(`users/${currentUserId}/categories/${catId}`).remove();
       const tvsToDelete = tvs.filter(tv => tv.categoryId === catId);
       for (const tv of tvsToDelete){
         await authModule.database.ref(`users/${currentUserId}/tvs/${tv.id}`).remove();
       }
-      showToast('Andar e TVs removidos', 'success');
+      showToast('Grupo e TVs removidos', 'success');
       await syncWithFirebase();
     }
   });
@@ -1028,7 +1028,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Informações da TV (modal fixo com copy/editar/salvar)
  // Informações da TV (modal fixo com copy/editar/salvar)
-// Informações da TV (modal fixo com copy/editar/salvar)
 document.addEventListener('click', e => {
   const infoBtn = e.target.closest('.info-tv-btn');
   if (!infoBtn) return;
@@ -1351,6 +1350,7 @@ function ensureActivationModal(){
     });
   }
 });
+
 
 // ========== FUNÇÃO QUE TINHA SUMIDO (usada na aba Mídias) ==========
 async function deleteMedia(tvSlug, mediaName, storagePath){
