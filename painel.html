@@ -323,6 +323,9 @@
       <div class="upload-tabs" role="tablist" aria-label="Modo de envio">
         <button class="tab-btn active" id="tab-file" data-mode="file" type="button" role="tab" aria-selected="true" aria-controls="file-mode">Arquivo</button>
         <button class="tab-btn" id="tab-link" data-mode="link" type="button" role="tab" aria-selected="false" aria-controls="link-mode">Link URL</button>
+
+        <!-- Nova aba iCloud -->
+        <button class="tab-btn" id="tab-icloud" data-mode="icloud" type="button" role="tab" aria-selected="false" aria-controls="icloud-mode">iCloud</button>
       </div>
 
       <!-- Toggle Playlist -->
@@ -390,6 +393,20 @@
             <label><input type="checkbox" id="link-loop"/> Repetir vídeo (loop)</label>
           </div>
         </div>
+      </div>
+
+      <!-- Modo iCloud (lista medias existentes no Firebase) -->
+      <div id="icloud-mode" class="hidden" style="padding-top:8px;">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+          <input id="icloud-search" type="search" placeholder="Pesquisar por nome ou TV..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #253545;background:transparent;color:inherit;">
+          <button id="icloud-refresh" class="btn" type="button">Atualizar</button>
+        </div>
+
+        <div id="icloud-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">
+          <!-- cards gerados dinamicamente -->
+        </div>
+
+        <div id="icloud-empty" class="no-items" style="display:none;margin-top:8px;">Nenhuma mídia encontrada no iCloud.</div>
       </div>
 
       <button id="upload-media-btn" class="btn" type="button" onclick="uploadMidia()">Enviar</button>

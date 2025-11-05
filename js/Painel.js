@@ -262,7 +262,7 @@ const updateTvGrid = () => {
       ${tv.activationKey ? '<div class="activation-badge">Ativada</div>' : ''}
       <div class="tv-actions">
         <button class="tv-action-btn toggle-tv-btn" data-id="${tv.id}" title="${tv.status === 'off' ? 'Ligar' : 'Desligar'}">
-          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEzIDNoLTJ2MTBoMlYzem03IDhoLTRjLTEuMS0yLjQtMi41LTQuOC00LTYgMS4zLTEuMyAyLjYtMi4yIDQtMyAyLjIgMS4zIDMuNSAzIDQgNXoiLz48L3N2Zz4=" width="14" height="14" alt="">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEzIDNoLTJ2MTBoMlYzem07NyA4aC00Yy0xLjEtMi40LTIuNS00LjgtNC02IDEuMy0xLjMgMi42LTIuMiA0LTMgMi4yIDEuMyAzLjUgMyA0IDV6Ii8+PC9zdmc+" width="14" height="14" alt="">
         </button>
         <button class="tv-action-btn view-tv-btn" data-id="${tv.id}" title="Ver Mídia">
           <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDQuNUM2LjUgNC41IDIgNy41IDIgMTJzNC41IDcuNSAxMCA3LjVjNS41IDAgMTAtMyAxMC03LjUtNC41LTcuNS0xMC03LjUtMTAuNXptMCAxMi41Yy0zLjggMC03LjItMi42LTguOS01LjUgMS43LTIuOSA1LjEtNS41IDguOS01LjVzNy4yIDIuNiA4LjkgNS41LTEuNyAyLjktNS4xIDUuNS04LjkuNXptMC0xMC41YzIuNSAwIDQuNSAyIDQuNSA0LjVzLTIgNC41LTQuNSA0LjUtNC41LTItNC41LTQuNSAyLTQuNSA0LjUtNC41eiIvPjwvc3ZnPg==" width="14" height="14" alt="">
@@ -271,7 +271,7 @@ const updateTvGrid = () => {
           <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTkgMTZoNnYtNmg0bC03LTctNyA3aDR6bS00IDJoMTR2Mkg1eiIvPjwvc3ZnPg==" width="14" height="14" alt="">
         </button>
         <button class="tv-action-btn info-tv-btn" data-id="${tv.id}" title="Informações">
-          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTExIDE3aDJ2LTZoLTJ2NnptMS0xNUM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptMCAxOGMtNC40MSAwLTgtMy41OS04LThzMy41OS04IDgtOCA4IDMuNTkgOCA4LTMuNTkgOC04IDh6bTAtMTRjLTIuMjEgMC00IDEuNzktNCA0aDJjMC0xLjEuOS0yIDItMnMyIC45IDIgMmMwIDItMyAxLjc1LTMgNWgyYzAtMi4yNSAzLTIuNSAzLTUgMC0yLjIxLTEuNzktNC00LTR6Ii8+PC9zdmc+" width="14" height="14" alt="">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDE3aDJ2LTZoLTJ2NnptMS0xNUM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptMCAxOGMtNC40MSAwLTgtMy41OS04LThzMy41OS04IDgtOCA4IDMuNTkgOCA4LTMuNTkgOC04IDh6bTAtMTRjLTIuMjEgMC00IDEuNzktNCA0aDJjMC0xLjEuOS0yIDItMnMyIC45IDIgMmMwIDItMyAxLjc1LTMgNWgyYzAtMi4yNSAzLTIuNSAzLTUgMC0yLjIxLTEuNzktNC00LTR6Ii8+PC9zdmc+" width="14" height="14" alt="">
         </button>
         <button class="tv-action-btn delete-tv-btn" data-id="${tv.id}" title="Excluir">
           <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTYgMTlhMiAyIDAgMCAwIDIgMmg4YTIgMiAwIDAgMCAyLTJWN0g2djEyTTE5IDRIMTUuNWwtMS0xaC05bC0xIDFINHYyaDE2VjR6Ii8+PC9zdmc+" width="14" height="14" alt="">
@@ -1432,3 +1432,251 @@ async function deleteMedia(tvSlug, mediaName, storagePath){
   }
 }
 // ======================== /Painel.js ==========================
+
+
+// ****************** iCloud: reutilizar mídias já enviadas ******************
+// (adicionado conforme solicitado: lista de mídias já enviadas e atribuição sem novo upload)
+
+// Registra listeners da aba iCloud
+function initICloudTabHandlers(){
+  const tabIcloud = document.getElementById('tab-icloud');
+  const icloudRefresh = document.getElementById('icloud-refresh');
+  const icloudSearch = document.getElementById('icloud-search');
+
+  tabIcloud?.addEventListener('click', () => setUploadMode('icloud'));
+  icloudRefresh?.addEventListener('click', () => loadICloudList());
+  icloudSearch?.addEventListener('input', () => filterICloudList());
+}
+
+// Atualiza setUploadMode para suportar 'icloud' (mantemos a função original e estendemos)
+const originalSetUploadMode = (typeof setUploadMode === 'function') ? setUploadMode : null;
+function setUploadModeWithICloud(mode){
+  if (originalSetUploadMode) originalSetUploadMode(mode);
+  // mostra/esconde o icloud-mode
+  const icloudMode = document.getElementById('icloud-mode');
+  if (icloudMode) icloudMode.classList.toggle('hidden', mode !== 'icloud');
+  if (mode === 'icloud') loadICloudList();
+}
+// substitui / sobrescreve a função (apenas se existia)
+if (originalSetUploadMode) window.setUploadMode = setUploadModeWithICloud;
+
+// Estado local para iCloud
+let icloudItems = []; // { tvSlug, mediaName, url, type, active, displayName, storagePath, timestamp, tvName }
+
+// Carrega do Firebase todos os itens em users/{uid}/tv_midias e agrega
+async function loadICloudList(){
+  const listEl = document.getElementById('icloud-list');
+  const emptyEl = document.getElementById('icloud-empty');
+  const searchVal = (document.getElementById('icloud-search')?.value || '').toLowerCase();
+
+  if (!currentUserId){
+    showToast('Faça login para acessar o iCloud', 'error');
+    return;
+  }
+  if (!isOnline()){
+    showToast('Sem internet', 'error');
+    return;
+  }
+
+  listEl.innerHTML = '';
+  emptyEl.style.display = 'none';
+  showToast('Buscando mídias no iCloud...', 'info');
+
+  try {
+    const snap = await authModule.database.ref(`users/${currentUserId}/tv_midias`).once('value');
+    const data = snap.val() || {};
+    const itemsMap = new Map();
+
+    // percorre cada tvSlug -> medias
+    for (const tvSlug in data){
+      const medias = data[tvSlug] || {};
+      for (const mediaName in medias){
+        const m = medias[mediaName];
+        // chave única por url ou storagePath (evita duplicar)
+        const uniqueKey = m.url || m.storagePath || (tvSlug + '::' + mediaName);
+        if (!uniqueKey) continue;
+        // se já existe, só acrescenta referência adicional
+        if (!itemsMap.has(uniqueKey)){
+          itemsMap.set(uniqueKey, {
+            tvSlug,
+            mediaName,
+            url: m.url || null,
+            type: m.mediaType || m.type || 'image',
+            active: !!m.active,
+            displayName: m.displayName || mediaName,
+            storagePath: m.storagePath || null,
+            timestamp: m.timestamp || 0,
+            tvName: m.tvName || tvSlug,
+            references: [tvSlug]
+          });
+        } else {
+          itemsMap.get(uniqueKey).references.push(tvSlug);
+        }
+      }
+    }
+
+    icloudItems = Array.from(itemsMap.values())
+      .sort((a,b)=> b.timestamp - a.timestamp);
+
+    // Aplicar filtro de busca
+    if (searchVal){
+      icloudItems = icloudItems.filter(it =>
+        (it.displayName || '').toLowerCase().includes(searchVal) ||
+        (it.tvName || '').toLowerCase().includes(searchVal) ||
+        (it.mediaName || '').toLowerCase().includes(searchVal)
+      );
+    }
+
+    if (icloudItems.length === 0){
+      emptyEl.style.display = 'block';
+      showToast('Nenhuma mídia no iCloud', 'info');
+      return;
+    }
+
+    // Render cards
+    for (const item of icloudItems){
+      const card = document.createElement('div');
+      card.className = 'media-card';
+      card.style.cursor = 'pointer';
+      card.innerHTML = `
+        <div class="media-thumb" style="height:96px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          ${item.type === 'video' ? `<img src="${PLAY_ICON}" alt="vídeo" style="width:48px;height:48px;opacity:.95"/>` :
+            (item.url ? `<img src="${item.url}" alt="${item.displayName}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.opacity=.6">` : `<div style="width:100%;height:100%;display:grid;place-items:center;background:#111">Sem prévia</div>`)}
+        </div>
+        <div class="media-info" style="padding:8px;">
+          <div class="media-title" title="${item.displayName}">${item.displayName}</div>
+          <div class="media-meta" style="margin-top:6px;">
+            <small style="color:var(--ink-dim)">${item.tvName} • ${item.references.length} ref</small>
+            <div style="margin-top:6px;display:flex;gap:6px;">
+              <button class="btn btn-assign" data-url="${item.url || ''}" data-name="${item.mediaName}" type="button">Atribuir</button>
+              <button class="btn-secondary btn-preview" data-url="${item.url || ''}" type="button">Visualizar</button>
+            </div>
+          </div>
+        </div>
+      `;
+      // atribuir
+      card.querySelector('.btn-assign').addEventListener('click', async (ev) => {
+        ev.stopPropagation();
+        const idx = icloudItems.indexOf(item);
+        // atribuir para a tv que está abrindo modal
+        if (!currentMediaTv){ showToast('Selecione a TV antes de atribuir', 'error'); return; }
+        await assignExistingMediaToTv(currentMediaTv, item);
+      });
+      // preview
+      card.querySelector('.btn-preview').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        if (!item.url){ showToast('Sem URL pública para visualizar', 'error'); return; }
+        // abre modal de visualização já existente (reaproveita view-media-modal)
+        const modal = document.getElementById('view-media-modal');
+        const container = document.getElementById('media-container');
+        container.innerHTML = '';
+        if (item.type === 'video'){
+          const v = document.createElement('video');
+          v.src = item.url; v.controls = true; v.autoplay = true; v.style.maxWidth='100%';
+          container.appendChild(v);
+        } else {
+          const img = document.createElement('img'); img.src = item.url; img.style.maxWidth='100%';
+          container.appendChild(img);
+        }
+        if (modal) modal.style.display = 'block';
+      });
+
+      // atribuir clicando no card também
+      card.addEventListener('click', async () => {
+        if (!currentMediaTv) return;
+        await assignExistingMediaToTv(currentMediaTv, item);
+      });
+
+      listEl.appendChild(card);
+    }
+
+    showToast('iCloud carregado', 'success');
+  } catch (err){
+    console.error('Erro ao carregar iCloud:', err);
+    showToast('Falha ao carregar iCloud', 'error');
+    emptyEl.style.display = 'block';
+  }
+}
+
+// filtrar lista já carregada
+function filterICloudList(){
+  const q = (document.getElementById('icloud-search')?.value || '').toLowerCase();
+  const listEl = document.getElementById('icloud-list');
+  if (!listEl) return;
+  Array.from(listEl.children).forEach(card => {
+    const title = (card.querySelector('.media-title')?.textContent || '').toLowerCase();
+    const meta = (card.querySelector('.media-meta small')?.textContent || '').toLowerCase();
+    const show = (!q) || title.includes(q) || meta.includes(q);
+    card.style.display = show ? '' : 'none';
+  });
+}
+
+// Faz a atribuição (sem upload): atualiza users/{uid}/tvs/{tvId}.media OR playlist + escreve em midia/{activationKey}
+async function assignExistingMediaToTv(tv, item){
+  try {
+    if (!currentUserId) { showToast('Faça login', 'error'); return; }
+    if (!isOnline()){ showToast('Sem internet', 'error'); return; }
+    showToast('Atribuindo mídia à TV...', 'info');
+
+    // decide se será mídia única ou playlist
+    const asPlaylist = playlistEnabled; // respeita switch playlist no modal atual
+    if (asPlaylist){
+      // cria playlist com 1 item (mantém ordem = 0)
+      const playlistItem = { url: item.url, type: item.type, duration: item.type==='video'?null:(item.duration||10), order: 0 };
+      tv.playlist = [ playlistItem ];
+      tv.media = null;
+      await authModule.database.ref(`users/${currentUserId}/tvs/${tv.id}`).update({ playlist: tv.playlist, media: null, lastUpdate: Date.now() });
+      // avisa player
+      if (tv.activationKey){
+        await authModule.database.ref('midia/' + tv.activationKey).set({ tipo:'playlist', items: tv.playlist, timestamp: Date.now() }).catch(()=>{});
+      }
+    } else {
+      // atribui como mídia única
+      const mediaData = { type: item.type, url: item.url, timestamp: Date.now() };
+      if (item.type !== 'video') mediaData.duration = item.duration || 10;
+      if (item.type === 'video') mediaData.loop = false;
+      tv.media = mediaData;
+      tv.playlist = null;
+      await authModule.database.ref(`users/${currentUserId}/tvs/${tv.id}`).update({ media: mediaData, playlist: null, lastUpdate: Date.now() });
+      if (tv.activationKey){
+        await authModule.database.ref('midia/' + tv.activationKey).set({
+          tipo: mediaData.type, url: mediaData.url, content:null, color:null, bgColor:null, fontSize:null,
+          duration: mediaData.duration || null, loop: mediaData.loop || false, timestamp: Date.now()
+        }).catch(()=>{});
+      }
+    }
+
+    // Registra referência no tv_midias do tv atual (para aparecer na aba "Minhas Mídias")
+    try {
+      const tvSlug = tvSlugFromName(tv.name);
+      const mediaName = item.mediaName || `reuso_${Date.now()}`;
+      const entry = {
+        tvId: tv.id, tvName: tv.name, mediaName, mediaType: item.type,
+        url: item.url || null, content:null, color:null, bgColor:null, fontSize:null,
+        duration: item.duration || null, loop: item.loop || false, timestamp: Date.now(),
+        lastActive: Date.now(), active: true,
+        storagePath: item.storagePath || null
+      };
+      await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvSlug}/${mediaName}`).set(entry).catch(()=>{});
+    } catch(e){ /* não crítico */ }
+
+    showToast('Mídia atribuída com sucesso!', 'success');
+
+    // fecha modal de upload
+    const modal = document.getElementById('upload-media-modal');
+    if (modal) modal.style.display = 'none';
+
+    // atualiza view/estado local
+    await syncWithFirebase();
+  } catch (err){
+    console.error('Erro ao atribuir mídia:', err);
+    showToast('Falha ao atribuir mídia', 'error');
+  }
+}
+
+// inicializa handlers iCloud ao carregar DOM
+document.addEventListener('DOMContentLoaded', ()=> {
+  // se a função de tabs já existe, substituímos a versão com suporte a icloud (feito acima)
+  initICloudTabHandlers();
+});
+/************************* /iCloud *************************/
