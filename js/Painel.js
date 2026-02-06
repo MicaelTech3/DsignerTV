@@ -943,14 +943,21 @@ document.addEventListener('DOMContentLoaded', () => {
   if (logout){ logout.addEventListener('click', (e) => { e.preventDefault(); authModule.signOut().then(() => window.location.href='index.html'); }); }
 
   // ===== AUTH =====
-  authModule.onAuthStateChanged(user => {
-    if (!user){ window.location.href = 'index.html'; return; }
-    currentUserId = user.uid;
-    const userEmail = document.getElementById('user-email'); if (userEmail) userEmail.textContent = user.email;
-    const supportEmail = document.getElementById('support-email'); if (supportEmail) supportEmail.value = user.email;
-    if (isOnline()){ syncWithFirebase(); }
-    else { showToast('Sem conexão: conecte-se para carregar dados', 'error'); updateCategoryList(); updateTvGrid(); }
-  });
+authModule.onAuthStateChanged(user => {
+  if (!user){ window.location.href = 'index.html'; return; }
+
+  // 🔑 email como chave segura
+  currentUserId = user.email.replace(/\./g, ',');
+
+  const userEmail = document.getElementById('user-email');
+  if (userEmail) userEmail.textContent = user.email;
+
+  const supportEmail = document.getElementById('support-email');
+  if (supportEmail) supportEmail.value = user.email;
+
+  if (isOnline()){ syncWithFirebase(); }
+});
+
 
   // ===== CATEGORY/FLOOR SELECTION =====
   document.addEventListener('click', (e) => {
