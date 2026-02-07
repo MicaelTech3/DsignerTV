@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;800&display=swap');
+
+/* =============== TEMA =============== */
+/* Verde (seu atual) */
+:root{
+  --bg:#0f1524;
+  --card:#2f2841;
+  --ink:#ffffff;
+  --muted:#b0b0b0;
+  --brand:#6aa3fb;
+  --brand-strong:#6aa3fb;
+  --field:#3b3354;
+  --stroke: #4a4261;
+  --glow: rgba(0,255,136,.32);
+}
+
+/* Azul (use se quiser igual ao Painel)
+:root{
+  --bg:#1a1f3b;
+  --card:#0a0f2b;
+  --ink:#eaf6ff;
+  --muted:#bcd8ff;
+  --brand:#00d4ff;
+  --brand-strong:#00b8e0;
+  --field:#141a3a;
+  --stroke:#244073;
+  --glow: rgba(0,212,255,.28);
+}
+*/
+
+/* =============== BASE =============== */
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Noto Sans',sans-serif;
+  background-color:var(--bg);
+  color:var(--ink);
+}
+
+/* container geral */
+.main-login{
+  width:100%;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap: clamp(24px, 6vw, 64px);
+  padding: 24px;
+  background-color:var(--bg);
+}
+
+/* =============== LADO ESQUERDO =============== */
+.left-login{
+  width:50%;
+  min-height:60vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.left-content{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:24px;
+}
+.left-content h1{
+  color:var(--brand);
+  font-size:clamp(28px, 4vw, 42px);
+  font-weight:800;
+  line-height:1.15;
+  margin:0;
+}
+.left-login-image{
+  width: min(26vw, 320px);
+  max-width: 320px;
+  filter: drop-shadow(0 0 14px var(--glow));
+}
+
+/* =============== CARD DE LOGIN =============== */
+.card-login{
+  width: min(70%, 400px);
+  background-color:var(--card);
+  border-radius:20px;
+  padding:40px 32px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+  border: 1px solid color-mix(in oklab, var(--brand), transparent 60%);
+  box-shadow:
+    0 8px 40px rgba(0,0,0,.32),
+    0 0 28px -10px var(--glow);
+}
+.card-login > h1{
+  color:var(--brand);
+  font-weight:800;
+  font-size:clamp(18px, 2.6vw, 22px);
+  margin:0;
+}
+
+/* =============== CAMPOS =============== */
+.textfield{width:100%; display:flex; flex-direction:column; gap:8px;}
+.textfield input{
+  width:100%;
+  height:48px;
+  border-radius:10px;
+  border:1px solid var(--stroke);
+  padding:0 12px;
+  background:var(--field);
+  color:var(--ink);
+  font-size:13pt;
+  outline:none;
+  transition: .2s border, .2s box-shadow, .2s background;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25);
+}
+.textfield input::placeholder{color:var(--muted); opacity:.75;}
+.textfield input:focus{
+  border-color:var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--glow), transparent 60%);
+  background: color-mix(in oklab, var(--field), white 2%);
+}
+
+/* =============== BOTÃO =============== */
+.btn-login{
+  width:100%;
+  border:none;
+  border-radius:10px;
+  height:48px;
+  background: linear-gradient(90deg, var(--brand), color-mix(in oklab, var(--brand), white 15%));
+  color:#000;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  cursor:pointer;
+  transform: translateZ(0);
+  box-shadow: 0 8px 32px -10px var(--glow);
+  transition: transform .08s ease, filter .2s ease, box-shadow .2s ease;
+}
+.btn-login:hover{ filter: brightness(1.05); box-shadow: 0 10px 36px -8px var(--glow); }
+.btn-login:active{ transform: translateY(1px); }
+.btn-login:disabled{ opacity:.6; cursor:not-allowed; }
+
+/* =============== LINK =============== */
+.signup-link{ font-size:14px; color: #ccc; }
+.signup-link a{
+  color:var(--brand);
+  text-decoration:none;
+  font-weight:600;
+}
+.signup-link a:hover{ text-decoration:underline; }
+
+/* =============== RESPONSIVO =============== */
+@media (max-width: 1024px){
+  .left-login{ width:45%; }
+  .card-login{ width:min(78%, 420px); }
+}
+@media (max-width: 820px){
+  .left-login{ display:none; }
+  .card-login{ width:min(92%, 440px); }
+  .main-login{ min-height:100dvh; }
+}
+
+/* espaçamento interno do card */
+.card-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;           /* distância entre itens (título, campos e botão) */
+}
+
+/* garante que o form mantenha o espaçamento entre inputs */
+.card-login form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;           /* espaço entre os campos e o botão */
+}
+
+/* opcional: separa o título do formulário */
+.card-login > h1 {
+  margin-bottom: 10px;
+}

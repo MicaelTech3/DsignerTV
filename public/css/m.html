@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galeria de Mídias</title>
+  <style>
+    body {
+      background-color: #1a1f3b;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #00d4ff;
+      margin-bottom: 20px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    select {
+      padding: 8px 12px;
+      border: 1px solid #00d4ff;
+      border-radius: 6px;
+      background: #0a0f2b;
+      color: #fff;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #0a0f2b;
+      border: 1px solid #00d4ff;
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 10px rgba(0,212,255,0.1);
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 20px rgba(0,212,255,0.3);
+    }
+
+    .thumbnail {
+      background: #172053;
+      height: 140px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9fc8ffcc;
+      font-size: 14px;
+    }
+
+    .info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .status-on { background: #22c55e; }
+    .status-off { background: #ef4444; }
+
+    .filename {
+      font-size: 14px;
+      color: #cfe8ff;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #00d4ff;
+      font-size: 16px;
+      transition: color .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .actions button:hover {
+      color: #00b3d1;
+    }
+
+    .actions svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mídia</h1>
+
+  <div class="filters">
+    <select>
+      <option>Andar</option>
+      <option>Andar 1</option>
+      <option>Andar 2</option>
+    </select>
+    <select>
+      <option>TV</option>
+      <option>TV Sala</option>
+      <option>TV Recepção</option>
+    </select>
+  </div>
+
+  <div class="gallery">
+    <div class="card">
+      <div class="thumbnail">Prévia</div>
+      <div class="info">
+        <span class="status-dot status-on"></span>
+        <span class="filename">captura_de_tela_2025-05-14.png</span>
+      </div>
+      <div class="actions">
+        <button title="Renomear">
+          <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg>
+        </button>
+        <button title="Excluir">
+          <svg viewBox="0 0 24 24"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumbnail">Vídeo</div>
+      <div class="info">
+        <span class="status-dot status-off"></span>
+        <span class="filename">video1.mp4</span>
+      </div>
+      <div class="actions">
+        <button title="Renomear">
+          <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg>
+        </button>
+        <button title="Excluir">
+          <svg viewBox="0 0 24 24"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumbnail">Imagem</div>
+      <div class="info">
+        <span class="status-dot status-on"></span>
+        <span class="filename">imagem1.png</span>
+      </div>
+      <div class="actions">
+        <button title="Renomear">
+          <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg>
+        </button>
+        <button title="Excluir">
+          <svg viewBox="0 0 24 24"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
