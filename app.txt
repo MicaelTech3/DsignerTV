@@ -3,3 +3,280 @@
 <button class="nav-item" ... >
 
 destravar
+
+
+# 📁 Estrutura Modular do Painel.js
+
+## 📋 Visão Geral
+
+O código foi dividido em **14 módulos** independentes e organizados por funcionalidade. Cada arquivo tem uma responsabilidade específica, facilitando a manutenção e evolução do sistema.
+
+---
+
+## 🗂️ Estrutura de Arquivos
+
+```
+js/
+├── config.js              # Configurações globais e constantes
+├── state.js               # Gerenciamento de estado global
+├── auth.js                # Autenticação do usuário
+├── toast.js               # Sistema de notificações
+├── firebase-sync.js       # Sincronização com Firebase
+├── ui-render.js           # Renderização de listas (categorias/TVs)
+├── sidebar.js             # Gerenciamento da barra lateral
+├── navigation.js          # Sistema de navegação entre seções
+├── category-manager.js    # CRUD de categorias/grupos
+├── tv-manager.js          # CRUD e controles de TVs
+├── tv-media-viewer.js     # Visualização de mídia e playlist
+├── dropzone.js            # Sistema de arrastar e soltar arquivos
+├── upload-tabs.js         # Gerenciamento de abas de upload
+├── upload-handler.js      # Manipulação de uploads
+├── icloud-manager.js      # Gerenciamento de mídias salvas
+├── media-manager.js       # Gerenciamento da lista de mídias
+├── modals.js              # Gerenciamento de modais e FAB
+└── main.js                # Inicialização da aplicação
+```
+
+---
+
+## 📦 Descrição dos Módulos
+
+### 🔧 **config.js**
+**Responsabilidade:** Configurações globais e constantes
+- Ícones (PLAY_ICON, BLACK_IMAGE_URL)
+- Limites de tamanho (MAX_FILE_SIZE)
+- Tempos de duração (toasts, animações)
+- Helpers globais (isOnline, tvSlugFromName, getMediaNameFromUrl)
+
+### 🗄️ **state.js**
+**Responsabilidade:** Gerenciamento do estado global da aplicação
+- Estado centralizado (categories, tvs, selectedCategoryId, etc.)
+- Getters e setters para acesso controlado
+- Evita variáveis globais espalhadas
+
+### 🔐 **auth.js**
+**Responsabilidade:** Autenticação de usuários
+- Monitoramento de estado de login
+- Redirecionamento se não autenticado
+- Atualização de dados do usuário na UI
+
+### 🔔 **toast.js**
+**Responsabilidade:** Sistema de notificações
+- Exibição de toasts (success, error, info)
+- Controle de duração e animações
+- Indicador de status de rede
+
+### 🔄 **firebase-sync.js**
+**Responsabilidade:** Sincronização com Firebase
+- Buscar dados remotos (categorias, TVs, mídias)
+- Atualizar status de mídias ativas
+- Enviar comandos para TVs (stop, etc.)
+
+### 🎨 **ui-render.js**
+**Responsabilidade:** Renderização de listas
+- Atualizar lista de categorias/grupos
+- Atualizar grid de TVs
+- Manter UI sincronizada com o estado
+
+### 📱 **sidebar.js**
+**Responsabilidade:** Barra lateral
+- Toggle desktop (expandir/colapsar)
+- Toggle mobile (abrir/fechar)
+- Persistência de estado no localStorage
+
+### 🧭 **navigation.js**
+**Responsabilidade:** Navegação entre seções
+- Alternar entre abas (Dashboard, Mídias, etc.)
+- Links especiais (logout, dskey)
+- Carregamento de dados por seção
+
+### 📂 **category-manager.js**
+**Responsabilidade:** CRUD de categorias
+- Adicionar categoria
+- Editar categoria
+- Deletar categoria (e TVs associadas)
+- Seleção de categoria ativa
+
+### 📺 **tv-manager.js**
+**Responsabilidade:** CRUD e controles de TVs
+- Adicionar TV
+- Deletar TV
+- Ligar/Desligar TV
+- Gerenciar chave de ativação
+- Abrir modal de informações
+
+### 🎬 **tv-media-viewer.js**
+**Responsabilidade:** Visualização de mídia
+- Exibir mídia única (imagem/vídeo)
+- Exibir e gerenciar playlist
+- Drag & drop de itens da playlist
+- Adicionar/remover itens da playlist
+- Atualizar playlist na TV
+
+### 📥 **dropzone.js**
+**Responsabilidade:** Sistema de arrastar e soltar
+- Drag and drop de arquivos
+- Preview de imagens
+- Lista de arquivos selecionados
+- Validação de múltiplos arquivos
+
+### 🔄 **upload-tabs.js**
+**Responsabilidade:** Abas de upload
+- Alternar entre modos (arquivo, link, iCloud)
+- Toggle de playlist
+- Controle de campos dinâmicos (duração/loop)
+
+### ⬆️ **upload-handler.js**
+**Responsabilidade:** Manipulação de uploads
+- Upload para Firebase Storage
+- Registro de mídia no banco de dados
+- Upload de arquivo único
+- Upload de playlist (múltiplos arquivos)
+- Upload via link
+
+### ☁️ **icloud-manager.js**
+**Responsabilidade:** Mídias salvas (iCloud)
+- Listar mídias salvas
+- Buscar mídias
+- Atribuir mídia existente a uma TV
+- Evitar duplicação de uploads
+
+### 🗃️ **media-manager.js**
+**Responsabilidade:** Lista de mídias (aba Mídias)
+- Listar todas as mídias
+- Filtrar por TV e status
+- Renomear mídia
+- Deletar mídia
+- Atualizar TVs que usam a mídia deletada
+
+### 🪟 **modals.js**
+**Responsabilidade:** Modais e FAB
+- Fechar modais (botão X ou clique fora)
+- Gerenciar FAB (botão flutuante)
+
+### 🚀 **main.js**
+**Responsabilidade:** Inicialização
+- Importar todos os módulos
+- Inicializar componentes na ordem correta
+- Event listeners globais (online/offline)
+
+---
+
+## 🔗 Como os Módulos se Comunicam
+
+### 1️⃣ **Estado Centralizado** (state.js)
+Todos os módulos que precisam acessar ou modificar dados globais usam os getters/setters do `state.js`:
+
+```javascript
+import { getTvs, setSelectedCategoryId } from './state.js';
+```
+
+### 2️⃣ **Helpers Compartilhados** (config.js)
+Funções utilitárias são importadas de `config.js`:
+
+```javascript
+import { isOnline, tvSlugFromName } from './config.js';
+```
+
+### 3️⃣ **Notificações** (toast.js)
+Qualquer módulo pode exibir toasts:
+
+```javascript
+import { showToast } from './toast.js';
+showToast('Operação realizada!', 'success');
+```
+
+### 4️⃣ **Sincronização** (firebase-sync.js)
+Módulos que alteram dados chamam `syncWithFirebase()`:
+
+```javascript
+import { syncWithFirebase } from './firebase-sync.js';
+await syncWithFirebase();
+```
+
+### 5️⃣ **Renderização** (ui-render.js)
+Após alterações, atualiza a UI:
+
+```javascript
+import { updateTvGrid, updateCategoryList } from './ui-render.js';
+updateTvGrid();
+```
+
+---
+
+## 🛠️ Como Adicionar no HTML
+
+### Opção 1: Módulos ES6 (Recomendado)
+
+```html
+<script type="module" src="js/main.js"></script>
+```
+
+**Importante:** Todos os arquivos devem usar `export` e `import` (já está implementado).
+
+### Opção 2: Bundler (Webpack/Vite)
+
+Se preferir um arquivo único para produção, use um bundler:
+
+```bash
+npm install --save-dev vite
+npx vite build
+```
+
+---
+
+## ✅ Vantagens da Modularização
+
+✔️ **Manutenção facilitada**: Cada arquivo tem uma responsabilidade clara  
+✔️ **Código organizado**: Fácil encontrar onde está cada funcionalidade  
+✔️ **Reutilização**: Módulos podem ser usados em outros projetos  
+✔️ **Testes**: Cada módulo pode ser testado isoladamente  
+✔️ **Colaboração**: Múltiplos desenvolvedores podem trabalhar simultaneamente  
+✔️ **Performance**: Possibilidade de lazy loading  
+
+---
+
+## 🔍 Onde Encontrar Cada Funcionalidade
+
+| Funcionalidade | Arquivo |
+|---|---|
+| Adicionar categoria | `category-manager.js` |
+| Editar categoria | `category-manager.js` |
+| Deletar categoria | `category-manager.js` |
+| Adicionar TV | `tv-manager.js` |
+| Deletar TV | `tv-manager.js` |
+| Ligar/Desligar TV | `tv-manager.js` |
+| Enviar mídia | `upload-handler.js` |
+| Ver playlist | `tv-media-viewer.js` |
+| Arrastar arquivo | `dropzone.js` |
+| Trocar aba upload | `upload-tabs.js` |
+| Ver mídias salvas | `icloud-manager.js` |
+| Listar todas mídias | `media-manager.js` |
+| Renomear mídia | `media-manager.js` |
+| Deletar mídia | `media-manager.js` |
+| Sidebar mobile | `sidebar.js` |
+| Trocar seção | `navigation.js` |
+
+---
+
+## 🚨 Observações Importantes
+
+1. **authModule** ainda está no `window.authModule` (mantido para compatibilidade)
+2. **window.uploadMidia** é exportado globalmente em `upload-handler.js`
+3. Todos os IDs e classes HTML foram mantidos iguais
+4. A lógica foi preservada 100%, apenas reorganizada
+5. Não há perda de funcionalidade
+
+---
+
+## 🎯 Próximos Passos Sugeridos
+
+1. ✅ Testar cada módulo individualmente
+2. ✅ Adicionar testes unitários
+3. ✅ Implementar TypeScript (opcional)
+4. ✅ Usar um bundler para produção
+5. ✅ Adicionar source maps para debug
+
+---
+
+**Desenvolvido com ❤️ para facilitar a manutenção do projeto**

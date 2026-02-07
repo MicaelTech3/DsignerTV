@@ -470,13 +470,31 @@ adb shell pm disable-user --user 0 com.tv.play</pre>
     </div>
   </div>
 
-  <!-- Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/Painel.js"></script>
+  <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+<!-- Firebase init (GLOBAL) -->
+  <script src="javascript/firebase.js"></script>
+
+  <!-- 🔒 Proteção de Rota - CARREGAR ANTES DOS MÓDULOS -->
+  <script>
+    // Bloquear acesso não autenticado
+    window.authModule.onAuthStateChanged((user) => {
+      if (!user) {
+        console.log('❌ Usuário não autenticado, redirecionando para login...');
+        window.location.href = 'index.html';
+      } else {
+        console.log('✅ Usuário autenticado:', user.email);
+      }
+    });
+  </script>
+
+  <!-- App (ES Modules) -->
+  <script type="module" src="javascript/main.js"></script>
+
   
   <!-- Sidebar Hover Enhancement -->
   <script>
