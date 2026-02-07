@@ -5,7 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>D`signer - Painel</title>
   <link rel="stylesheet" href="css/Painel.css"/>
-  <link rel="shortcut icon" href="imagens/favicon.png" type="image/x-icon">
+ <link rel="shortcut icon" href="imagens/favicon.png" type="image/x-icon">
+  <style>
+    /* Fix temporário caso as imagens não carreguem */
+    .app-card img {
+      display: block;
+    }
+    .app-card img[src*="androibaixar.svg"]::before,
+    .app-card img[src*="winbaixar.svg"]::before {
+      content: "📱";
+      font-size: 48px;
+    }
+  </style>
 </head>
 <body>
   <!-- Indicador de rede -->
@@ -46,11 +57,11 @@
           <span>My Cloud</span>
         </button>
 
-        <button class="nav-item" data-section="app-section" title="Em breve" type="button" disabled>
+        <button class="nav-item" data-section="app-section" title="Downloads" type="button">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
           </svg>
-          <span>App <small style="opacity:0.6;font-size:0.75em;">(em breve)</small></span>
+          <span>App</span>
         </button>
 
         <button class="nav-item" data-section="perfil-section" title="Perfil" type="button">
@@ -85,7 +96,7 @@
       </button>
     </aside>
 
-    <!-- Overlay para fechar sidebar no mobile -->
+    <!-- Overlay -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <!-- MAIN -->
@@ -135,89 +146,57 @@
         </div>
       </section>
 
-      <!-- ===== APP ===== -->
-      <section id="app-section" class="content-section">
-        <h2 style="color:var(--accent); text-align:center; margin-bottom:16px;">Downloads do Aplicativo</h2>
-        <div class="app-wrapper">
-          <div class="app-downloads">
-            <div class="card">
-              <div class="image_container">
-                <img src="imagens/androibaixar.svg" alt="Android / TV" class="image">
-              </div>
-              <div class="title"><span>APK</span></div>
-              <div class="size"><span>CLIQUE PARA BAIXAR</span></div>
-              <div class="action">
-                <a href="../apps/dskey.apk" class="download-button" target="_blank" rel="noopener">
-                  <span class="button-text">DOWNLOAD</span>
-                </a>
-              </div>
-            </div>
+<!-- ===== APP (CORRIGIDO - SEM CLASSE HIDDEN) ===== -->
+<section id="app-section" class="content-section">
+  <div id="app-menu" class="app-menu-view">
+    <h2 style="color:var(--accent); text-align:center; margin-bottom:24px;">
+      Downloads DSigner TV
+    </h2>
 
-            <div class="card">
-              <div class="image_container">
-                <img src="imagens/winbaixar.svg" alt="Windows" class="image">
-              </div>
-              <div class="title"><span>WINDOWS</span></div>
-              <div class="size"><span>CLIQUE PARA BAIXAR</span></div>
-              <div class="action">
-                <a href="https://seulink2.com" class="download-button" target="_blank" rel="noopener">
-                  <span class="button-text">DOWNLOAD</span>
-                </a>
-              </div>
-            </div>
+    <div class="app-simple-wrapper">
 
-            <div class="card">
-              <div class="image_container">
-                <img src="imagens/linux.png" alt="Linux" class="image">
-              </div>
-              <div class="title"><span>LINUX</span></div>
-              <div class="size"><span>CLIQUE PARA BAIXAR</span></div>
-              <div class="action">
-                <a href="https://seulink3.com" class="download-button" target="_blank" rel="noopener">
-                  <span class="button-text">DOWNLOAD</span>
-                </a>
-              </div>
-            </div>
-          </div>
+      <!-- CARD APK -->
+      <div class="app-card">
+        <svg viewBox="0 0 24 24" width="80" height="80" fill="var(--accent)" style="margin-bottom:20px;">
+          <path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-2.86-1.21-6.08-1.21-8.94 0L5.65 5.67c-.19-.28-.54-.37-.83-.22-.3.16-.42.54-.26.85l1.84 3.18C4.25 11.24 2.5 13.89 2.5 17h19c0-3.11-1.75-5.76-3.9-7.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/>
+        </svg>
+        <h3>Aplicativo para TV (APK)</h3>
+        <p>Instale o DSigner TV em Android TV ou TV Box.</p>
+        <button class="app-btn" data-app-url="https://baixar-dskey.vercel.app/" type="button">
+          DOWNLOAD APP
+        </button>
+      </div>
 
-          <aside class="app-guide container-neon">
-            <header class="guide-head">
-              <h3>Instalar o D`Signer TV</h3>
-              <p class="guide-sub">Passo a passo rápido + comandos ADB.</p>
-              <a class="btn btn-primary guide-download" href="software/software.exe" target="_blank" rel="noopener">
-                Baixar Software para PC
-              </a>
-            </header>
-            <figure class="guide-hero">
-              <img src="software/Captura de tela 2025-10-10 085725.png" alt="Ilustração instalação" />
-              <figcaption>imagem real do software.</figcaption>
-            </figure>
-            <ol class="steps">
-              <li><strong>Baixe</strong> o instalador para PC e o <strong>APK</strong> acima.</li>
-              <li>Na TV Box, ative <em>Opções do desenvolvedor</em> → <em>Depuração USB/ADB</em>.</li>
-              <li>Conecte a TV Box ao PC por USB (ou ADB over Wi-Fi).</li>
-              <li>Abra o software <strong>DsignerTV</strong> no PC e clique <em>"INSTALAR ADB"</em> (se necessário).</li>
-              <li>Use <em>"ATIVAR Dsigner"</em> para instalar o APK e definir como launcher.</li>
-            </ol>
-            <div class="guide-screens">
-              <img src="imagens/placeholder-1.png" alt="Tela 1" />
-              <img src="imagens/placeholder-2.png" alt="Tela 2" />
-            </div>
-            <details class="faq">
-              <summary>Instalar via ADB (manual, opcional)</summary>
-              <pre class="code">adb devices
-adb install -t -r com.tv.play.apk
-adb shell cmd package set-home-activity com.tv.play/.MainActivity</pre>
-            </details>
-            <details class="faq">
-              <summary>Restaurar launcher original</summary>
-              <pre class="code">adb shell pm enable com.google.android.tvlauncher
-adb shell pm disable-user --user 0 com.tv.play</pre>
-            </details>
-            <p class="note">Dúvidas? Use a aba <strong>Suporte</strong> para falar com a gente.</p>
-          </aside>
-        </div>
-      </section>
+      <!-- CARD ACTIVE -->
+      <div class="app-card">
+        <svg viewBox="0 0 24 24" width="80" height="80" fill="var(--accent)" style="margin-bottom:20px;">
+          <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
+        </svg>
+        <h3>Software Active</h3>
+        <p>Instalador para Windows/Linux com ADB automático.</p>
+        <button class="app-btn secondary" data-app-url="https://baixar-dskey-software.vercel.app/" type="button">
+          DOWNLOAD ACTIVE
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- IFRAME CONTAINER -->
+  <div id="app-iframe-container" class="app-iframe-container" style="display:none;">
+    <div class="app-iframe-header">
+      <button class="app-back-btn" type="button" title="Voltar">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Voltar
+      </button>
+      <span class="app-iframe-title">Carregando...</span>
+    </div>
+    <iframe id="app-iframe" frameborder="0" allowfullscreen></iframe>
+  </div>
+</section>
+
 
       <!-- ===== PERFIL ===== -->
       <section id="perfil-section" class="content-section" aria-labelledby="title-perfil">
@@ -470,18 +449,14 @@ adb shell pm disable-user --user 0 com.tv.play</pre>
     </div>
   </div>
 
-  <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-
-<!-- Firebase init (GLOBAL) -->
+  <!-- Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
   <script src="javascript/firebase.js"></script>
-
-  <!-- 🔒 Proteção de Rota - CARREGAR ANTES DOS MÓDULOS -->
+  
   <script>
-    // Bloquear acesso não autenticado
     window.authModule.onAuthStateChanged((user) => {
       if (!user) {
         console.log('❌ Usuário não autenticado, redirecionando para login...');
@@ -492,13 +467,9 @@ adb shell pm disable-user --user 0 com.tv.play</pre>
     });
   </script>
 
-  <!-- App (ES Modules) -->
   <script type="module" src="javascript/main.js"></script>
-
   
-  <!-- Sidebar Hover Enhancement -->
   <script>
-    // Expandir sidebar no hover quando colapsada (apenas desktop)
     const sidebar = document.getElementById('sidebar');
     let hoverTimeout;
     
