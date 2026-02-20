@@ -203,7 +203,7 @@ async function uploadMidia() {
     }
 
     const file = files[0];
-    if (file.size > 190 * 1024 * 1024) {
+    if (file.size > 500 * 1024 * 1024) {
       showToast('Arquivo muito grande (máx. 190MB)', 'error');
       return;
     }
