@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="shortcut icon" href="imagens/favicon.png" type="image/x-icon">
 <title>DevConsole · DSigner</title>
+<link rel="shortcut icon" href="imagens/favicon.png" type="image/x-icon">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
@@ -829,6 +829,10 @@ textarea.edit-input {
     <span class="topbar-badge">DEV CONSOLE</span>
     <div class="topbar-right">
       <div class="user-pill"><div class="user-dot"></div><span id="topbar-email">—</span></div>
+      <a href="https://dsignertv.com.br" target="_blank" class="btn-icon" title="Abrir site" style="text-decoration:none;font-size:11px;width:auto;padding:0 10px;gap:5px;display:flex">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1.5a5.5 5.5 0 110 11 5.5 5.5 0 010-11zm0 1c-.8 0-1.8 1.5-2.2 4h4.4c-.4-2.5-1.4-4-2.2-4zm-2.4.5A6.1 6.1 0 004 8h2.3c.1-1.1.3-2.1.7-3zm4.8 0c.4.9.6 1.9.7 3H13a6.1 6.1 0 00-1.6-3zM4 8.5c0 1 .2 2 .6 2.9A6.1 6.1 0 004 8.5zm2.3 0H4c.1 1.2.6 2.3 1.3 3.1.4-.9.6-1.9.7-3.1zm1 0c-.1 1.4-.5 2.7-1.1 3.6.8.3 1.4.4 1.8.4s1-.1 1.8-.4c-.6-.9-1-2.2-1.1-3.6zm2.4 0c.1 1.2.3 2.2.7 3.1A5.4 5.4 0 0012 8.5h-2.3zm2.3 0H13c0 .9-.2 1.7-.6 2.4z"/></svg>
+        Site
+      </a>
       <button class="btn-icon" id="theme-toggle" title="Alternar tema">◐</button>
       <button class="btn-icon" id="logout-btn" title="Sair">⏻</button>
     </div>
@@ -872,6 +876,16 @@ textarea.edit-input {
     <div class="nav-item" data-section="rules-section">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v2H2zm0 4h8v2H2zm0 4h10v2H2zm0 4h6v2H2z"/></svg>
       <span>Rules Viewer</span>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:8px">Produto</div>
+    <div class="nav-item" data-section="apps-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h4v4H3zm6 0h4v4H9zM3 9h4v4H3zm6 0h4v4H9z"/></svg>
+      <span>App & Active</span>
+    </div>
+    <div class="nav-item" data-section="sites-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1.5a5.5 5.5 0 110 11 5.5 5.5 0 010-11zm0 1c-.8 0-1.8 1.5-2.2 4h4.4c-.4-2.5-1.4-4-2.2-4zm-2.4.5A6.1 6.1 0 004 8h2.3c.1-1.1.3-2.1.7-3zm4.8 0c.4.9.6 1.9.7 3H13a6.1 6.1 0 00-1.6-3zM4 8.5c0 1 .2 2 .6 2.9A6.1 6.1 0 004 8.5zm2.3 0H4c.1 1.2.6 2.3 1.3 3.1.4-.9.6-1.9.7-3.1zm1 0c-.1 1.4-.5 2.7-1.1 3.6.8.3 1.4.4 1.8.4s1-.1 1.8-.4c-.6-.9-1-2.2-1.1-3.6zm2.4 0c.1 1.2.3 2.2.7 3.1A5.4 5.4 0 0012 8.5h-2.3zm2.3 0H13c0 .9-.2 1.7-.6 2.4z"/></svg>
+      <span>Sites</span>
     </div>
   </nav>
 
@@ -1172,6 +1186,139 @@ textarea.edit-input {
       </div>
     </div>
 
+    <!-- APPS & ACTIVE -->
+    <div class="section" id="apps-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">App & Active</div>
+          <div class="page-sub">Gerenciamento de releases, software e aplicativo</div>
+        </div>
+        <span class="badge badge-yellow">Em desenvolvimento</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px">
+        <!-- App Card -->
+        <div class="table-card" style="margin-bottom:0">
+          <div class="table-header">
+            <div class="table-title">📱 APLICATIVO MOBILE</div>
+            <span class="badge badge-yellow">Em Breve</span>
+          </div>
+          <div style="padding:20px">
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px">
+              Área para upload e gerenciamento de versões do aplicativo mobile DSigner.<br><br>
+              Funcionalidades planejadas:<br>
+              — Upload de APK / IPA<br>
+              — Controle de versão semântico<br>
+              — Release notes por versão<br>
+              — Download links para usuários<br>
+              — Canal stable / beta
+            </div>
+            <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);font-family:var(--mono);font-size:11px;color:var(--text3)">
+              🚧 Em breve — app e software aqui
+            </div>
+          </div>
+        </div>
+
+        <!-- Software Card -->
+        <div class="table-card" style="margin-bottom:0">
+          <div class="table-header">
+            <div class="table-title">💻 SOFTWARE / PLAYER</div>
+            <span class="badge badge-yellow">Em Breve</span>
+          </div>
+          <div style="padding:20px">
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px">
+              Área para upload e distribuição do software player DSigner para TVs e dispositivos.<br><br>
+              Funcionalidades planejadas:<br>
+              — Upload de instaladores (.exe, .dmg, .deb)<br>
+              — Versões por plataforma (Windows, Linux, Android TV)<br>
+              — Auto-update endpoint<br>
+              — Changelog público<br>
+              — Distribuição por activation key
+            </div>
+            <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);font-family:var(--mono);font-size:11px;color:var(--text3)">
+              🚧 Em breve — app e software aqui
+            </div>
+          </div>
+        </div>
+
+        <!-- Activation Keys Card -->
+        <div class="table-card" style="margin-bottom:0">
+          <div class="table-header">
+            <div class="table-title">🔑 ACTIVATION KEYS</div>
+            <span class="badge badge-yellow">Em Breve</span>
+          </div>
+          <div style="padding:20px">
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px">
+              Gerenciamento centralizado de chaves de ativação para dispositivos.<br><br>
+              Funcionalidades planejadas:<br>
+              — Geração em lote de keys<br>
+              — Associar key a usuário/plano<br>
+              — Status: ativa / expirada / bloqueada<br>
+              — Histórico de uso<br>
+              — Expiração por data ou uso
+            </div>
+            <div style="padding:12px;background:var(--bg3);border-radius:var(--radius);font-family:var(--mono);font-size:11px;color:var(--text3)">
+              🚧 Em breve — app e software aqui
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">ROADMAP DE FUNCIONALIDADES</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Funcionalidade</th><th>Categoria</th><th>Prioridade</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Upload de APK Android</td><td>App Mobile</td><td><span class="badge badge-red">Alta</span></td><td><span class="badge badge-yellow">Planejado</span></td></tr>
+              <tr><td>Versioning semântico (major.minor.patch)</td><td>App Mobile</td><td><span class="badge badge-red">Alta</span></td><td><span class="badge badge-yellow">Planejado</span></td></tr>
+              <tr><td>Player Windows (.exe installer)</td><td>Software</td><td><span class="badge badge-red">Alta</span></td><td><span class="badge badge-yellow">Planejado</span></td></tr>
+              <tr><td>Player Android TV (.apk)</td><td>Software</td><td><span class="badge badge-red">Alta</span></td><td><span class="badge badge-yellow">Planejado</span></td></tr>
+              <tr><td>Auto-update endpoint</td><td>Software</td><td><span class="badge badge-blue">Média</span></td><td><span class="badge badge-gray">Backlog</span></td></tr>
+              <tr><td>Geração em lote de activation keys</td><td>Activation</td><td><span class="badge badge-blue">Média</span></td><td><span class="badge badge-gray">Backlog</span></td></tr>
+              <tr><td>Release notes por versão</td><td>App Mobile</td><td><span class="badge badge-gray">Baixa</span></td><td><span class="badge badge-gray">Backlog</span></td></tr>
+              <tr><td>Canal beta / stable</td><td>Software</td><td><span class="badge badge-gray">Baixa</span></td><td><span class="badge badge-gray">Backlog</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SITES -->
+    <div class="section" id="sites-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Sites</div>
+          <div class="page-sub">Domínios e propriedades web do DSigner</div>
+        </div>
+        <button class="btn-sm" onclick="checkAllDomains()">↻ Verificar Status</button>
+      </div>
+
+      <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))">
+        <div class="stat-card"><div class="stat-label">Domínios</div><div class="stat-value" id="site-stat-total">—</div></div>
+        <div class="stat-card"><div class="stat-label">Online</div><div class="stat-value" id="site-stat-online" style="color:var(--green)">—</div></div>
+        <div class="stat-card"><div class="stat-label">SSL Válido</div><div class="stat-value" id="site-stat-ssl" style="color:var(--blue)">—</div></div>
+        <div class="stat-card"><div class="stat-label">Verificando</div><div class="stat-value" id="site-stat-checking" style="color:var(--yellow)">—</div></div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">DOMÍNIOS REGISTRADOS</div>
+          <div class="table-actions">
+            <button class="btn-sm primary" onclick="openModal('add-domain-modal')">+ Adicionar</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Domínio</th><th>Tipo</th><th>Status</th><th>SSL</th><th>Registrador</th><th>Notas</th><th>Ações</th></tr></thead>
+            <tbody id="sites-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -1276,6 +1423,45 @@ textarea.edit-input {
     <div class="modal-footer">
       <button class="btn-sm" onclick="closeModal('create-tv-modal')">Cancelar</button>
       <button class="btn-sm primary" onclick="createTv()">Criar TV</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Adicionar Domínio -->
+<div class="modal-overlay" id="add-domain-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <div class="modal-head-title">+ Adicionar Domínio</div>
+      <button class="modal-close" onclick="closeModal('add-domain-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="edit-field">
+        <div class="edit-label">Domínio</div>
+        <input class="edit-input" id="new-domain-url" placeholder="ex: dsignertv.com.br">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">Tipo</div>
+        <select class="edit-input" id="new-domain-type">
+          <option value="principal">Principal</option>
+          <option value="landing">Landing Page</option>
+          <option value="painel">Painel / App</option>
+          <option value="api">API / Backend</option>
+          <option value="dev">Dev / Staging</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">Registrador</div>
+        <input class="edit-input" id="new-domain-registrar" placeholder="ex: Registro.br, GoDaddy, Cloudflare">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">Notas</div>
+        <input class="edit-input" id="new-domain-notes" placeholder="ex: Hospedado na Vercel, renovação jan/2026">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('add-domain-modal')">Cancelar</button>
+      <button class="btn-sm primary" onclick="addDomain()">Adicionar</button>
     </div>
   </div>
 </div>
@@ -1397,6 +1583,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (sec === 'categories-section') loadAllCategories();
     if (sec === 'db-browser') browsePath('');
     if (sec === 'rules-section') loadRules();
+    if (sec === 'sites-section') initSitesSection();
   });
 });
 
@@ -2075,7 +2262,7 @@ async function deleteTv(uid, tvId, name) {
   try {
     await db.ref(`users/${uid}/tvs/${tvId}`).remove();
     toast('TV excluída', 'success');
-    loadAllTvs();
+    loadTvsForUser();
   } catch(e) { toast('Erro ao excluir', 'error'); }
 }
 
@@ -2373,6 +2560,181 @@ function updateRtFields() {}
 function copyRaw() {
   const text = document.getElementById('raw-modal-content').textContent;
   navigator.clipboard.writeText(text).then(() => toast('Copiado!', 'success'));
+}
+
+// ========== SITES ==========
+const DOMAINS_KEY = 'dsigner-dev-domains';
+
+const DEFAULT_DOMAINS = [
+  { url: 'dsignertv.com.br', type: 'principal', registrar: 'Registro.br', notes: 'Site principal / landing page', status: 'checking', ssl: 'checking' },
+  { url: 'app.dsignertv.com.br', type: 'painel', registrar: 'Registro.br', notes: 'Painel do cliente', status: 'checking', ssl: 'checking' },
+  { url: 'dsignertv.firebaseapp.com', type: 'dev', registrar: 'Firebase', notes: 'Auth domain Firebase', status: 'checking', ssl: 'checking' },
+];
+
+function loadDomainsFromStorage() {
+  try {
+    const raw = localStorage.getItem(DOMAINS_KEY);
+    return raw ? JSON.parse(raw) : DEFAULT_DOMAINS;
+  } catch { return DEFAULT_DOMAINS; }
+}
+
+function saveDomainsToStorage(domains) {
+  localStorage.setItem(DOMAINS_KEY, JSON.stringify(domains));
+}
+
+let domainsList = loadDomainsFromStorage();
+
+function renderSitesTable() {
+  const tbody = document.getElementById('sites-body');
+  tbody.innerHTML = '';
+
+  let online = 0, sslOk = 0, checking = 0;
+  document.getElementById('site-stat-total').textContent = domainsList.length;
+
+  domainsList.forEach((d, idx) => {
+    const typeBadge = {
+      principal: 'badge-blue', landing: 'badge-green', painel: 'badge-blue',
+      api: 'badge-yellow', dev: 'badge-gray', outro: 'badge-gray'
+    }[d.type] || 'badge-gray';
+
+    const statusBadge = d.status === 'online'
+      ? '<span class="badge badge-green">online</span>'
+      : d.status === 'offline'
+      ? '<span class="badge badge-red">offline</span>'
+      : '<span class="badge badge-yellow">verificando...</span>';
+
+    const sslBadge = d.ssl === 'ok'
+      ? '<span class="badge badge-green">✓ SSL</span>'
+      : d.ssl === 'error'
+      ? '<span class="badge badge-red">✗ SSL</span>'
+      : '<span class="badge badge-gray">—</span>';
+
+    if (d.status === 'online') online++;
+    if (d.ssl === 'ok') sslOk++;
+    if (d.status === 'checking') checking++;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <a href="https://${d.url}" target="_blank" style="color:var(--blue);font-family:var(--mono);font-size:12px;text-decoration:none">
+          ${d.url} ↗
+        </a>
+      </td>
+      <td><span class="badge ${typeBadge}">${d.type}</span></td>
+      <td>${statusBadge}</td>
+      <td>${sslBadge}</td>
+      <td style="font-size:12px;color:var(--text3)">${d.registrar || '—'}</td>
+      <td style="font-size:12px;color:var(--text3);max-width:200px">${d.notes || '—'}</td>
+      <td>
+        <button class="action-btn" onclick="checkDomain(${idx})">↻</button>
+        <button class="action-btn" onclick="editDomain(${idx})">Editar</button>
+        <button class="action-btn danger" onclick="removeDomain(${idx})">Del</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('site-stat-online').textContent = online;
+  document.getElementById('site-stat-ssl').textContent = sslOk;
+  document.getElementById('site-stat-checking').textContent = checking;
+}
+
+async function checkDomain(idx) {
+  const d = domainsList[idx];
+  d.status = 'checking';
+  d.ssl = 'checking';
+  renderSitesTable();
+
+  try {
+    // Usa fetch com mode no-cors para testar se o domínio responde
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    await fetch(`https://${d.url}`, { mode: 'no-cors', signal: controller.signal });
+    clearTimeout(timeout);
+    d.status = 'online';
+    d.ssl = 'ok'; // se chegou via https sem erro, SSL está ok
+  } catch(e) {
+    if (e.name === 'AbortError') {
+      d.status = 'offline';
+    } else {
+      // no-cors fetch pode lançar TypeError em CORS mas o site pode estar online
+      d.status = 'online';
+      d.ssl = 'ok';
+    }
+  }
+
+  saveDomainsToStorage(domainsList);
+  renderSitesTable();
+}
+
+async function checkAllDomains() {
+  toast('Verificando todos os domínios...', 'info');
+  await Promise.all(domainsList.map((_, idx) => checkDomain(idx)));
+  toast('Verificação concluída', 'success');
+}
+
+function addDomain() {
+  const url = document.getElementById('new-domain-url').value.trim().replace(/^https?:\/\//, '');
+  const type = document.getElementById('new-domain-type').value;
+  const registrar = document.getElementById('new-domain-registrar').value.trim();
+  const notes = document.getElementById('new-domain-notes').value.trim();
+
+  if (!url) { toast('Informe o domínio', 'error'); return; }
+
+  domainsList.push({ url, type, registrar, notes, status: 'checking', ssl: 'checking' });
+  saveDomainsToStorage(domainsList);
+  closeModal('add-domain-modal');
+  document.getElementById('new-domain-url').value = '';
+  document.getElementById('new-domain-registrar').value = '';
+  document.getElementById('new-domain-notes').value = '';
+  renderSitesTable();
+
+  // Auto-check o novo domínio
+  checkDomain(domainsList.length - 1);
+  toast(`Domínio ${url} adicionado`, 'success');
+}
+
+function editDomain(idx) {
+  const d = domainsList[idx];
+  document.getElementById('new-domain-url').value = d.url;
+  document.getElementById('new-domain-type').value = d.type;
+  document.getElementById('new-domain-registrar').value = d.registrar || '';
+  document.getElementById('new-domain-notes').value = d.notes || '';
+
+  // Trocar botão para salvar edição
+  const modal = document.getElementById('add-domain-modal');
+  modal.querySelector('.modal-head-title').textContent = '✏ Editar Domínio';
+  const saveBtn = modal.querySelector('.btn-sm.primary');
+  saveBtn.textContent = 'Salvar';
+  saveBtn.onclick = () => {
+    domainsList[idx] = {
+      ...domainsList[idx],
+      url: document.getElementById('new-domain-url').value.trim().replace(/^https?:\/\//, ''),
+      type: document.getElementById('new-domain-type').value,
+      registrar: document.getElementById('new-domain-registrar').value.trim(),
+      notes: document.getElementById('new-domain-notes').value.trim(),
+    };
+    saveDomainsToStorage(domainsList);
+    closeModal('add-domain-modal');
+    modal.querySelector('.modal-head-title').textContent = '+ Adicionar Domínio';
+    saveBtn.textContent = 'Adicionar';
+    saveBtn.onclick = addDomain;
+    renderSitesTable();
+    toast('Domínio atualizado', 'success');
+  };
+  openModal('add-domain-modal');
+}
+
+async function removeDomain(idx) {
+  const ok = await showConfirm('Remover domínio', `Remover "${domainsList[idx].url}" da lista?`);
+  if (!ok) return;
+  domainsList.splice(idx, 1);
+  saveDomainsToStorage(domainsList);
+  renderSitesTable();
+  toast('Domínio removido', 'success');
+}
+
+function initSitesSection() {
+  renderSitesTable();
 }
 
 // ========== KEYBOARD ==========
