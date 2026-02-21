@@ -916,7 +916,10 @@ textarea.edit-input {
           <div class="page-title">Usuários</div>
           <div class="page-sub">Todos os usuários no banco</div>
         </div>
-        <button class="btn-sm" onclick="loadUsers()">↻ Atualizar</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm" onclick="loadUsers()">↻ Atualizar</button>
+          <button class="btn-sm primary" onclick="openModal('create-user-modal')">+ Criar Usuário</button>
+        </div>
       </div>
       <div class="table-card">
         <div class="table-header">
@@ -941,7 +944,10 @@ textarea.edit-input {
           <div class="page-title">TVs</div>
           <div class="page-sub">Selecione um usuário para ver suas TVs</div>
         </div>
-        <button class="btn-sm" id="tv-refresh-btn" onclick="loadTvsForUser()" style="display:none">↻ Atualizar</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm" id="tv-refresh-btn" onclick="loadTvsForUser()" style="display:none">↻ Atualizar</button>
+          <button class="btn-sm primary" id="tv-add-btn" onclick="openCreateTvModal()" style="display:none">+ Nova TV</button>
+        </div>
       </div>
 
       <!-- User picker -->
@@ -1199,6 +1205,76 @@ textarea.edit-input {
     <div class="modal-footer">
       <button class="btn-sm" onclick="copyRaw()">⎘ Copiar</button>
       <button class="btn-sm" onclick="closeModal('raw-modal')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Criar Usuário -->
+<div class="modal-overlay" id="create-user-modal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <div class="modal-head-title">+ Criar Novo Usuário</div>
+      <button class="modal-close" onclick="closeModal('create-user-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--blue);font-family:var(--mono)">
+        ℹ Cria o usuário no Firebase Auth e inicializa a estrutura no Realtime Database.
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">Email</div>
+        <input class="edit-input" id="new-user-email" type="email" placeholder="usuario@email.com">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">Senha</div>
+        <input class="edit-input" id="new-user-pass" type="password" placeholder="mínimo 6 caracteres">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">Nome / Empresa (opcional)</div>
+        <input class="edit-input" id="new-user-name" placeholder="ex: Hotel Exemplo">
+      </div>
+      <div id="create-user-error" style="display:none;margin-top:8px;padding:8px 12px;background:var(--red-bg);color:var(--red);border-radius:var(--radius);font-size:12px;font-family:var(--mono)"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('create-user-modal')">Cancelar</button>
+      <button class="btn-sm primary" id="create-user-btn" onclick="createUser()">Criar Usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Criar TV -->
+<div class="modal-overlay" id="create-tv-modal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <div class="modal-head-title" id="create-tv-modal-title">+ Nova TV</div>
+      <button class="modal-close" onclick="closeModal('create-tv-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="edit-field">
+        <div class="edit-label">Nome da TV</div>
+        <input class="edit-input" id="new-tv-name" placeholder="ex: TV Recepção">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">Categoria</div>
+        <select class="edit-input" id="new-tv-category">
+          <option value="">— sem categoria —</option>
+        </select>
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">Activation Key (opcional)</div>
+        <input class="edit-input" id="new-tv-key" placeholder="ex: ABC123">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">Status inicial</div>
+        <select class="edit-input" id="new-tv-status">
+          <option value="on">online</option>
+          <option value="off">offline</option>
+        </select>
+      </div>
+      <div id="create-tv-error" style="display:none;margin-top:8px;padding:8px 12px;background:var(--red-bg);color:var(--red);border-radius:var(--radius);font-size:12px;font-family:var(--mono)"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('create-tv-modal')">Cancelar</button>
+      <button class="btn-sm primary" onclick="createTv()">Criar TV</button>
     </div>
   </div>
 </div>
@@ -1537,14 +1613,17 @@ function onTvUserChange() {
   selectedTvUid = document.getElementById('tv-user-select').value;
   const card = document.getElementById('tv-table-card');
   const refreshBtn = document.getElementById('tv-refresh-btn');
+  const addBtn = document.getElementById('tv-add-btn');
   if (!selectedTvUid) {
     card.style.display = 'none';
     refreshBtn.style.display = 'none';
+    addBtn.style.display = 'none';
     document.getElementById('tv-user-stats').style.display = 'none';
     return;
   }
   card.style.display = 'block';
   refreshBtn.style.display = '';
+  addBtn.style.display = '';
   loadTvsForUser();
 }
 
@@ -1765,27 +1844,176 @@ async function deleteMediaRow(btn) {
   }
 }
 
+// ========== CRIAR USUÁRIO ==========
+async function createUser() {
+  const email = document.getElementById('new-user-email').value.trim();
+  const pass = document.getElementById('new-user-pass').value;
+  const name = document.getElementById('new-user-name').value.trim();
+  const errEl = document.getElementById('create-user-error');
+  const btn = document.getElementById('create-user-btn');
+
+  errEl.style.display = 'none';
+  if (!email || !pass) { errEl.textContent = 'Email e senha são obrigatórios'; errEl.style.display = 'block'; return; }
+  if (pass.length < 6) { errEl.textContent = 'Senha deve ter mínimo 6 caracteres'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Criando...';
+
+  try {
+    // Cria o usuário no Firebase Auth usando uma instância secundária temporária
+    const secondaryApp = firebase.initializeApp(firebase.app().options, 'secondary-' + Date.now());
+    const secondaryAuth = secondaryApp.auth();
+    const cred = await secondaryAuth.createUserWithEmailAndPassword(email, pass);
+    const newUser = cred.user;
+    await secondaryAuth.signOut();
+    await secondaryApp.delete();
+
+    // Inicializa estrutura no Realtime Database
+    const uid = email.replace(/\./g, ',');
+    const initialData = {
+      profile: { email, name: name || email, createdAt: Date.now(), createdBy: 'dev-console' },
+      categories: { '1': { id: '1', name: 'Geral', status: 'active' } }
+    };
+    await db.ref(`users/${uid}`).update(initialData);
+
+    toast(`Usuário ${email} criado com sucesso!`, 'success');
+    closeModal('create-user-modal');
+    document.getElementById('new-user-email').value = '';
+    document.getElementById('new-user-pass').value = '';
+    document.getElementById('new-user-name').value = '';
+    loadUsers();
+    loadOverview();
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use': 'Este email já está cadastrado',
+      'auth/invalid-email': 'Email inválido',
+      'auth/weak-password': 'Senha muito fraca'
+    };
+    errEl.textContent = msgs[e.code] || e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Criar Usuário';
+  }
+}
+
+// ========== CRIAR TV ==========
+function openCreateTvModal() {
+  const uid = selectedTvUid;
+  if (!uid) { toast('Selecione um usuário primeiro', 'error'); return; }
+  const email = uid.replace(/,/g, '.');
+  document.getElementById('create-tv-modal-title').textContent = `+ Nova TV para ${email}`;
+
+  // Preencher categorias do usuário
+  const cats = (allUsersData[uid] && allUsersData[uid].categories) || {};
+  const sel = document.getElementById('new-tv-category');
+  sel.innerHTML = '<option value="">— sem categoria —</option>';
+  Object.entries(cats).forEach(([catId, cat]) => {
+    const opt = document.createElement('option');
+    opt.value = catId;
+    opt.textContent = cat.name;
+    sel.appendChild(opt);
+  });
+
+  document.getElementById('new-tv-name').value = '';
+  document.getElementById('new-tv-key').value = '';
+  document.getElementById('create-tv-error').style.display = 'none';
+  openModal('create-tv-modal');
+}
+
+async function createTv() {
+  const uid = selectedTvUid;
+  if (!uid) return;
+  const name = document.getElementById('new-tv-name').value.trim();
+  const categoryId = document.getElementById('new-tv-category').value;
+  const activationKey = document.getElementById('new-tv-key').value.trim();
+  const status = document.getElementById('new-tv-status').value;
+  const errEl = document.getElementById('create-tv-error');
+
+  errEl.style.display = 'none';
+  if (!name) { errEl.textContent = 'Nome da TV é obrigatório'; errEl.style.display = 'block'; return; }
+
+  try {
+    // Pegar TVs existentes para gerar novo ID
+    const snap = await db.ref(`users/${uid}/tvs`).once('value');
+    const existingTvs = snap.val() || {};
+    const ids = Object.keys(existingTvs).map(Number).filter(n => !isNaN(n));
+    const newId = (ids.length ? Math.max(...ids) + 1 : 1).toString();
+
+    const newTv = {
+      id: newId,
+      name,
+      categoryId: categoryId || null,
+      status,
+      activationKey: activationKey || null,
+      deviceName: activationKey ? `Dispositivo ${newId}` : null,
+      lastActivation: activationKey ? Date.now() : null,
+      createdAt: Date.now(),
+      createdBy: 'dev-console'
+    };
+
+    await db.ref(`users/${uid}/tvs/${newId}`).set(newTv);
+
+    // Se tiver activation key, registra no nó /midia também
+    if (activationKey) {
+      await db.ref('midia/' + activationKey).set({
+        tipo: 'activation',
+        tvData: newTv,
+        timestamp: Date.now()
+      });
+    }
+
+    // Atualizar allUsersData local
+    if (!allUsersData[uid]) allUsersData[uid] = {};
+    if (!allUsersData[uid].tvs) allUsersData[uid].tvs = {};
+    allUsersData[uid].tvs[newId] = newTv;
+
+    toast(`TV "${name}" criada com sucesso!`, 'success');
+    closeModal('create-tv-modal');
+    loadTvsForUser();
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  }
+}
+
 // ========== RULES VIEWER ==========
 const CURRENT_RULES = {
-  "rules": {
-    ".read": false,
-    ".write": false,
-    "users": {
-      ".read": "auth != null && auth.token.email === 'micaelbardimtech@gmail.com'",
-      ".write": "auth != null && auth.token.email === 'micaelbardimtech@gmail.com'",
-      "$userId": {
-        ".read": "auth != null && (auth.token.email.replace('.', ',') === $userId || auth.token.email === 'micaelbardimtech@gmail.com')",
-        ".write": "auth != null && (auth.token.email.replace('.', ',') === $userId || auth.token.email === 'micaelbardimtech@gmail.com')",
-        "categories": { ".indexOn": ["id", "name", "status"] },
-        "tvs": { ".indexOn": ["id", "name", "categoryId", "status", "activationKey"] },
-        "tv_midias": { "$tvSlug": { ".indexOn": ["active", "timestamp", "lastActive"] } }
+  "Realtime Database": {
+    "rules": {
+      ".read": false,
+      ".write": false,
+      "users": {
+        ".read": "auth != null && auth.token.email === 'micaelbardimtech@gmail.com'",
+        ".write": "auth != null && auth.token.email === 'micaelbardimtech@gmail.com'",
+        "$userId": {
+          ".read": "auth != null && (auth.token.email.replace('.', ',') === $userId || auth.token.email === 'micaelbardimtech@gmail.com')",
+          ".write": "auth != null && (auth.token.email.replace('.', ',') === $userId || auth.token.email === 'micaelbardimtech@gmail.com')",
+          "categories": { ".indexOn": ["id", "name", "status"] },
+          "tvs": { ".indexOn": ["id", "name", "categoryId", "status", "activationKey"] },
+          "tv_midias": { "$tvSlug": { ".indexOn": ["active", "timestamp", "lastActive"] } }
+        }
+      },
+      "midia": {
+        ".read": "auth != null && auth.token.email === 'micaelbardimtech@gmail.com'",
+        "$activationKey": {
+          ".read": true,
+          ".write": "auth != null"
+        }
       }
-    },
-    "midia": {
-      ".read": "auth != null && auth.token.email === 'micaelbardimtech@gmail.com'",
-      "$activationKey": {
-        ".read": true,
-        ".write": "auth != null"
+    }
+  },
+  "Firebase Storage": {
+    "rules_version": "2",
+    "service": "firebase.storage",
+    "match /b/{bucket}/o": {
+      "match /tv_media/{allPaths=**}": {
+        "allow read": "request.auth != null",
+        "allow write": "request.auth != null",
+        "allow delete": "request.auth != null && request.auth.token.email == 'micaelbardimtech@gmail.com'"
+      },
+      "match /{allPaths=**}": {
+        "allow read, write": "request.auth != null && request.auth.token.email == 'micaelbardimtech@gmail.com'"
       }
     }
   }
