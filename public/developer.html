@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevConsole · DSigner</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f8f8f6;
+  --bg2: #ffffff;
+  --bg3: #f0f0ed;
+  --border: #e2e2dc;
+  --border2: #d0d0ca;
+  --text: #1a1a18;
+  --text2: #4a4a46;
+  --text3: #8a8a84;
+  --accent: #1a1a18;
+  --accent2: #e8e8e4;
+  --green: #1a7a4a;
+  --green-bg: #e8f5ee;
+  --red: #c0392b;
+  --red-bg: #fdf0ef;
+  --yellow: #8a6200;
+  --yellow-bg: #fef8e7;
+  --blue: #1a4a8a;
+  --blue-bg: #eef3fc;
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow2: 0 4px 12px rgba(0,0,0,.08);
+  --radius: 6px;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg: #0f0f0e;
+  --bg2: #191918;
+  --bg3: #222220;
+  --border: #2e2e2c;
+  --border2: #3e3e3c;
+  --text: #f0f0ec;
+  --text2: #b0b0aa;
+  --text3: #666662;
+  --accent: #f0f0ec;
+  --accent2: #2a2a28;
+  --green: #4ade80;
+  --green-bg: #0a2a18;
+  --red: #f87171;
+  --red-bg: #2a0a0a;
+  --yellow: #fbbf24;
+  --yellow-bg: #2a1e00;
+  --blue: #60a5fa;
+  --blue-bg: #0a1a2a;
+  --shadow: 0 1px 3px rgba(0,0,0,.3);
+  --shadow2: 0 4px 12px rgba(0,0,0,.4);
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: background .2s, color .2s;
+}
+
+/* ---- LOGIN ---- */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: var(--shadow2);
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.login-logo-mark {
+  width: 28px;
+  height: 28px;
+  background: var(--text);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-logo-mark svg { fill: var(--bg2); }
+
+.login-logo-text {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--text);
+}
+
+.login-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.login-sub {
+  font-size: 13px;
+  color: var(--text3);
+  margin-bottom: 28px;
+}
+
+.form-group { margin-bottom: 16px; }
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-family: var(--mono);
+}
+
+.form-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s;
+}
+
+.form-input:focus { border-color: var(--text); }
+
+.btn-primary {
+  width: 100%;
+  padding: 10px;
+  background: var(--text);
+  color: var(--bg2);
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity .15s;
+  margin-top: 4px;
+}
+
+.btn-primary:hover { opacity: .85; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+.login-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--red-bg);
+  color: var(--red);
+  border-radius: var(--radius);
+  font-size: 13px;
+  display: none;
+}
+
+/* ---- LAYOUT ---- */
+#app { display: none; min-height: 100vh; }
+
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 48px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+
+.topbar-logo {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: .06em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-logo-mark {
+  width: 20px;
+  height: 20px;
+  background: var(--text);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topbar-logo-mark svg { fill: var(--bg2); width: 10px; }
+
+.topbar-sep { width: 1px; height: 20px; background: var(--border); }
+
+.topbar-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 7px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text3);
+  letter-spacing: .04em;
+}
+
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-pill {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg2);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, border-color .15s;
+  font-size: 14px;
+}
+
+.btn-icon:hover { background: var(--bg3); border-color: var(--border2); }
+
+.sidebar {
+  position: fixed;
+  top: 48px; bottom: 0; left: 0;
+  width: 220px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 12px 0;
+  z-index: 90;
+}
+
+.sidebar-section {
+  padding: 6px 12px 2px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text2);
+  transition: background .1s, color .1s;
+  border-left: 2px solid transparent;
+  user-select: none;
+}
+
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+
+.nav-item.active {
+  background: var(--accent2);
+  color: var(--text);
+  border-left-color: var(--text);
+  font-weight: 500;
+}
+
+.nav-item svg { flex-shrink: 0; opacity: .7; }
+.nav-item.active svg { opacity: 1; }
+
+.main {
+  margin-left: 220px;
+  margin-top: 48px;
+  padding: 24px;
+  min-height: calc(100vh - 48px);
+}
+
+/* ---- SECTIONS ---- */
+.section { display: none; }
+.section.active { display: block; }
+
+.page-header {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.page-sub {
+  font-size: 13px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+/* ---- STAT CARDS ---- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+}
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+}
+
+.stat-delta {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+
+/* ---- TABLE ---- */
+.table-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.table-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.table-title {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: .04em;
+}
+
+.table-actions { display: flex; gap: 8px; align-items: center; }
+
+.search-input {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  outline: none;
+  width: 200px;
+  transition: border-color .15s;
+}
+
+.search-input:focus { border-color: var(--text); }
+
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  padding: 8px 14px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--bg3); }
+
+.mono { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+.badge-blue { background: var(--blue-bg); color: var(--blue); }
+.badge-gray { background: var(--bg3); color: var(--text3); }
+
+.badge::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.action-btn {
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg2);
+  color: var(--text2);
+  font-size: 11px;
+  font-family: var(--mono);
+  cursor: pointer;
+  transition: background .1s;
+  margin-right: 4px;
+}
+
+.action-btn:hover { background: var(--bg3); }
+.action-btn.danger { color: var(--red); border-color: var(--red-bg); }
+.action-btn.danger:hover { background: var(--red-bg); }
+
+/* ---- JSON VIEWER ---- */
+.json-viewer {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  color: var(--text2);
+  white-space: pre;
+}
+
+.json-key { color: var(--blue); }
+.json-string { color: var(--green); }
+.json-number { color: var(--yellow); }
+.json-bool { color: var(--red); }
+
+/* ---- MODAL ---- */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.4);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  display: none;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow2);
+}
+
+.modal-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-head-title {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.modal-body {
+  padding: 18px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-family: var(--mono);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text2);
+  transition: background .1s;
+}
+
+.btn-sm:hover { background: var(--bg3); }
+.btn-sm.primary { background: var(--text); color: var(--bg2); border-color: var(--text); }
+.btn-sm.primary:hover { opacity: .85; }
+.btn-sm.danger { background: var(--red-bg); color: var(--red); border-color: var(--red-bg); }
+
+/* ---- LOADING ---- */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- RAW DB BROWSER ---- */
+.path-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+.path-crumb {
+  color: var(--blue);
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.path-crumb:hover { background: var(--accent2); }
+.path-sep { color: var(--text3); }
+.path-current { color: var(--text); }
+
+.tree-node {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.tree-node-head {
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: var(--bg2);
+  transition: background .1s;
+}
+
+.tree-node-head:hover { background: var(--bg3); }
+
+.tree-arrow { font-size: 10px; color: var(--text3); transition: transform .15s; }
+.tree-node.open .tree-arrow { transform: rotate(90deg); }
+
+.tree-key { font-family: var(--mono); font-size: 12px; color: var(--text); font-weight: 500; }
+.tree-type { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-left: auto; }
+.tree-count { font-family: var(--mono); font-size: 10px; color: var(--blue); }
+
+.tree-body {
+  display: none;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg3);
+}
+
+.tree-node.open .tree-body { display: block; }
+
+/* ---- TOAST ---- */
+#toast-container {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 12px;
+  box-shadow: var(--shadow2);
+  animation: slideIn .2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast.success { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.toast.error { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+.toast.info { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue); }
+
+@keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ---- CONFIRM DIALOG ---- */
+#confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 250; display: none; align-items: center; justify-content: center; }
+#confirm-overlay.open { display: flex; }
+
+.confirm-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: var(--shadow2);
+}
+
+.confirm-title { font-weight: 500; margin-bottom: 8px; }
+.confirm-msg { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+.confirm-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); transition: transform .2s; }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---- DB EDITOR ---- */
+.edit-field { margin-bottom: 12px; }
+.edit-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.edit-input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  outline: none;
+}
+
+.edit-input:focus { border-color: var(--text); }
+
+textarea.edit-input {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+.kv-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.kv-row .edit-input { flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-mark">
+        <svg viewBox="0 0 10 10" width="12"><path d="M2 2h6v2H5v4H3V4H2z"/></svg>
+      </div>
+      <div class="login-logo-text">DSIGNER · DEV</div>
+    </div>
+    <div class="login-title">Developer Console</div>
+    <div class="login-sub">Acesso restrito — equipe técnica</div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="login-email" placeholder="dev@dsigner.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input class="form-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" id="login-btn">Entrar</button>
+    <div class="login-error" id="login-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="topbar-logo-mark">
+        <svg viewBox="0 0 10 10" width="10"><path d="M2 2h6v2H5v4H3V4H2z"/></svg>
+      </div>
+      DSIGNER
+    </div>
+    <div class="topbar-sep"></div>
+    <span class="topbar-badge">DEV CONSOLE</span>
+    <div class="topbar-right">
+      <div class="user-pill"><div class="user-dot"></div><span id="topbar-email">—</span></div>
+      <button class="btn-icon" id="theme-toggle" title="Alternar tema">◐</button>
+      <button class="btn-icon" id="logout-btn" title="Sair">⏻</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">Visão Geral</div>
+    <div class="nav-item active" data-section="overview">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 1h6v6H1zm8 0h6v6H9zM1 9h6v6H1zm8 0h6v6H9z"/></svg>
+      <span>Dashboard</span>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:8px">Banco de Dados</div>
+    <div class="nav-item" data-section="users-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6H2z"/></svg>
+      <span>Usuários</span>
+    </div>
+    <div class="nav-item" data-section="tvs-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="14" height="9" rx="1"/><path d="M5 13h6v1H5z"/></svg>
+      <span>TVs</span>
+    </div>
+    <div class="nav-item" data-section="media-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2h14v12H1zm2 2v8h10V4H3zm3 1l4 3-4 3V5z"/></svg>
+      <span>Mídias</span>
+    </div>
+    <div class="nav-item" data-section="categories-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 1h6v6H1zm8 0h6v3H9zm0 5h6v3H9zM1 9h14v2H1zm0 4h14v2H1z"/></svg>
+      <span>Categorias</span>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:8px">Avançado</div>
+    <div class="nav-item" data-section="db-browser">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><ellipse cx="8" cy="4" rx="6" ry="2"/><path d="M2 4v3c0 1.1 2.7 2 6 2s6-.9 6-2V4"/><path d="M2 7v3c0 1.1 2.7 2 6 2s6-.9 6-2V7"/><path d="M2 10v2c0 1.1 2.7 2 6 2s6-.9 6-2v-2"/></svg>
+      <span>DB Browser</span>
+    </div>
+    <div class="nav-item" data-section="realtime-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 8V4h2v4H7zm0 2h2v2H7v-2z"/></svg>
+      <span>Realtime Midia</span>
+    </div>
+    <div class="nav-item" data-section="rules-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v2H2zm0 4h8v2H2zm0 4h10v2H2zm0 4h6v2H2z"/></svg>
+      <span>Rules Viewer</span>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="overview">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">Resumo geral do banco de dados</div>
+        </div>
+        <button class="btn-sm" id="refresh-overview">↻ Atualizar</button>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-label">Usuários</div><div class="stat-value" id="stat-users">—</div></div>
+        <div class="stat-card"><div class="stat-label">TVs</div><div class="stat-value" id="stat-tvs">—</div></div>
+        <div class="stat-card"><div class="stat-label">Categorias</div><div class="stat-value" id="stat-cats">—</div></div>
+        <div class="stat-card"><div class="stat-label">Mídias</div><div class="stat-value" id="stat-medias">—</div></div>
+        <div class="stat-card"><div class="stat-label">TVs Online</div><div class="stat-value" id="stat-online" style="color:var(--green)">—</div></div>
+        <div class="stat-card"><div class="stat-label">Keys Ativas</div><div class="stat-value" id="stat-keys">—</div></div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">USUÁRIOS RECENTES</div>
+        </div>
+        <div class="table-wrap">
+          <table id="overview-users-table">
+            <thead><tr><th>Email</th><th>TVs</th><th>Categorias</th><th>Mídias</th><th>Ações</th></tr></thead>
+            <tbody id="overview-users-body"><tr><td colspan="5" class="loading"><div class="spinner"></div>Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="section" id="users-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Usuários</div>
+          <div class="page-sub">Todos os usuários no banco</div>
+        </div>
+        <button class="btn-sm" onclick="loadUsers()">↻ Atualizar</button>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">USUÁRIOS</div>
+          <div class="table-actions">
+            <input class="search-input" id="user-search" placeholder="Filtrar..." oninput="filterTable('users-body', this.value)">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID (email codificado)</th><th>Email</th><th>TVs</th><th>Cats</th><th>Mídias</th><th>Ações</th></tr></thead>
+            <tbody id="users-body"><tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TVs -->
+    <div class="section" id="tvs-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">TVs</div>
+          <div class="page-sub">Selecione um usuário para ver suas TVs</div>
+        </div>
+        <button class="btn-sm" id="tv-refresh-btn" onclick="loadTvsForUser()" style="display:none">↻ Atualizar</button>
+      </div>
+
+      <!-- User picker -->
+      <div class="table-card" style="margin-bottom:16px">
+        <div class="table-header">
+          <div class="table-title">SELECIONAR USUÁRIO</div>
+        </div>
+        <div style="padding:14px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <select class="edit-input" id="tv-user-select" style="max-width:340px;flex:1" onchange="onTvUserChange()">
+            <option value="">— escolha um usuário —</option>
+          </select>
+          <span id="tv-user-stats" class="badge badge-gray" style="display:none"></span>
+        </div>
+      </div>
+
+      <!-- TVs table -->
+      <div class="table-card" id="tv-table-card" style="display:none">
+        <div class="table-header">
+          <div class="table-title" id="tv-table-title">DISPOSITIVOS</div>
+          <div class="table-actions">
+            <input class="search-input" id="tv-search" placeholder="Filtrar..." oninput="filterTable('tvs-body', this.value)">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nome</th><th>Categoria</th><th>Status</th><th>Activation Key</th><th>Mídia Atual</th><th>Ações</th></tr></thead>
+            <tbody id="tvs-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIA -->
+    <div class="section" id="media-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Mídias</div>
+          <div class="page-sub">Selecione um usuário para ver suas mídias</div>
+        </div>
+        <button class="btn-sm" id="media-refresh-btn" onclick="loadMediaForUser()" style="display:none">↻ Atualizar</button>
+      </div>
+
+      <!-- User picker -->
+      <div class="table-card" style="margin-bottom:16px">
+        <div class="table-header">
+          <div class="table-title">SELECIONAR USUÁRIO</div>
+        </div>
+        <div style="padding:14px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <select class="edit-input" id="media-user-select" style="max-width:340px;flex:1" onchange="onMediaUserChange()">
+            <option value="">— escolha um usuário —</option>
+          </select>
+          <span id="media-user-stats" class="badge badge-gray" style="display:none"></span>
+        </div>
+      </div>
+
+      <!-- Media table -->
+      <div class="table-card" id="media-table-card" style="display:none">
+        <div class="table-header">
+          <div class="table-title" id="media-table-title">MÍDIAS</div>
+          <div class="table-actions">
+            <input class="search-input" placeholder="Filtrar..." oninput="filterTable('media-body', this.value)">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nome</th><th>TV</th><th>Tipo</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead>
+            <tbody id="media-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="section" id="categories-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Categorias</div>
+          <div class="page-sub">Grupos de TVs por usuário</div>
+        </div>
+        <button class="btn-sm" onclick="loadAllCategories()">↻ Atualizar</button>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">CATEGORIAS</div>
+          <div class="table-actions">
+            <input class="search-input" placeholder="Filtrar..." oninput="filterTable('cats-body', this.value)">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Nome</th><th>Usuário</th><th>Status</th><th>TVs</th><th>Ações</th></tr></thead>
+            <tbody id="cats-body"><tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- DB BROWSER -->
+    <div class="section" id="db-browser">
+      <div class="page-header">
+        <div>
+          <div class="page-title">DB Browser</div>
+          <div class="page-sub">Explorador de nós do Firebase Realtime Database</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input class="search-input" id="db-path-input" placeholder="users/userId/tvs" style="width:260px">
+          <button class="btn-sm primary" onclick="browsePath()">Ir →</button>
+        </div>
+      </div>
+      <div class="path-bar" id="path-bar"><span class="path-current">raiz</span></div>
+      <div id="db-tree"></div>
+    </div>
+
+    <!-- REALTIME MIDIA -->
+    <div class="section" id="realtime-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Realtime Midia</div>
+          <div class="page-sub">Monitor e envio de comandos para TVs via /midia/{key}</div>
+        </div>
+      </div>
+      <div class="table-card" style="margin-bottom:20px">
+        <div class="table-header">
+          <div class="table-title">ENVIAR COMANDO</div>
+        </div>
+        <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div class="edit-label" style="margin-bottom:4px">Activation Key</div>
+            <input class="edit-input" id="rt-key" placeholder="ex: ABC123">
+          </div>
+          <div>
+            <div class="edit-label" style="margin-bottom:4px">Tipo</div>
+            <select class="edit-input" id="rt-type" onchange="updateRtFields()">
+              <option value="image">image</option>
+              <option value="video">video</option>
+              <option value="stop">stop</option>
+              <option value="activation">activation</option>
+            </select>
+          </div>
+          <div>
+            <div class="edit-label" style="margin-bottom:4px">URL</div>
+            <input class="edit-input" id="rt-url" placeholder="https://...">
+          </div>
+          <div>
+            <div class="edit-label" style="margin-bottom:4px">Duration (s)</div>
+            <input class="edit-input" id="rt-duration" type="number" value="10">
+          </div>
+          <div style="grid-column:1/-1">
+            <button class="btn-sm primary" onclick="sendRealtimeCommand()" style="margin-right:8px">⚡ Enviar</button>
+            <button class="btn-sm" onclick="monitorKey()">👁 Monitorar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">MONITOR REALTIME</div>
+          <div class="table-actions">
+            <span id="rt-status" class="badge badge-gray">offline</span>
+          </div>
+        </div>
+        <div style="padding:16px">
+          <div class="json-viewer" id="rt-monitor">Nenhum dado. Insira uma key e clique em Monitorar.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RULES VIEWER -->
+    <div class="section" id="rules-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Rules Viewer</div>
+          <div class="page-sub">Visualização das regras atuais do Firebase Realtime Database</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm" onclick="loadRules()">↻ Recarregar</button>
+          <button class="btn-sm" onclick="copyRules()">⎘ Copiar JSON</button>
+        </div>
+      </div>
+
+      <div class="table-card" style="margin-bottom:16px">
+        <div class="table-header">
+          <div class="table-title">REGRAS ATUAIS</div>
+          <div class="table-actions">
+            <span class="badge badge-yellow">⚠ somente leitura via console</span>
+          </div>
+        </div>
+        <div style="padding:16px">
+          <div style="background:var(--yellow-bg);border:1px solid var(--yellow);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--yellow);font-family:var(--mono)">
+            ⚠ A API do Firebase não permite ler/editar Rules via SDK client. Para editar, acesse o <a href="https://console.firebase.google.com/project/dsignertv/database/dsignertv-default-rtdb/rules" target="_blank" style="color:var(--blue)">Firebase Console → Rules</a>. Abaixo estão as regras atuais do sistema (hardcoded para referência).
+          </div>
+          <div class="json-viewer" id="rules-viewer" style="max-height:600px"></div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">RULES PLAYGROUND — TESTE DE PERMISSÃO</div>
+        </div>
+        <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div>
+            <div class="edit-label" style="margin-bottom:4px">Path</div>
+            <input class="edit-input" id="rules-test-path" placeholder="users/uid/tvs">
+          </div>
+          <div>
+            <div class="edit-label" style="margin-bottom:4px">Email simulado</div>
+            <input class="edit-input" id="rules-test-email" placeholder="user@email.com">
+          </div>
+          <div>
+            <div class="edit-label" style="margin-bottom:4px">Operação</div>
+            <select class="edit-input" id="rules-test-op">
+              <option value="read">read</option>
+              <option value="write">write</option>
+            </select>
+          </div>
+          <div style="grid-column:1/-1">
+            <button class="btn-sm primary" onclick="testRule()">▶ Testar no Firebase</button>
+            <span id="rules-test-result" style="margin-left:12px;font-family:var(--mono);font-size:12px"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL: Node Detail -->
+<div class="modal-overlay" id="node-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title" id="node-modal-title">Nó</div>
+      <button class="modal-close" onclick="closeModal('node-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="node-modal-content"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm danger" id="node-delete-btn" onclick="confirmDeleteNode()">🗑 Excluir nó</button>
+      <button class="btn-sm" onclick="closeModal('node-modal')">Fechar</button>
+      <button class="btn-sm primary" id="node-save-btn" onclick="saveNodeEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Raw JSON -->
+<div class="modal-overlay" id="raw-modal">
+  <div class="modal" style="max-width:800px">
+    <div class="modal-head">
+      <div class="modal-head-title" id="raw-modal-title">JSON Raw</div>
+      <button class="modal-close" onclick="closeModal('raw-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="json-viewer" id="raw-modal-content"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="copyRaw()">⎘ Copiar</button>
+      <button class="btn-sm" onclick="closeModal('raw-modal')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirm-title">Confirmar</div>
+    <div class="confirm-msg" id="confirm-msg">Tem certeza?</div>
+    <div class="confirm-btns">
+      <button class="btn-sm" onclick="resolveConfirm(false)">Cancelar</button>
+      <button class="btn-sm danger" onclick="resolveConfirm(true)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<script>
+// ========== FIREBASE CONFIG ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyBhj6nv3QcIHyuznWPNM4t_0NjL0ghMwFw",
+  authDomain: "dsignertv.firebaseapp.com",
+  databaseURL: "https://dsignertv-default-rtdb.firebaseio.com",
+  projectId: "dsignertv",
+  storageBucket: "dsignertv.firebasestorage.app",
+  messagingSenderId: "930311416952",
+  appId: "1:930311416952:web:d0e7289f0688c46492d18d"
+};
+
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+// ========== STATE ==========
+let currentUser = null;
+let allUsersData = {};
+let currentNodePath = null;
+let currentNodeData = null;
+let rtListener = null;
+
+// ========== THEME ==========
+const themeBtn = document.getElementById('theme-toggle');
+const htmlEl = document.documentElement;
+
+function setTheme(t) {
+  htmlEl.setAttribute('data-theme', t);
+  localStorage.setItem('dev-theme', t);
+}
+
+themeBtn.addEventListener('click', () => {
+  setTheme(htmlEl.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+
+if (localStorage.getItem('dev-theme') === 'dark') setTheme('dark');
+
+// ========== AUTH ==========
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('topbar-email').textContent = user.email;
+    loadOverview();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    currentUser = null;
+  }
+});
+
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-err');
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  errEl.style.display = 'none';
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(e) {
+    errEl.textContent = translateAuthError(e.code);
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  }
+});
+
+document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-btn').click(); });
+
+document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+
+function translateAuthError(code) {
+  const map = {
+    'auth/user-not-found': 'Usuário não encontrado',
+    'auth/wrong-password': 'Senha incorreta',
+    'auth/invalid-credential': 'Credenciais inválidas',
+    'auth/invalid-email': 'Email inválido',
+    'auth/too-many-requests': 'Muitas tentativas. Aguarde.'
+  };
+  return map[code] || 'Erro ao entrar. Verifique as credenciais.';
+}
+
+// ========== NAVIGATION ==========
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    const sec = item.dataset.section;
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(sec)?.classList.add('active');
+
+    if (sec === 'users-section') loadUsers();
+    if (sec === 'tvs-section') populateUserSelects();
+    if (sec === 'media-section') populateUserSelects();
+    if (sec === 'categories-section') loadAllCategories();
+    if (sec === 'db-browser') browsePath('');
+    if (sec === 'rules-section') loadRules();
+  });
+});
+
+document.getElementById('refresh-overview').addEventListener('click', loadOverview);
+
+// ========== HELPERS ==========
+function toast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function fmtDate(ts) {
+  if (!ts) return '—';
+  return new Date(ts).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function filterTable(tbodyId, q) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  const lq = q.toLowerCase();
+  tbody.querySelectorAll('tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(lq) ? '' : 'none';
+  });
+}
+
+function closeModal(id) {
+  document.getElementById(id)?.classList.remove('open');
+}
+
+function openModal(id) {
+  document.getElementById(id)?.classList.add('open');
+}
+
+// Confirm dialog
+let _resolveConfirm = null;
+
+function showConfirm(title, msg) {
+  return new Promise(res => {
+    _resolveConfirm = res;
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-msg').textContent = msg;
+    document.getElementById('confirm-overlay').classList.add('open');
+  });
+}
+
+function resolveConfirm(v) {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  if (_resolveConfirm) { _resolveConfirm(v); _resolveConfirm = null; }
+}
+
+function syntaxHighlight(json) {
+  if (typeof json !== 'string') json = JSON.stringify(json, null, 2);
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+    let cls = 'json-number';
+    if (/^"/.test(m)) cls = /:$/.test(m) ? 'json-key' : 'json-string';
+    else if (/true|false/.test(m)) cls = 'json-bool';
+    else if (/null/.test(m)) cls = 'json-bool';
+    return `<span class="${cls}">${m}</span>`;
+  });
+}
+
+// ========== OVERVIEW ==========
+async function loadOverview() {
+  try {
+    const snap = await db.ref('users').once('value');
+    const data = snap.val() || {};
+    allUsersData = data;
+    const userIds = Object.keys(data);
+    let totalTvs = 0, totalCats = 0, totalMedia = 0, onlineTvs = 0;
+
+    for (const uid of userIds) {
+      const u = data[uid];
+      totalTvs += u.tvs ? Object.keys(u.tvs).length : 0;
+      totalCats += u.categories ? Object.keys(u.categories).length : 0;
+      if (u.tvs) {
+        for (const tv of Object.values(u.tvs)) {
+          if (tv.status === 'on') onlineTvs++;
+        }
+      }
+      if (u.tv_midias) {
+        for (const slug of Object.values(u.tv_midias)) {
+          totalMedia += Object.keys(slug).length;
+        }
+      }
+    }
+
+    // Keys
+    const keysSnap = await db.ref('midia').once('value');
+    const keysCount = keysSnap.val() ? Object.keys(keysSnap.val()).length : 0;
+
+    document.getElementById('stat-users').textContent = userIds.length;
+    document.getElementById('stat-tvs').textContent = totalTvs;
+    document.getElementById('stat-cats').textContent = totalCats;
+    document.getElementById('stat-medias').textContent = totalMedia;
+    document.getElementById('stat-online').textContent = onlineTvs;
+    document.getElementById('stat-keys').textContent = keysCount;
+
+    // Table
+    const tbody = document.getElementById('overview-users-body');
+    tbody.innerHTML = '';
+    for (const uid of userIds) {
+      const u = data[uid];
+      const email = uid.replace(/,/g, '.');
+      const tvCount = u.tvs ? Object.keys(u.tvs).length : 0;
+      const catCount = u.categories ? Object.keys(u.categories).length : 0;
+      let mediaCount = 0;
+      if (u.tv_midias) for (const s of Object.values(u.tv_midias)) mediaCount += Object.keys(s).length;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="mono">${email}</td>
+        <td>${tvCount}</td>
+        <td>${catCount}</td>
+        <td>${mediaCount}</td>
+        <td>
+          <button class="action-btn" onclick="viewUserRaw('${uid}')">JSON</button>
+          <button class="action-btn danger" onclick="deleteUser('${uid}', '${email}')">Excluir</button>
+        </td>`;
+      tbody.appendChild(tr);
+    }
+  } catch(e) {
+    console.error(e);
+    toast('Erro ao carregar dados', 'error');
+  }
+}
+
+// ========== USERS ==========
+async function loadUsers() {
+  const tbody = document.getElementById('users-body');
+  tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
+  try {
+    const snap = await db.ref('users').once('value');
+    const data = snap.val() || {};
+    allUsersData = data;
+    tbody.innerHTML = '';
+    for (const uid of Object.keys(data)) {
+      const u = data[uid];
+      const email = uid.replace(/,/g, '.');
+      const tvCount = u.tvs ? Object.keys(u.tvs).length : 0;
+      const catCount = u.categories ? Object.keys(u.categories).length : 0;
+      let mediaCount = 0;
+      if (u.tv_midias) for (const s of Object.values(u.tv_midias)) mediaCount += Object.keys(s).length;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="mono" style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${uid}</td>
+        <td class="mono">${email}</td>
+        <td>${tvCount}</td>
+        <td>${catCount}</td>
+        <td>${mediaCount}</td>
+        <td>
+          <button class="action-btn" onclick="viewUserRaw('${uid}')">JSON</button>
+          <button class="action-btn danger" onclick="deleteUser('${uid}', '${email}')">Excluir</button>
+        </td>`;
+      tbody.appendChild(tr);
+    }
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red)">Erro ao carregar</td></tr>';
+  }
+}
+
+function viewUserRaw(uid) {
+  const u = allUsersData[uid];
+  document.getElementById('raw-modal-title').textContent = 'users/' + uid;
+  document.getElementById('raw-modal-content').innerHTML = syntaxHighlight(u);
+  openModal('raw-modal');
+}
+
+async function deleteUser(uid, email) {
+  const ok = await showConfirm('Excluir usuário', `Excluir todos os dados de ${email}? Esta ação é IRREVERSÍVEL.`);
+  if (!ok) return;
+  try {
+    await db.ref(`users/${uid}`).remove();
+    toast('Usuário excluído', 'success');
+    loadUsers();
+    loadOverview();
+  } catch(e) {
+    toast('Erro ao excluir', 'error');
+  }
+}
+
+// ========== USER SELECTS (shared) ==========
+async function populateUserSelects() {
+  try {
+    const snap = await db.ref('users').once('value');
+    const data = snap.val() || {};
+    allUsersData = data;
+    const uids = Object.keys(data);
+
+    ['tv-user-select', 'media-user-select'].forEach(selId => {
+      const sel = document.getElementById(selId);
+      if (!sel) return;
+      const current = sel.value;
+      sel.innerHTML = '<option value="">— escolha um usuário —</option>';
+      uids.forEach(uid => {
+        const email = uid.replace(/,/g, '.');
+        const tvCount = data[uid].tvs ? Object.keys(data[uid].tvs).length : 0;
+        const opt = document.createElement('option');
+        opt.value = uid;
+        opt.textContent = `${email} (${tvCount} TVs)`;
+        if (uid === current) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    });
+  } catch(e) { console.error('populateUserSelects:', e); }
+}
+
+// ========== TVs (por usuário) ==========
+let selectedTvUid = '';
+
+function onTvUserChange() {
+  selectedTvUid = document.getElementById('tv-user-select').value;
+  const card = document.getElementById('tv-table-card');
+  const refreshBtn = document.getElementById('tv-refresh-btn');
+  if (!selectedTvUid) {
+    card.style.display = 'none';
+    refreshBtn.style.display = 'none';
+    document.getElementById('tv-user-stats').style.display = 'none';
+    return;
+  }
+  card.style.display = 'block';
+  refreshBtn.style.display = '';
+  loadTvsForUser();
+}
+
+function loadTvsForUser() {
+  const uid = selectedTvUid;
+  if (!uid) return;
+  const u = allUsersData[uid];
+  const email = uid.replace(/,/g, '.');
+  const tbody = document.getElementById('tvs-body');
+  tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
+  document.getElementById('tv-table-title').textContent = `TVs de ${email}`;
+
+  // Re-fetch fresh data for this user
+  db.ref(`users/${uid}/tvs`).once('value').then(snap => {
+    const tvs = snap.val() || {};
+    const cats = (allUsersData[uid] && allUsersData[uid].categories) || {};
+    tbody.innerHTML = '';
+    const entries = Object.entries(tvs);
+
+    const statsEl = document.getElementById('tv-user-stats');
+    statsEl.style.display = '';
+    statsEl.className = 'badge badge-blue';
+    statsEl.textContent = `${entries.length} TV${entries.length !== 1 ? 's' : ''}`;
+
+    if (!entries.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Nenhuma TV encontrada</td></tr>';
+      return;
+    }
+
+    entries.forEach(([tvId, tv]) => {
+      const catName = cats[tv.categoryId] ? cats[tv.categoryId].name : tv.categoryId || '—';
+      const mediaInfo = tv.media ? `<span class="badge badge-blue">${tv.media.type || 'mídia'}</span>`
+                       : tv.playlist ? `<span class="badge badge-green">playlist (${tv.playlist.length})</span>` : '—';
+      const statusBadge = tv.status === 'on'
+        ? '<span class="badge badge-green">online</span>'
+        : '<span class="badge badge-gray">off</span>';
+      const keyEl = tv.activationKey
+        ? `<span class="mono">${tv.activationKey}</span>`
+        : '<span style="color:var(--text3)">—</span>';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight:500">${tv.name || '—'}</td>
+        <td>${catName}</td>
+        <td>${statusBadge}</td>
+        <td>${keyEl}</td>
+        <td>${mediaInfo}</td>
+        <td>
+          <button class="action-btn" onclick="viewTvRaw('${uid}','${tvId}')">JSON</button>
+          <button class="action-btn" onclick="sendStopToTv('${tv.activationKey}')">Stop</button>
+          <button class="action-btn danger" onclick="deleteTv('${uid}','${tvId}','${tv.name}')">Del</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }).catch(e => {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--red)">Erro: ${e.message}</td></tr>`;
+  });
+}
+
+// ========== MEDIA (por usuário) ==========
+let selectedMediaUid = '';
+
+function onMediaUserChange() {
+  selectedMediaUid = document.getElementById('media-user-select').value;
+  const card = document.getElementById('media-table-card');
+  const refreshBtn = document.getElementById('media-refresh-btn');
+  if (!selectedMediaUid) {
+    card.style.display = 'none';
+    refreshBtn.style.display = 'none';
+    document.getElementById('media-user-stats').style.display = 'none';
+    return;
+  }
+  card.style.display = 'block';
+  refreshBtn.style.display = '';
+  loadMediaForUser();
+}
+
+async function loadMediaForUser() {
+  const uid = selectedMediaUid;
+  if (!uid) return;
+  const email = uid.replace(/,/g, '.');
+  const tbody = document.getElementById('media-body');
+  tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
+  document.getElementById('media-table-title').textContent = `Mídias de ${email}`;
+
+  try {
+    const snap = await db.ref(`users/${uid}/tv_midias`).once('value');
+    const data = snap.val() || {};
+    tbody.innerHTML = '';
+    let count = 0;
+
+    for (const [tvSlug, medias] of Object.entries(data)) {
+      for (const [mName, m] of Object.entries(medias)) {
+        count++;
+        const kind = m.mediaType || m.type || '—';
+        const statusBadge = m.active
+          ? '<span class="badge badge-green">ativa</span>'
+          : '<span class="badge badge-gray">inativa</span>';
+
+        const tr = document.createElement('tr');
+        // Store data attrs for delete
+        tr.dataset.uid = uid;
+        tr.dataset.tvslug = tvSlug;
+        tr.dataset.mname = mName;
+        tr.dataset.storagepath = m.storagePath || '';
+
+        tr.innerHTML = `
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.displayName || mName}">${m.displayName || mName}</td>
+          <td>${m.tvName || tvSlug}</td>
+          <td><span class="badge badge-blue">${kind}</span></td>
+          <td>${statusBadge}</td>
+          <td class="mono" style="font-size:11px">${fmtDate(m.timestamp)}</td>
+          <td>
+            <button class="action-btn" onclick='viewMediaObj(${JSON.stringify(JSON.stringify(m))})'>JSON</button>
+            <button class="action-btn danger" onclick="deleteMediaRow(this)">Del</button>
+          </td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    const statsEl = document.getElementById('media-user-stats');
+    statsEl.style.display = '';
+    statsEl.className = 'badge badge-blue';
+    statsEl.textContent = `${count} mídia${count !== 1 ? 's' : ''}`;
+
+    if (!count) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Nenhuma mídia encontrada</td></tr>';
+    }
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--red)">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+function viewMediaObj(jsonStr) {
+  const obj = JSON.parse(jsonStr);
+  document.getElementById('raw-modal-title').textContent = 'Mídia — JSON';
+  document.getElementById('raw-modal-content').innerHTML = syntaxHighlight(obj);
+  openModal('raw-modal');
+}
+
+async function deleteMediaRow(btn) {
+  const tr = btn.closest('tr');
+  const uid = tr.dataset.uid;
+  const tvSlug = tr.dataset.tvslug;
+  const mName = tr.dataset.mname;
+  const storagePath = tr.dataset.storagepath;
+
+  const ok = await showConfirm('Excluir mídia', `Excluir "${mName}" de ${tvSlug}?\n\nIsso também removerá do Firebase Storage se houver arquivo.`);
+  if (!ok) return;
+
+  try {
+    // 1. Remove de tv_midias
+    await db.ref(`users/${uid}/tv_midias/${tvSlug}/${mName}`).remove();
+
+    // 2. Remove do Firebase Storage se houver path
+    if (storagePath && storagePath !== '') {
+      try {
+        await firebase.storage().ref().child(storagePath).delete();
+        toast('Arquivo removido do Storage', 'success');
+      } catch(storErr) {
+        // Arquivo pode não existir mais — não é erro fatal
+        console.warn('Storage delete:', storErr.message);
+      }
+    }
+
+    // 3. Atualiza TVs do usuário que usavam esta mídia
+    const tvsSnap = await db.ref(`users/${uid}/tvs`).once('value');
+    const tvs = tvsSnap.val() || {};
+    for (const [tvId, tv] of Object.entries(tvs)) {
+      let changed = false;
+      let wasActive = false;
+
+      if (Array.isArray(tv.playlist)) {
+        const before = tv.playlist.length;
+        tv.playlist = tv.playlist.filter(item => {
+          if (item.url && item.url.includes(mName)) { wasActive = true; return false; }
+          return true;
+        });
+        if (tv.playlist.length !== before) changed = true;
+      }
+
+      if (tv.media && tv.media.url && tv.media.url.includes(mName)) {
+        wasActive = true;
+        tv.media = null;
+        changed = true;
+      }
+
+      if (changed) {
+        await db.ref(`users/${uid}/tvs/${tvId}`).update({
+          media: tv.media || null,
+          playlist: tv.playlist || null,
+          lastUpdate: Date.now()
+        });
+      }
+
+      if (wasActive && tv.activationKey) {
+        await db.ref('midia/' + tv.activationKey).set({ tipo: 'stop', timestamp: Date.now() });
+      }
+    }
+
+    // 4. Remove a linha da tabela
+    tr.remove();
+    toast('Mídia excluída do Firebase ✓', 'success');
+
+    // Atualizar contador
+    const remaining = document.getElementById('media-body').querySelectorAll('tr').length;
+    const statsEl = document.getElementById('media-user-stats');
+    if (statsEl) {
+      statsEl.textContent = `${remaining} mídia${remaining !== 1 ? 's' : ''}`;
+    }
+    if (remaining === 0) {
+      document.getElementById('media-body').innerHTML =
+        '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Nenhuma mídia encontrada</td></tr>';
+    }
+  } catch(e) {
+    console.error('deleteMediaRow:', e);
+    toast('Erro ao excluir: ' + e.message, 'error');
+  }
+}
+
+// ========== RULES VIEWER ==========
+const CURRENT_RULES = {
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      ".read": "auth != null && auth.token.email === 'micaelbardimtech@gmail.com'",
+      ".write": "auth != null && auth.token.email === 'micaelbardimtech@gmail.com'",
+      "$userId": {
+        ".read": "auth != null && (auth.token.email.replace('.', ',') === $userId || auth.token.email === 'micaelbardimtech@gmail.com')",
+        ".write": "auth != null && (auth.token.email.replace('.', ',') === $userId || auth.token.email === 'micaelbardimtech@gmail.com')",
+        "categories": { ".indexOn": ["id", "name", "status"] },
+        "tvs": { ".indexOn": ["id", "name", "categoryId", "status", "activationKey"] },
+        "tv_midias": { "$tvSlug": { ".indexOn": ["active", "timestamp", "lastActive"] } }
+      }
+    },
+    "midia": {
+      ".read": "auth != null && auth.token.email === 'micaelbardimtech@gmail.com'",
+      "$activationKey": {
+        ".read": true,
+        ".write": "auth != null"
+      }
+    }
+  }
+};
+
+function loadRules() {
+  document.getElementById('rules-viewer').innerHTML = syntaxHighlight(CURRENT_RULES);
+}
+
+function copyRules() {
+  navigator.clipboard.writeText(JSON.stringify(CURRENT_RULES, null, 2))
+    .then(() => toast('Rules copiadas!', 'success'));
+}
+
+async function testRule() {
+  const path = document.getElementById('rules-test-path').value.trim();
+  const email = document.getElementById('rules-test-email').value.trim();
+  const op = document.getElementById('rules-test-op').value;
+  const resultEl = document.getElementById('rules-test-result');
+
+  if (!path || !email) {
+    resultEl.textContent = '⚠ Preencha path e email';
+    resultEl.style.color = 'var(--yellow)';
+    return;
+  }
+
+  resultEl.textContent = '⏳ testando...';
+  resultEl.style.color = 'var(--text3)';
+
+  // Testa tentando fazer a operação no Firebase com o usuário atual
+  // Como somos o admin, testamos lendo o path diretamente
+  try {
+    if (op === 'read') {
+      await db.ref(path).once('value');
+      resultEl.textContent = `✅ ${op.toUpperCase()} permitido em /${path} (como dev admin)`;
+      resultEl.style.color = 'var(--green)';
+    } else {
+      // write test - apenas verifica sem modificar
+      resultEl.textContent = `ℹ️ Teste de WRITE requer simulação no Firebase Console`;
+      resultEl.style.color = 'var(--blue)';
+    }
+  } catch(e) {
+    resultEl.textContent = `❌ ${op.toUpperCase()} negado: ${e.message}`;
+    resultEl.style.color = 'var(--red)';
+  }
+}
+
+function viewTvRaw(uid, tvId) {
+  const tv = allUsersData[uid]?.tvs?.[tvId];
+  document.getElementById('raw-modal-title').textContent = `users/${uid}/tvs/${tvId}`;
+  document.getElementById('raw-modal-content').innerHTML = syntaxHighlight(tv);
+  openModal('raw-modal');
+}
+
+async function deleteTv(uid, tvId, name) {
+  const ok = await showConfirm('Excluir TV', `Excluir a TV "${name}"?`);
+  if (!ok) return;
+  try {
+    await db.ref(`users/${uid}/tvs/${tvId}`).remove();
+    toast('TV excluída', 'success');
+    loadAllTvs();
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+async function sendStopToTv(key) {
+  if (!key || key === 'null') { toast('TV sem activation key', 'error'); return; }
+  try {
+    await db.ref('midia/' + key).set({ tipo: 'stop', timestamp: Date.now() });
+    toast(`Stop enviado para ${key}`, 'success');
+  } catch(e) { toast('Erro ao enviar stop', 'error'); }
+}
+
+// ========== MEDIA ==========
+async function loadAllMedia() {
+  const tbody = document.getElementById('media-body');
+  tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
+  try {
+    const snap = await db.ref('users').once('value');
+    const data = snap.val() || {};
+    tbody.innerHTML = '';
+    let count = 0;
+    for (const uid of Object.keys(data)) {
+      const u = data[uid];
+      const email = uid.replace(/,/g, '.');
+      if (!u.tv_midias) continue;
+      for (const [tvSlug, medias] of Object.entries(u.tv_midias)) {
+        for (const [mName, m] of Object.entries(medias)) {
+          count++;
+          const type = m.mediaType || m.type || '—';
+          const statusBadge = m.active ? '<span class="badge badge-green">ativa</span>' : '<span class="badge badge-gray">inativa</span>';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${m.displayName || mName}">${m.displayName || mName}</td>
+            <td>${m.tvName || tvSlug}</td>
+            <td class="mono" style="font-size:11px">${email}</td>
+            <td><span class="badge badge-blue">${type}</span></td>
+            <td>${statusBadge}</td>
+            <td class="mono" style="font-size:11px">${fmtDate(m.timestamp)}</td>
+            <td>
+              <button class="action-btn" onclick="viewMediaRaw(${JSON.stringify(JSON.stringify(m))})">JSON</button>
+              <button class="action-btn danger" onclick="deleteMedia('${uid}','${tvSlug}','${mName}')">Del</button>
+            </td>`;
+          tbody.appendChild(tr);
+        }
+      }
+    }
+    if (!count) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:24px">Nenhuma mídia encontrada</td></tr>';
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red)">Erro ao carregar</td></tr>';
+  }
+}
+
+function viewMediaRaw(jsonStr) {
+  const obj = JSON.parse(jsonStr);
+  document.getElementById('raw-modal-title').textContent = 'Mídia — JSON';
+  document.getElementById('raw-modal-content').innerHTML = syntaxHighlight(obj);
+  openModal('raw-modal');
+}
+
+async function deleteMedia(uid, tvSlug, mName) {
+  const ok = await showConfirm('Excluir mídia', `Excluir "${mName}" de ${tvSlug}?`);
+  if (!ok) return;
+  try {
+    await db.ref(`users/${uid}/tv_midias/${tvSlug}/${mName}`).remove();
+    toast('Mídia excluída', 'success');
+    loadAllMedia();
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+// ========== CATEGORIES ==========
+async function loadAllCategories() {
+  const tbody = document.getElementById('cats-body');
+  tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
+  try {
+    const snap = await db.ref('users').once('value');
+    const data = snap.val() || {};
+    tbody.innerHTML = '';
+    let count = 0;
+    for (const uid of Object.keys(data)) {
+      const u = data[uid];
+      const email = uid.replace(/,/g, '.');
+      if (!u.categories) continue;
+      for (const [catId, cat] of Object.entries(u.categories)) {
+        count++;
+        const tvCount = u.tvs ? Object.values(u.tvs).filter(tv => tv.categoryId === catId).length : 0;
+        const statusBadge = cat.status === 'active' ? '<span class="badge badge-green">active</span>' : '<span class="badge badge-gray">inactive</span>';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="mono">${catId}</td>
+          <td style="font-weight:500">${cat.name}</td>
+          <td class="mono" style="font-size:11px">${email}</td>
+          <td>${statusBadge}</td>
+          <td>${tvCount}</td>
+          <td>
+            <button class="action-btn" onclick="editCategory('${uid}','${catId}')">Editar</button>
+            <button class="action-btn danger" onclick="deleteCategory('${uid}','${catId}','${cat.name}')">Del</button>
+          </td>`;
+        tbody.appendChild(tr);
+      }
+    }
+    if (!count) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Nenhuma categoria encontrada</td></tr>';
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red)">Erro ao carregar</td></tr>';
+  }
+}
+
+function editCategory(uid, catId) {
+  const cat = allUsersData[uid]?.categories?.[catId];
+  if (!cat) { toast('Dados não disponíveis. Recarregue a seção.', 'error'); return; }
+  document.getElementById('node-modal-title').textContent = `Categoria: ${cat.name}`;
+  document.getElementById('node-modal-content').innerHTML = `
+    <div class="edit-field"><div class="edit-label">Nome</div><input class="edit-input" id="edit-cat-name" value="${cat.name}"></div>
+    <div class="edit-field"><div class="edit-label">Status</div><select class="edit-input" id="edit-cat-status"><option value="active" ${cat.status==='active'?'selected':''}>active</option><option value="inactive" ${cat.status!=='active'?'selected':''}>inactive</option></select></div>`;
+  currentNodePath = `users/${uid}/categories/${catId}`;
+  currentNodeData = cat;
+  document.getElementById('node-delete-btn').style.display = 'none';
+  document.getElementById('node-save-btn').onclick = async () => {
+    const newName = document.getElementById('edit-cat-name').value.trim();
+    const newStatus = document.getElementById('edit-cat-status').value;
+    if (!newName) { toast('Nome inválido', 'error'); return; }
+    try {
+      await db.ref(currentNodePath).update({ name: newName, status: newStatus });
+      toast('Categoria atualizada', 'success');
+      closeModal('node-modal');
+      loadAllCategories();
+    } catch(e) { toast('Erro ao salvar', 'error'); }
+  };
+  openModal('node-modal');
+}
+
+async function deleteCategory(uid, catId, name) {
+  const ok = await showConfirm('Excluir categoria', `Excluir "${name}" e todas as TVs associadas?`);
+  if (!ok) return;
+  try {
+    await db.ref(`users/${uid}/categories/${catId}`).remove();
+    const snap = await db.ref(`users/${uid}/tvs`).once('value');
+    const tvs = snap.val() || {};
+    for (const [tvId, tv] of Object.entries(tvs)) {
+      if (tv.categoryId === catId) await db.ref(`users/${uid}/tvs/${tvId}`).remove();
+    }
+    toast('Categoria e TVs excluídas', 'success');
+    loadAllCategories();
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+// ========== DB BROWSER ==========
+let currentBrowsePath = '';
+
+async function browsePath(pathOverride) {
+  const pathInput = document.getElementById('db-path-input');
+  const path = pathOverride !== undefined ? pathOverride : (pathInput?.value?.trim() || '');
+  currentBrowsePath = path;
+
+  // Path bar
+  renderPathBar(path);
+
+  const container = document.getElementById('db-tree');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div>Buscando...</div>';
+
+  try {
+    const ref = path ? db.ref(path) : db.ref('/');
+    const snap = await ref.once('value');
+    const data = snap.val();
+    container.innerHTML = '';
+
+    if (data === null) {
+      container.innerHTML = '<div style="padding:20px;color:var(--text3);font-family:var(--mono);font-size:13px">Nó vazio ou inexistente</div>';
+      return;
+    }
+
+    if (typeof data !== 'object') {
+      container.innerHTML = `<div class="json-viewer">${syntaxHighlight(JSON.stringify({ value: data }, null, 2))}</div>`;
+      return;
+    }
+
+    for (const [key, val] of Object.entries(data)) {
+      container.appendChild(buildTreeNode(key, val, path ? `${path}/${key}` : key));
+    }
+  } catch(e) {
+    container.innerHTML = `<div style="padding:20px;color:var(--red);font-family:var(--mono);font-size:13px">Erro: ${e.message}</div>`;
+  }
+}
+
+function renderPathBar(path) {
+  const bar = document.getElementById('path-bar');
+  const parts = path ? path.split('/').filter(Boolean) : [];
+  let html = `<span class="path-crumb" onclick="browsePath('')">raiz</span>`;
+  let accumulated = '';
+  for (const part of parts) {
+    accumulated += (accumulated ? '/' : '') + part;
+    const p = accumulated;
+    html += `<span class="path-sep">/</span><span class="path-crumb" onclick="browsePath('${p}')">${part}</span>`;
+  }
+  bar.innerHTML = html;
+}
+
+function buildTreeNode(key, val, fullPath) {
+  const node = document.createElement('div');
+  node.className = 'tree-node';
+  const isObj = val && typeof val === 'object';
+  const count = isObj ? Object.keys(val).length : null;
+
+  node.innerHTML = `
+    <div class="tree-node-head">
+      <span class="tree-arrow">${isObj ? '▶' : '·'}</span>
+      <span class="tree-key">${key}</span>
+      ${count !== null ? `<span class="tree-count">{${count}}</span>` : `<span class="tree-type">${typeof val}</span>`}
+      <div style="margin-left:auto;display:flex;gap:4px">
+        <button class="action-btn" onclick="event.stopPropagation();openNodePath('${fullPath}')">→ Navegar</button>
+        <button class="action-btn" onclick="event.stopPropagation();openNodeRaw('${fullPath}')">JSON</button>
+        <button class="action-btn danger" onclick="event.stopPropagation();deleteNodePath('${fullPath}')">Del</button>
+      </div>
+    </div>
+    <div class="tree-body">
+      ${isObj ? `<div class="json-viewer" style="max-height:200px">${syntaxHighlight(val)}</div>` : `<span class="mono">${JSON.stringify(val)}</span>`}
+    </div>`;
+
+  node.querySelector('.tree-node-head').addEventListener('click', (e) => {
+    if (e.target.closest('.action-btn')) return;
+    node.classList.toggle('open');
+  });
+
+  return node;
+}
+
+function openNodePath(path) {
+  document.getElementById('db-path-input').value = path;
+  browsePath(path);
+}
+
+async function openNodeRaw(path) {
+  try {
+    const snap = await db.ref(path).once('value');
+    document.getElementById('raw-modal-title').textContent = path;
+    document.getElementById('raw-modal-content').innerHTML = syntaxHighlight(snap.val());
+    openModal('raw-modal');
+  } catch(e) { toast('Erro ao buscar nó', 'error'); }
+}
+
+async function deleteNodePath(path) {
+  const ok = await showConfirm('Excluir nó', `Excluir o nó "${path}" e todos os filhos?`);
+  if (!ok) return;
+  try {
+    await db.ref(path).remove();
+    toast('Nó excluído', 'success');
+    browsePath(currentBrowsePath);
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+async function saveNodeEdit() {}
+
+async function confirmDeleteNode() {
+  if (!currentNodePath) return;
+  const ok = await showConfirm('Excluir nó', `Excluir ${currentNodePath}?`);
+  if (!ok) return;
+  try {
+    await db.ref(currentNodePath).remove();
+    toast('Nó excluído', 'success');
+    closeModal('node-modal');
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+// ========== REALTIME ==========
+function sendRealtimeCommand() {
+  const key = document.getElementById('rt-key').value.trim();
+  if (!key) { toast('Informe a activation key', 'error'); return; }
+  const tipo = document.getElementById('rt-type').value;
+  const url = document.getElementById('rt-url').value.trim();
+  const dur = parseInt(document.getElementById('rt-duration').value) || 10;
+  const payload = { tipo, timestamp: Date.now() };
+  if (url) payload.url = url;
+  if (tipo === 'image' || tipo === 'video') payload.duration = dur;
+
+  db.ref('midia/' + key).set(payload)
+    .then(() => toast(`Comando "${tipo}" enviado para ${key}`, 'success'))
+    .catch(() => toast('Erro ao enviar', 'error'));
+}
+
+function monitorKey() {
+  const key = document.getElementById('rt-key').value.trim();
+  if (!key) { toast('Informe a activation key', 'error'); return; }
+  if (rtListener) rtListener();
+  const monitorEl = document.getElementById('rt-monitor');
+  const statusEl = document.getElementById('rt-status');
+  statusEl.className = 'badge badge-green';
+  statusEl.textContent = 'online · ' + key;
+  rtListener = db.ref('midia/' + key).on('value', snap => {
+    const data = snap.val();
+    monitorEl.innerHTML = data ? syntaxHighlight(data) : '<span style="color:var(--text3)">Sem dados</span>';
+  });
+}
+
+function updateRtFields() {}
+
+// ========== RAW COPY ==========
+function copyRaw() {
+  const text = document.getElementById('raw-modal-content').textContent;
+  navigator.clipboard.writeText(text).then(() => toast('Copiado!', 'success'));
+}
+
+// ========== KEYBOARD ==========
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    resolveConfirm(false);
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    const dbInput = document.getElementById('db-path-input');
+    if (document.getElementById('db-browser').classList.contains('active')) {
+      browsePath(dbInput.value.trim());
+    }
+  }
+});
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>
