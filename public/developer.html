@@ -886,6 +886,16 @@ textarea.edit-input {
       <span>Chamados <span id="ticket-badge" style="display:none;background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:4px;font-family:var(--mono)">0</span></span>
     </div>
 
+    <div class="sidebar-section" style="margin-top:8px">Cobranças</div>
+    <div class="nav-item" data-section="change-plans-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 4v1.5h1.5a.75.75 0 010 1.5H8.75v1h1.5a.75.75 0 010 1.5H8.75V11a.75.75 0 01-1.5 0v-.5H5.75a.75.75 0 010-1.5h1.5v-1H5.75a.75.75 0 010-1.5h1.5V5a.75.75 0 011.5 0z"/></svg>
+      <span>Change Plans <span id="cp-badge" style="display:none;background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:4px;font-family:var(--mono)">0</span></span>
+    </div>
+    <div class="nav-item" data-section="settings-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6A3 3 0 008 5zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM6.5 1l-.5 1.5-1.4.6L3 2.5 2 3.5l.6 1.6L2 6.5l1.5.5.6 1.4L2.5 10l1 1 1.6-.6 1.4.6.5 1.5h2l.5-1.5 1.4-.6 1.6.6 1-1-.6-1.6.6-1.4L14 6.5l-.5-1.4.6-1.6-1-1-1.6.6L10 2.5l-.5-1.5h-3z"/></svg>
+      <span>Settings</span>
+    </div>
+
     <div class="sidebar-section" style="margin-top:8px">Produto</div>
     <div class="nav-item" data-section="apps-section">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h4v4H3zm6 0h4v4H9zM3 9h4v4H3zm6 0h4v4H9z"/></svg>
@@ -1388,26 +1398,21 @@ textarea.edit-input {
           <div class="page-title">Chamados de Suporte</div>
           <div class="page-sub">Mensagens enviadas pelos usuários pelo painel</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <select class="search-input" id="ticket-filter-email" style="width:220px;max-width:100%;" onchange="loadTickets()">
-            <option value="">Todos os usuários</option>
-          </select>
-          <button class="btn-sm" onclick="loadTickets()">↻ Atualizar</button>
-        </div>
+        <button class="btn-sm" onclick="loadTickets()">↻ Atualizar</button>
       </div>
 
+      <!-- Stats chamados -->
       <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:16px">
         <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="ticket-stat-total">—</div></div>
         <div class="stat-card"><div class="stat-label">Abertos</div><div class="stat-value" id="ticket-stat-open" style="color:var(--blue)">—</div></div>
         <div class="stat-card"><div class="stat-label">Aguardando</div><div class="stat-value" id="ticket-stat-pending" style="color:var(--yellow)">—</div></div>
         <div class="stat-card"><div class="stat-label">Resolvidos</div><div class="stat-value" id="ticket-stat-done" style="color:var(--green)">—</div></div>
-        <div class="stat-card"><div class="stat-label">Não lidos</div><div class="stat-value" id="ticket-stat-unread" style="color:var(--red)">—</div></div>
       </div>
 
       <div class="table-card">
         <div class="table-header">
           <div class="table-title">CHAMADOS</div>
-          <div class="table-actions" style="gap:8px;flex-wrap:wrap;">
+          <div class="table-actions">
             <select class="search-input" id="ticket-filter-status" style="width:140px" onchange="loadTickets()">
               <option value="">Todos</option>
               <option value="open">Abertos</option>
@@ -1418,10 +1423,76 @@ textarea.edit-input {
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Usuário</th><th>Assunto</th><th>Mensagem</th><th>Data</th><th>Status</th><th>Não lido</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Usuário</th><th>Assunto</th><th>Mensagem</th><th>Data</th><th>Status</th><th>Chat</th><th>Ações</th></tr></thead>
             <tbody id="tickets-body"><tr><td colspan="7" class="loading"><div class="spinner"></div>Carregando...</td></tr></tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- ===== CHANGE PLANS ===== -->
+    <div class="section" id="change-plans-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Change Plans</div>
+          <div class="page-sub">Solicitações de mudança de plano e cobranças</div>
+        </div>
+        <button class="btn-sm" onclick="loadChangePlans()">↻ Atualizar</button>
+      </div>
+
+      <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:16px">
+        <div class="stat-card"><div class="stat-label">Pendentes</div><div class="stat-value" id="cp-stat-pending" style="color:var(--yellow)">—</div></div>
+        <div class="stat-card"><div class="stat-label">Aguardando Pgto</div><div class="stat-value" id="cp-stat-waiting" style="color:var(--blue)">—</div></div>
+        <div class="stat-card"><div class="stat-label">Pagos (mês)</div><div class="stat-value" id="cp-stat-paid" style="color:var(--green)">—</div></div>
+        <div class="stat-card"><div class="stat-label">Vencendo em 2d</div><div class="stat-value" id="cp-stat-expiring" style="color:var(--red)">—</div></div>
+        <div class="stat-card"><div class="stat-label">Inadimplentes</div><div class="stat-value" id="cp-stat-overdue" style="color:var(--red)">—</div></div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">SOLICITAÇÕES & ASSINATURAS</div>
+          <div class="table-actions" style="gap:8px;flex-wrap:wrap">
+            <select class="search-input" id="cp-filter-status" style="width:160px" onchange="loadChangePlans()">
+              <option value="">Todos</option>
+              <option value="pending">Pendentes</option>
+              <option value="awaiting_payment">Aguardando Pgto</option>
+              <option value="active">Ativos</option>
+              <option value="overdue">Inadimplentes</option>
+            </select>
+            <input class="search-input" id="cp-search" placeholder="Buscar..." oninput="filterTable('cp-body', this.value)" style="width:160px">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuário</th>
+                <th>Plano Atual</th>
+                <th>Plano Solicitado</th>
+                <th>Data</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="cp-body"><tr><td colspan="7" class="loading"><div class="spinner"></div>Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS ===== -->
+    <div class="section" id="settings-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Settings</div>
+          <div class="page-sub">Configure os planos, chaves Pix e QR Codes para cobranças</div>
+        </div>
+        <button class="btn-sm primary" onclick="saveSettings()">💾 Salvar tudo</button>
+      </div>
+
+      <div id="settings-plans-container" style="display:flex;flex-direction:column;gap:16px">
+        <div class="loading" style="padding:24px;text-align:center"><div class="spinner"></div>Carregando...</div>
       </div>
     </div>
 
@@ -1429,7 +1500,70 @@ textarea.edit-input {
 </div>
 
 
+<!-- MODAL: Change Plan Detail -->
+<div class="modal-overlay" id="cp-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <div>
+        <div class="modal-head-title" id="cp-modal-title">Solicitação de Plano</div>
+        <div style="font-size:11px;font-family:var(--mono);color:var(--ink-dim)" id="cp-modal-sub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('cp-modal')">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Info da solicitação -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:11px;font-family:var(--mono);color:var(--ink-dim);margin-bottom:8px">SOLICITAÇÃO</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+          <div><span style="color:var(--ink-dim)">Plano atual:</span> <strong id="cp-modal-current">—</strong></div>
+          <div><span style="color:var(--ink-dim)">Plano solicitado:</span> <strong id="cp-modal-requested" style="color:var(--blue)">—</strong></div>
+          <div><span style="color:var(--ink-dim)">Valor:</span> <strong id="cp-modal-value" style="color:var(--green)">—</strong></div>
+          <div><span style="color:var(--ink-dim)">Vencimento atual:</span> <strong id="cp-modal-expiry">—</strong></div>
+        </div>
+        <div id="cp-modal-msg" style="margin-top:10px;font-size:12px;color:var(--ink-muted);border-top:1px solid var(--border);padding-top:8px;white-space:pre-wrap"></div>
+      </div>
+
+      <!-- Comprovante enviado pelo usuário -->
+      <div id="cp-modal-proof-wrap" style="display:none;background:var(--bg);border:1px solid var(--green);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:11px;font-family:var(--mono);color:var(--green);margin-bottom:6px">✅ COMPROVANTE ENVIADO PELO USUÁRIO</div>
+        <div id="cp-modal-proof-info" style="font-size:12px;color:var(--ink-muted)"></div>
+        <a id="cp-modal-proof-link" href="#" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--blue)">Ver comprovante →</a>
+      </div>
+
+      <!-- Ações -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="edit-field">
+          <div class="edit-label">Plano a aplicar</div>
+          <select class="edit-input" id="cp-modal-plan-select">
+            <option value="50mb">50 MB — Gratuito</option>
+            <option value="100mb">100 MB</option>
+            <option value="512mb">512 MB</option>
+            <option value="1gb">1 GB</option>
+            <option value="2gb">2 GB</option>
+            <option value="5gb">5 GB</option>
+            <option value="10gb">10 GB</option>
+            <option value="20gb">20 GB</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <div class="edit-label">Nota interna</div>
+          <textarea class="edit-input" id="cp-modal-note" rows="2" placeholder="Observações..." style="resize:vertical;font-family:var(--sans)"></textarea>
+        </div>
+      </div>
+      <input type="hidden" id="cp-modal-id">
+      <input type="hidden" id="cp-modal-userid">
+    </div>
+    <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
+      <button class="btn-sm danger" onclick="closeModal('cp-modal')">Cancelar</button>
+      <button class="btn-sm" onclick="applyPlanChange()" style="background:var(--green);color:#000;border-color:var(--green)">✅ Aplicar Plano</button>
+      <button class="btn-sm primary" onclick="sendBillingToUser()">💰 Enviar Cobrança</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: Bulk Plan -->
+
 <div class="modal-overlay" id="bulk-plan-modal">
   <div class="modal" style="max-width:460px">
     <div class="modal-head">
@@ -1472,69 +1606,55 @@ textarea.edit-input {
   </div>
 </div>
 
-<!-- MODAL: Ticket Detail / Chat em tempo real -->
+<!-- MODAL: Ticket Detail / Chat -->
 <div class="modal-overlay" id="ticket-modal">
-  <div class="modal" style="max-width:580px">
+  <div class="modal" style="max-width:560px">
     <div class="modal-head">
       <div style="display:flex;flex-direction:column;gap:2px">
         <div class="modal-head-title" id="ticket-modal-title">Chamado</div>
-        <div style="font-size:11px;font-family:var(--mono);color:var(--ink-dim);display:flex;align-items:center;gap:8px">
-          <span id="ticket-modal-sub"></span>
-          <span id="ticket-modal-status-badge" style="font-size:10px;font-weight:700;padding:1px 8px;border-radius:3px;"></span>
-        </div>
+        <div style="font-size:11px;font-family:var(--mono);color:var(--ink-dim)" id="ticket-modal-sub"></div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span id="dev-live-dot" title="Conectado ao chat" style="width:8px;height:8px;border-radius:50%;background:var(--green,#22c55e);display:none;flex-shrink:0;"></span>
-        <button class="modal-close" onclick="closeModal('ticket-modal')">×</button>
-      </div>
+      <button class="modal-close" onclick="closeModal('ticket-modal')">×</button>
     </div>
-    <div class="modal-body" style="padding:0;display:flex;flex-direction:column;max-height:72vh;">
+    <div class="modal-body">
+      <!-- Mensagem original -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:11px;font-family:var(--mono);color:var(--ink-dim);margin-bottom:6px">MENSAGEM ORIGINAL</div>
+        <div id="ticket-original-msg" style="font-size:13px;color:var(--ink);line-height:1.6;white-space:pre-wrap"></div>
+      </div>
 
-      <!-- Mensagem original (colapsável) -->
-      <div style="padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-        <div style="font-size:10px;font-family:var(--mono);color:var(--ink-dim);display:flex;justify-content:space-between;align-items:center;">
-          <span>MENSAGEM ORIGINAL</span><span style="opacity:.5">clique para expandir</span>
+      <!-- Chat (futuro - placeholder) -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:11px;font-family:var(--mono);color:var(--ink-dim);margin-bottom:8px;display:flex;align-items:center;gap:8px">
+          CHAT EM TEMPO REAL
+          <span style="background:var(--yellow-bg,#fef8e7);color:var(--yellow);border:1px solid var(--yellow);padding:1px 7px;border-radius:3px;font-size:10px;">em breve</span>
+        </div>
+        <div id="ticket-chat-messages" style="min-height:80px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0">
+          <div style="text-align:center;color:var(--ink-dim);font-size:12px;font-family:var(--mono);padding:20px 0">
+            💬 Chat disponível em breve — por enquanto responda via status abaixo
+          </div>
         </div>
       </div>
-      <div id="ticket-original-wrap" style="display:none;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;">
-        <div id="ticket-original-msg" style="font-size:13px;color:var(--ink);line-height:1.6;white-space:pre-wrap;max-height:120px;overflow-y:auto;"></div>
-      </div>
 
-      <!-- Chat em tempo real -->
-      <div style="padding:10px 16px 6px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:11px;font-family:var(--mono);color:var(--ink-dim);">CHAT EM TEMPO REAL</span>
-        <span id="dev-conn-label" style="font-size:10px;font-family:var(--mono);color:var(--ink-dim);">desconectado</span>
+      <!-- Status + resposta -->
+      <div class="edit-field">
+        <div class="edit-label">Status do chamado</div>
+        <select class="edit-input" id="ticket-status-select">
+          <option value="open">Aberto</option>
+          <option value="pending">Aguardando usuário</option>
+          <option value="closed">Resolvido</option>
+        </select>
       </div>
-      <div id="ticket-chat-messages" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-height:140px;max-height:300px;"></div>
-
-      <!-- Input dev -->
-      <div id="dev-chat-input-area" style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;">
-        <textarea id="dev-chat-input" rows="2" placeholder="Responder ao usuário... (Enter para enviar)"
-          style="flex:1;background:var(--bg);color:var(--ink);border:1px solid var(--border);border-radius:6px;padding:8px 10px;resize:none;font-family:var(--sans);font-size:13px;outline:none;"></textarea>
-        <button class="btn-sm primary" onclick="sendDevMessage()" style="white-space:nowrap;padding:8px 14px;">Enviar</button>
-      </div>
-
-      <!-- Status + nota interna -->
-      <div style="padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:10px;">
-        <div class="edit-field" style="margin:0">
-          <div class="edit-label">Status do chamado</div>
-          <select class="edit-input" id="ticket-status-select" onchange="onTicketStatusChange()">
-            <option value="open">Aberto</option>
-            <option value="pending">Aguardando usuário</option>
-            <option value="closed">Resolvido</option>
-          </select>
-        </div>
-        <div class="edit-field" style="margin:0">
-          <div class="edit-label">Nota interna (só visível aqui)</div>
-          <textarea class="edit-input" id="ticket-note-input" rows="2" placeholder="Observações internas..." style="resize:vertical;min-height:56px;font-family:var(--sans);"></textarea>
-        </div>
+      <div class="edit-field">
+        <div class="edit-label">Nota interna (só visível aqui)</div>
+        <textarea class="edit-input" id="ticket-note-input" rows="3" placeholder="Observações internas sobre este chamado..." style="resize:vertical;min-height:70px;font-family:var(--sans);"></textarea>
       </div>
       <input type="hidden" id="ticket-modal-id">
     </div>
     <div class="modal-footer">
       <button class="btn-sm danger" onclick="deleteTicket()">Excluir</button>
       <button class="btn-sm" onclick="closeModal('ticket-modal')">Fechar</button>
-      <button class="btn-sm primary" onclick="saveTicket()">Salvar Status</button>
+      <button class="btn-sm primary" onclick="saveTicket()">Salvar</button>
     </div>
   </div>
 </div>
@@ -1853,11 +1973,14 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (sec === 'sites-section') initSitesSection();
     if (sec === 'plans-section') loadPlans();
     if (sec === 'tickets-section') loadTickets();
+    if (sec === 'change-plans-section') loadChangePlans();
+    if (sec === 'settings-section') loadSettings();
   });
 });
 
 document.getElementById('refresh-overview').addEventListener('click', loadOverview);
 startTicketListener();
+startChangePlansListener();
 
 // ========== HELPERS ==========
 function toast(msg, type = 'info') {
@@ -2694,272 +2817,537 @@ function openSinglePlanModal(uid,email) { openPlanModal(uid,email); }
 
 // ========== CHAMADOS ==========
 
-let devChatListener = null;
-let devCurrentTicketId = null;
-
 async function loadTickets() {
-  const tbody = document.getElementById('tickets-body');
-  tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
-  const filterStatus = document.getElementById('ticket-filter-status')?.value || '';
-  const filterEmail  = document.getElementById('ticket-filter-email')?.value  || '';
+  const tbody=document.getElementById('tickets-body');
+  tbody.innerHTML='<tr><td colspan="7" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
+  const filterStatus=document.getElementById('ticket-filter-status')?.value||'';
   try {
-    const snap = await db.ref('support_tickets').once('value');
-    const data = snap.val() || {};
-
-    // Preenche filtro de email
-    const emailSelect = document.getElementById('ticket-filter-email');
-    if (emailSelect && emailSelect.options.length <= 1) {
-      const emails = [...new Set(Object.values(data).map(t => (t.email || t.userId || '').replace(/,/g,'.')).filter(Boolean))].sort();
-      emails.forEach(e => {
-        const opt = document.createElement('option');
-        opt.value = e; opt.textContent = e;
-        emailSelect.appendChild(opt);
-      });
-    }
-
-    let tickets = Object.entries(data)
-      .map(([id, t]) => ({ id, ...t }))
-      .filter(t => !filterStatus || t.status === filterStatus)
-      .filter(t => !filterEmail  || (t.email || t.userId || '').replace(/,/g,'.') === filterEmail)
-      .sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
-
-    const total   = Object.keys(data).length;
-    const open    = Object.values(data).filter(t => t.status === 'open').length;
-    const pending = Object.values(data).filter(t => t.status === 'pending').length;
-    const closed  = Object.values(data).filter(t => t.status === 'closed').length;
-    const unread  = Object.values(data).filter(t => t.unreadDev === true).length;
-
-    document.getElementById('ticket-stat-total').textContent   = total;
-    document.getElementById('ticket-stat-open').textContent    = open;
-    document.getElementById('ticket-stat-pending').textContent = pending;
-    document.getElementById('ticket-stat-done').textContent    = closed;
-    const unreadEl = document.getElementById('ticket-stat-unread');
-    if (unreadEl) unreadEl.textContent = unread;
-
-    const badge = document.getElementById('ticket-badge');
-    if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? '' : 'none'; }
-
-    tbody.innerHTML = '';
-    if (tickets.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--ink-dim);padding:20px;font-family:var(--mono);font-size:12px">Nenhum chamado encontrado</td></tr>';
-      return;
-    }
-
+    const snap=await db.ref('support_tickets').once('value');
+    const data=snap.val()||{};
+    const tickets=Object.entries(data).map(([id,t])=>({id,...t})).filter(t=>!filterStatus||t.status===filterStatus).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    const total=Object.keys(data).length;
+    const open=Object.values(data).filter(t=>t.status==='open').length;
+    const pending=Object.values(data).filter(t=>t.status==='pending').length;
+    const closed=Object.values(data).filter(t=>t.status==='closed').length;
+    const unread=Object.values(data).filter(t=>t.status!=='closed').length;
+    document.getElementById('ticket-stat-total').textContent=total;
+    document.getElementById('ticket-stat-open').textContent=open;
+    document.getElementById('ticket-stat-pending').textContent=pending;
+    document.getElementById('ticket-stat-done').textContent=closed;
+    const badge=document.getElementById('ticket-badge');
+    if(badge){ badge.textContent=unread; badge.style.display=unread>0?'':'none'; }
+    tbody.innerHTML='';
+    if(tickets.length===0){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--ink-dim);padding:20px;font-family:var(--mono);font-size:12px">Nenhum chamado encontrado</td></tr>'; return; }
     for (const t of tickets) {
-      const isUnread    = t.unreadDev === true;
-      const statusColor = t.status === 'open' ? 'var(--blue)' : t.status === 'pending' ? 'var(--yellow)' : 'var(--green)';
-      const statusLabel = { open: 'Aberto', pending: 'Aguardando', closed: 'Resolvido' }[t.status] || t.status;
-      const date = t.createdAt
-        ? new Date(t.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
-        : '—';
-      const msgPreview = (t.message || '').slice(0, 60) + ((t.message || '').length > 60 ? '\u2026' : '');
-      const emailDisplay = (t.email || t.userId || '?').replace(/,/g, '.');
-
-      const tr = document.createElement('tr');
-      if (isUnread) tr.style.background = 'rgba(100,163,251,0.07)';
-      tr.innerHTML = `
-        <td class="mono" style="font-size:11px">${devEscapeHtml(emailDisplay)}</td>
-        <td style="font-size:13px;font-weight:500">${devEscapeHtml(t.subject || 'Sem assunto')}</td>
-        <td style="font-size:12px;color:var(--ink-muted);max-width:200px">${devEscapeHtml(msgPreview)}</td>
+      const statusColor=t.status==='open'?'var(--blue)':t.status==='pending'?'var(--yellow)':'var(--green)';
+      const statusLabel={open:'Aberto',pending:'Aguardando',closed:'Resolvido'}[t.status]||t.status;
+      const date=t.createdAt?new Date(t.createdAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+      const msgPreview=(t.message||'').slice(0,60)+((t.message||'').length>60?'…':'');
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td class="mono" style="font-size:11px">${(t.email||t.userId||'?').replace(/,/g,'.')}</td>
+        <td style="font-size:13px;font-weight:500">${t.subject||'Sem assunto'}</td>
+        <td style="font-size:12px;color:var(--ink-muted);max-width:200px">${msgPreview}</td>
         <td class="mono" style="font-size:11px;white-space:nowrap">${date}</td>
         <td><span style="background:${statusColor}20;color:${statusColor};border:1px solid ${statusColor};padding:2px 8px;border-radius:3px;font-size:10px;font-family:var(--mono);font-weight:600">${statusLabel}</span></td>
-        <td style="text-align:center">${isUnread ? '<span style="width:8px;height:8px;border-radius:50%;background:var(--red,#ef4444);display:inline-block;" title="N\u00e3o lido"></span>' : ''}</td>
+        <td style="text-align:center"><span style="font-size:16px;cursor:pointer;opacity:.5" title="Chat em breve">💬</span></td>
         <td>
-          <button class="action-btn" onclick="openTicket('${t.id}')">\u{1F4AC} Chat</button>
+          <button class="action-btn" onclick="openTicket('${t.id}')">Ver</button>
           <button class="action-btn danger" onclick="deleteTicketById('${t.id}')">Del</button>
         </td>`;
       tbody.appendChild(tr);
     }
-  } catch(e) {
-    console.error('loadTickets:', e);
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red)">Erro ao carregar</td></tr>';
-  }
+  } catch(e) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--red)">Erro ao carregar</td></tr>'; }
 }
 
 function startTicketListener() {
   if (ticketListener) return;
   try {
     ticketListener = db.ref('support_tickets').on('value', snap => {
-      const data  = snap.val() || {};
-      const unread = Object.values(data).filter(t => t.unreadDev === true).length;
-      const badge = document.getElementById('ticket-badge');
-      if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? '' : 'none'; }
-      const section = document.getElementById('tickets-section');
-      if (section && section.classList.contains('active')) loadTickets();
+      const data=snap.val()||{};
+      const unread=Object.values(data).filter(t=>t.status!=='closed').length;
+      const badge=document.getElementById('ticket-badge');
+      if(badge){ badge.textContent=unread; badge.style.display=unread>0?'':'none'; }
+      const section=document.getElementById('tickets-section');
+      if(section&&section.classList.contains('active')) loadTickets();
     });
   } catch(e) { console.warn('ticket listener:', e); }
 }
 
-async function openTicket(id) {
-  devCurrentTicketId = id;
-
-  // Marca como lido pelo dev
-  await db.ref(`support_tickets/${id}`).update({ unreadDev: false, updatedAt: Date.now() }).catch(() => {});
-
-  const snap = await db.ref(`support_tickets/${id}`).once('value');
-  const t    = snap.val();
-  if (!t) return;
-
-  const date = t.createdAt ? new Date(t.createdAt).toLocaleString('pt-BR') : '';
-  document.getElementById('ticket-modal-title').textContent = t.subject || 'Sem assunto';
-  document.getElementById('ticket-modal-sub').textContent   = `${(t.email || t.userId || '?').replace(/,/g,'.')} \u00b7 ${date}`;
-  document.getElementById('ticket-original-msg').textContent = t.message || '';
-  document.getElementById('ticket-status-select').value      = t.status || 'open';
-  document.getElementById('ticket-note-input').value         = t.devNote || '';
-  document.getElementById('ticket-modal-id').value           = id;
-
-  // Badge de status no modal
-  const sb = document.getElementById('ticket-modal-status-badge');
-  if (sb) {
-    const colors = { open: '#3b82f6', pending: '#f59e0b', closed: '#22c55e' };
-    const labels = { open: 'Aberto', pending: 'Aguardando', closed: 'Resolvido' };
-    sb.textContent = labels[t.status] || t.status;
-    sb.style.cssText = `background:${colors[t.status] || '#666'}22;color:${colors[t.status] || '#666'};border:1px solid ${colors[t.status] || '#666'};`;
-  }
-
-  // Input ativo/desativado conforme status
-  onTicketStatusChange();
-
-  openModal('ticket-modal');
-  startDevChatListener(id);
+function openTicket(id) {
+  db.ref(`support_tickets/${id}`).once('value').then(snap => {
+    const t=snap.val(); if(!t) return;
+    const date=t.createdAt?new Date(t.createdAt).toLocaleString('pt-BR'):'';
+    document.getElementById('ticket-modal-title').textContent=t.subject||'Sem assunto';
+    document.getElementById('ticket-modal-sub').textContent=`${(t.email||t.userId||'?').replace(/,/g,'.')} · ${date}`;
+    document.getElementById('ticket-original-msg').textContent=t.message||'';
+    document.getElementById('ticket-status-select').value=t.status||'open';
+    document.getElementById('ticket-note-input').value=t.devNote||'';
+    document.getElementById('ticket-modal-id').value=id;
+    openModal('ticket-modal');
+  });
+}
+async function saveTicket() {
+  const id=document.getElementById('ticket-modal-id').value;
+  const status=document.getElementById('ticket-status-select').value;
+  const note=document.getElementById('ticket-note-input').value.trim();
+  try {
+    await db.ref(`support_tickets/${id}`).update({status,devNote:note,updatedAt:Date.now()});
+    toast('Chamado atualizado','success'); closeModal('ticket-modal'); loadTickets();
+  } catch(e){ toast('Erro ao salvar','error'); }
+}
+async function deleteTicket() { const id=document.getElementById('ticket-modal-id').value; await deleteTicketById(id); closeModal('ticket-modal'); }
+async function deleteTicketById(id) {
+  const ok=await showConfirm('Excluir chamado','Excluir este chamado permanentemente?'); if(!ok) return;
+  try { await db.ref(`support_tickets/${id}`).remove(); toast('Chamado excluído','success'); loadTickets(); }
+  catch(e){ toast('Erro ao excluir','error'); }
 }
 
-function onTicketStatusChange() {
-  const status   = document.getElementById('ticket-status-select')?.value;
-  const inputArea = document.getElementById('dev-chat-input-area');
-  if (inputArea) inputArea.style.display = status === 'closed' ? 'none' : 'flex';
-}
+// ========== CHANGE PLANS ==========
 
-function startDevChatListener(ticketId) {
-  stopDevChatListener();
+const PLAN_CONFIGS = {
+  '50mb':  { label: '50 MB',   quota: 52428800 },
+  '100mb': { label: '100 MB',  quota: 104857600 },
+  '512mb': { label: '512 MB',  quota: 536870912 },
+  '1gb':   { label: '1 GB',    quota: 1073741824 },
+  '2gb':   { label: '2 GB',    quota: 2147483648 },
+  '5gb':   { label: '5 GB',    quota: 5368709120 },
+  '10gb':  { label: '10 GB',   quota: 10737418240 },
+  '20gb':  { label: '20 GB',   quota: 21474836480 },
+};
 
-  const messagesEl    = document.getElementById('ticket-chat-messages');
-  const connLabel     = document.getElementById('dev-conn-label');
-  const liveDot       = document.getElementById('dev-live-dot');
-  if (!messagesEl) return;
+async function loadChangePlans() {
+  const tbody = document.getElementById('cp-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
 
-  messagesEl.innerHTML = '<div style="text-align:center;color:var(--ink-dim);font-size:12px;font-family:var(--mono);padding:16px">Conectando...</div>';
-  if (connLabel) { connLabel.textContent = 'conectado'; connLabel.style.color = 'var(--green,#22c55e)'; }
-  if (liveDot)   { liveDot.style.display = 'block'; }
+  const filterStatus = document.getElementById('cp-filter-status')?.value || '';
 
-  devChatListener = db.ref(`support_tickets/${ticketId}/messages`).on('value', (snap) => {
-    const data     = snap.val() || {};
-    const messages = Object.entries(data)
-      .map(([id, m]) => ({ id, ...m }))
-      .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+  try {
+    // Carrega tickets do tipo plan_change E planos ativos com vencimento
+    const [ticketsSnap, usersSnap] = await Promise.all([
+      db.ref('support_tickets').orderByChild('type').equalTo('plan_change').once('value'),
+      db.ref('users').once('value'),
+    ]);
 
-    messagesEl.innerHTML = '';
+    const tickets = [];
+    const now = Date.now();
 
-    if (messages.length === 0) {
-      messagesEl.innerHTML = '<div style="text-align:center;color:var(--ink-dim);font-size:12px;font-family:var(--mono);padding:24px 0">Nenhuma mensagem ainda.</div>';
+    // Solicitações pendentes
+    (ticketsSnap.val() || {}) && Object.entries(ticketsSnap.val() || {}).forEach(([id, t]) => {
+      if (t.status === 'closed') return;
+      tickets.push({ id, source: 'request', ...t });
+    });
+
+    // Assinaturas ativas / vencendo / inadimplentes
+    const usersData = usersSnap.val() || {};
+    Object.entries(usersData).forEach(([uid, u]) => {
+      const plan = u.plan;
+      if (!plan || !plan.expiresAt) return;
+      const daysLeft = Math.ceil((plan.expiresAt - now) / 86400000);
+      let billStatus = 'active';
+      if (daysLeft < 0)  billStatus = 'overdue';
+      else if (daysLeft <= 2) billStatus = 'expiring';
+      tickets.push({ id: `sub_${uid}`, source: 'subscription', userId: uid,
+        email: uid.replace(/,/g, '.'), currentPlan: plan.label, requestedPlan: plan.label,
+        status: billStatus, expiresAt: plan.expiresAt, daysLeft, planKey: plan.key });
+    });
+
+    // Stats
+    const pending  = tickets.filter(t => t.status === 'open' || t.status === 'pending').length;
+    const waiting  = tickets.filter(t => t.status === 'awaiting_payment').length;
+    const paid     = tickets.filter(t => t.status === 'active').length;
+    const expiring = tickets.filter(t => t.status === 'expiring').length;
+    const overdue  = tickets.filter(t => t.status === 'overdue').length;
+
+    document.getElementById('cp-stat-pending').textContent  = pending;
+    document.getElementById('cp-stat-waiting').textContent  = waiting;
+    document.getElementById('cp-stat-paid').textContent     = paid;
+    document.getElementById('cp-stat-expiring').textContent = expiring;
+    document.getElementById('cp-stat-overdue').textContent  = overdue;
+
+    // Badge no nav
+    const badge = document.getElementById('cp-badge');
+    const unread = pending + waiting + expiring;
+    if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? '' : 'none'; }
+
+    // Filtro
+    const filtered = filterStatus
+      ? tickets.filter(t => {
+          if (filterStatus === 'pending') return t.status === 'open' || t.status === 'pending';
+          return t.status === filterStatus;
+        })
+      : tickets;
+
+    tbody.innerHTML = '';
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--ink-dim);padding:20px;font-size:12px">Nenhuma solicitação</td></tr>';
       return;
     }
 
-    for (const msg of messages) {
-      const isDev  = msg.sender === 'dev';
-      const bubble = document.createElement('div');
-      bubble.style.cssText = `max-width:80%;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.5;align-self:${isDev ? 'flex-end' : 'flex-start'};background:${isDev ? 'var(--ink,#e0e0e0)' : 'var(--bg,#1a1a2e)'};color:${isDev ? 'var(--bg,#111)' : 'var(--ink)'};border:1px solid var(--border);`;
-      bubble.innerHTML = `
-        <div style="font-size:10px;font-weight:700;font-family:var(--mono);margin-bottom:4px;opacity:.7">${isDev ? '\u{1F6E0} Você (Suporte)' : '\u{1F464} Usuário'}</div>
-        <div>${devEscapeHtml(msg.text || '')}</div>
-        <div style="font-size:10px;opacity:.5;margin-top:4px;text-align:right;font-family:var(--mono)">${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</div>
+    filtered.sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+
+    for (const t of filtered) {
+      const emailDisplay = (t.email || t.userId || '?').replace(/,/g, '.');
+      const date = t.createdAt ? fmtDate(t.createdAt) : '—';
+      const expiry = t.expiresAt ? fmtDate(t.expiresAt) : '—';
+
+      const statusMap = {
+        open: ['var(--yellow)', 'Pendente'],
+        pending: ['var(--yellow)', 'Pendente'],
+        awaiting_payment: ['var(--blue)', 'Aguard. Pgto'],
+        active: ['var(--green)', 'Ativo'],
+        expiring: ['#f97316', 'Vence em breve'],
+        overdue: ['var(--red)', 'Inadimplente'],
+        closed: ['var(--ink-dim)', 'Encerrado'],
+      };
+      const [sc, sl] = statusMap[t.status] || ['var(--ink-dim)', t.status];
+
+      const isOverdue = t.status === 'overdue';
+      const tr = document.createElement('tr');
+      if (isOverdue) tr.style.background = 'rgba(239,68,68,0.06)';
+      if (t.status === 'expiring') tr.style.background = 'rgba(249,115,22,0.06)';
+
+      // Ações dependem do tipo
+      let actionsHtml = '';
+      if (t.source === 'request') {
+        actionsHtml = `<button class="action-btn" onclick="openCpModal('${t.id}')">Ver</button>`;
+      } else {
+        actionsHtml = `
+          <button class="action-btn primary" onclick="sendRenewalBilling('${t.userId}','${t.planKey||'1gb'}')">💰 Renovar</button>
+          ${isOverdue ? `<button class="action-btn" onclick="downgradeToFree('${t.userId}')">↓ 50MB</button>` : ''}
+          ${t.status === 'active' ? `<button class="action-btn" onclick="confirmRenewal('${t.userId}')">✅ Confirmar Pgto</button>` : ''}
+        `;
+      }
+
+      tr.innerHTML = `
+        <td class="mono" style="font-size:11px">${emailDisplay}</td>
+        <td style="font-size:12px">${t.currentPlan || '—'}</td>
+        <td style="font-size:12px;color:var(--blue);font-weight:600">${t.requestedPlan || '—'}</td>
+        <td class="mono" style="font-size:11px">${date}</td>
+        <td class="mono" style="font-size:11px;color:${t.daysLeft < 0 ? 'var(--red)' : t.daysLeft <= 2 ? '#f97316' : 'inherit'}">${expiry}</td>
+        <td><span style="background:${sc}20;color:${sc};border:1px solid ${sc};padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600;font-family:var(--mono)">${sl}</span></td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap">${actionsHtml}</td>
       `;
-      messagesEl.appendChild(bubble);
+      tbody.appendChild(tr);
     }
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  });
-
-  // Enter para enviar
-  const input = document.getElementById('dev-chat-input');
-  if (input && !input._devListener) {
-    input._devListener = (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendDevMessage(); }
-    };
-    input.addEventListener('keydown', input._devListener);
-  }
-}
-
-function stopDevChatListener() {
-  if (devChatListener && devCurrentTicketId) {
-    db.ref(`support_tickets/${devCurrentTicketId}/messages`).off('value', devChatListener);
-    devChatListener = null;
-  }
-  const connLabel = document.getElementById('dev-conn-label');
-  const liveDot   = document.getElementById('dev-live-dot');
-  if (connLabel) { connLabel.textContent = 'desconectado'; connLabel.style.color = 'var(--ink-dim)'; }
-  if (liveDot)   { liveDot.style.display = 'none'; }
-}
-
-async function sendDevMessage() {
-  if (!devCurrentTicketId) return;
-  const inputEl = document.getElementById('dev-chat-input');
-  const text    = inputEl?.value.trim();
-  if (!text) return;
-
-  inputEl.value    = '';
-  inputEl.disabled = true;
-
-  try {
-    const msgId = Date.now().toString();
-    await db.ref(`support_tickets/${devCurrentTicketId}/messages/${msgId}`).set({
-      sender: 'dev', senderId: 'dev', text, timestamp: Date.now()
-    });
-    await db.ref(`support_tickets/${devCurrentTicketId}`).update({
-      unreadUser:  true,
-      unreadDev:   false,
-      updatedAt:   Date.now(),
-      status:      'pending',
-    });
-    document.getElementById('ticket-status-select').value = 'pending';
-    onTicketStatusChange();
   } catch(e) {
-    console.error('sendDevMessage:', e);
-    toast('Falha ao enviar', 'error');
-  } finally {
-    inputEl.disabled = false;
-    inputEl.focus();
+    console.error('loadChangePlans:', e);
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red)">Erro ao carregar</td></tr>';
   }
 }
 
-async function saveTicket() {
-  const id     = document.getElementById('ticket-modal-id').value;
-  const status = document.getElementById('ticket-status-select').value;
-  const note   = document.getElementById('ticket-note-input').value.trim();
+async function openCpModal(ticketId) {
+  const snap = await db.ref(`support_tickets/${ticketId}`).once('value');
+  const t = snap.val();
+  if (!t) return;
+
+  document.getElementById('cp-modal-title').textContent    = 'Solicitação de Plano';
+  document.getElementById('cp-modal-sub').textContent      = (t.email || t.userId || '').replace(/,/g, '.');
+  document.getElementById('cp-modal-current').textContent  = t.currentPlan   || '—';
+  document.getElementById('cp-modal-requested').textContent = t.requestedPlan || '—';
+  document.getElementById('cp-modal-msg').textContent      = t.message || '';
+  document.getElementById('cp-modal-id').value             = ticketId;
+  document.getElementById('cp-modal-userid').value         = t.userId || '';
+
+  // Preenche valor baseado nas settings
+  const settingsSnap = await db.ref('dev_settings/plans').once('value');
+  const settings = settingsSnap.val() || {};
+  const reqKey = planLabelToKey(t.requestedPlan);
+  const planCfg = settings[reqKey] || {};
+  document.getElementById('cp-modal-value').textContent = planCfg.price ? `R$ ${planCfg.price}` : '—';
+
+  // Pré-seleciona o plano solicitado
+  const sel = document.getElementById('cp-modal-plan-select');
+  if (reqKey && sel) sel.value = reqKey;
+
+  // Comprovante
+  const proofWrap = document.getElementById('cp-modal-proof-wrap');
+  const proofInfo = document.getElementById('cp-modal-proof-info');
+  const proofLink = document.getElementById('cp-modal-proof-link');
+  if (t.proof) {
+    proofWrap.style.display = 'block';
+    proofInfo.textContent = `Enviado em ${fmtDate(t.proofSentAt || t.updatedAt)}`;
+    proofLink.href = t.proof;
+  } else {
+    proofWrap.style.display = 'none';
+  }
+
+  // Vencimento
+  document.getElementById('cp-modal-expiry').textContent = t.expiresAt ? fmtDate(t.expiresAt) : 'Nenhum';
+
+  openModal('cp-modal');
+}
+
+async function applyPlanChange() {
+  const ticketId = document.getElementById('cp-modal-id').value;
+  const userId   = document.getElementById('cp-modal-userid').value;
+  const planKey  = document.getElementById('cp-modal-plan-select').value;
+  const note     = document.getElementById('cp-modal-note').value.trim();
+
+  if (!userId || !planKey) { toast('Dados incompletos', 'error'); return; }
+
+  const cfg = PLAN_CONFIGS[planKey];
+  if (!cfg) { toast('Plano inválido', 'error'); return; }
+
+  const expiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000); // +30 dias
+
   try {
-    await db.ref(`support_tickets/${id}`).update({ status, devNote: note, updatedAt: Date.now() });
-    toast('Chamado atualizado', 'success');
-    closeModal('ticket-modal');
-    loadTickets();
-  } catch(e) { toast('Erro ao salvar', 'error'); }
+    // Atualiza plano do usuário
+    await db.ref(`users/${userId}/plan`).set({
+      key: planKey,
+      label: cfg.label,
+      quota: cfg.quota,
+      expiresAt,
+      activatedAt: Date.now(),
+      activatedBy: currentUser?.email || 'dev',
+    });
+
+    // Fecha o ticket
+    if (ticketId && !ticketId.startsWith('sub_')) {
+      await db.ref(`support_tickets/${ticketId}`).update({
+        status: 'closed',
+        devNote: note || 'Plano aplicado pelo dev',
+        updatedAt: Date.now(),
+        unreadUser: true,
+      });
+    }
+
+    toast(`Plano ${cfg.label} aplicado! Vence em 30 dias.`, 'success');
+    closeModal('cp-modal');
+    loadChangePlans();
+  } catch(e) {
+    console.error('applyPlanChange:', e);
+    toast('Erro ao aplicar plano', 'error');
+  }
 }
 
-async function deleteTicket() {
-  const id = document.getElementById('ticket-modal-id').value;
-  await deleteTicketById(id);
-  closeModal('ticket-modal');
+async function sendBillingToUser() {
+  const ticketId  = document.getElementById('cp-modal-id').value;
+  const userId    = document.getElementById('cp-modal-userid').value;
+  const planKey   = document.getElementById('cp-modal-plan-select').value;
+
+  if (!userId || !planKey) { toast('Selecione o plano antes de enviar', 'error'); return; }
+
+  // Carrega settings do plano
+  const settingsSnap = await db.ref(`dev_settings/plans/${planKey}`).once('value');
+  const planSettings = settingsSnap.val();
+
+  if (!planSettings || !planSettings.pixKey) {
+    toast('Configure o Pix para este plano em Settings antes de enviar', 'error');
+    return;
+  }
+
+  const cfg = PLAN_CONFIGS[planKey];
+  const billing = {
+    planKey,
+    planLabel:    cfg.label,
+    price:        planSettings.price || '—',
+    pixKey:       planSettings.pixKey,
+    pixName:      planSettings.pixName || '',
+    pixBank:      planSettings.pixBank || '',
+    qrCodeUrl:    planSettings.qrCodeUrl || '',
+    sentAt:       Date.now(),
+    status:       'awaiting_payment',
+  };
+
+  try {
+    // Salva cobrança no nó do usuário
+    await db.ref(`users/${userId}/billing`).set(billing);
+
+    // Atualiza ticket
+    if (ticketId && !ticketId.startsWith('sub_')) {
+      await db.ref(`support_tickets/${ticketId}`).update({
+        status: 'awaiting_payment',
+        updatedAt: Date.now(),
+        unreadUser: true,
+        billingPlanKey: planKey,
+      });
+    }
+
+    toast('Cobrança enviada para o usuário!', 'success');
+    closeModal('cp-modal');
+    loadChangePlans();
+  } catch(e) {
+    console.error('sendBillingToUser:', e);
+    toast('Erro ao enviar cobrança', 'error');
+  }
 }
 
-async function deleteTicketById(id) {
-  const ok = await showConfirm('Excluir chamado', 'Excluir este chamado permanentemente?');
+async function sendRenewalBilling(userId, planKey) {
+  const settingsSnap = await db.ref(`dev_settings/plans/${planKey}`).once('value');
+  const planSettings = settingsSnap.val();
+
+  if (!planSettings || !planSettings.pixKey) {
+    toast('Configure o Pix para este plano em Settings', 'error');
+    return;
+  }
+
+  const cfg = PLAN_CONFIGS[planKey] || { label: planKey };
+  const billing = {
+    planKey,
+    planLabel:    cfg.label,
+    price:        planSettings.price || '—',
+    pixKey:       planSettings.pixKey,
+    pixName:      planSettings.pixName || '',
+    pixBank:      planSettings.pixBank || '',
+    qrCodeUrl:    planSettings.qrCodeUrl || '',
+    sentAt:       Date.now(),
+    status:       'awaiting_payment',
+    isRenewal:    true,
+  };
+
+  try {
+    await db.ref(`users/${userId}/billing`).set(billing);
+    toast('Cobrança de renovação enviada!', 'success');
+    loadChangePlans();
+  } catch(e) {
+    toast('Erro ao enviar renovação', 'error');
+  }
+}
+
+async function confirmRenewal(userId) {
+  const planSnap = await db.ref(`users/${userId}/plan`).once('value');
+  const plan = planSnap.val();
+  if (!plan) { toast('Plano não encontrado', 'error'); return; }
+
+  const expiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000);
+  try {
+    await db.ref(`users/${userId}/plan`).update({ expiresAt, activatedAt: Date.now() });
+    await db.ref(`users/${userId}/billing`).update({ status: 'paid', paidAt: Date.now() });
+    toast('Pagamento confirmado! Plano renovado por 30 dias.', 'success');
+    loadChangePlans();
+  } catch(e) {
+    toast('Erro ao confirmar pagamento', 'error');
+  }
+}
+
+async function downgradeToFree(userId) {
+  const ok = await showConfirm('Rebaixar plano', 'Mover usuário para 50 MB (inadimplência)?');
   if (!ok) return;
+  const expiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000);
   try {
-    await db.ref(`support_tickets/${id}`).remove();
-    toast('Chamado excluído', 'success');
-    loadTickets();
-  } catch(e) { toast('Erro ao excluir', 'error'); }
+    await db.ref(`users/${userId}/plan`).set({
+      key: '50mb', label: '50 MB', quota: 52428800,
+      expiresAt, activatedAt: Date.now(), activatedBy: 'system_downgrade',
+    });
+    await db.ref(`users/${userId}/billing`).update({ status: 'overdue_downgraded' });
+    toast('Usuário rebaixado para 50 MB', 'success');
+    loadChangePlans();
+  } catch(e) {
+    toast('Erro ao rebaixar plano', 'error');
+  }
 }
 
-function devEscapeHtml(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+// Listener para badge de Change Plans
+function startChangePlansListener() {
+  try {
+    db.ref('support_tickets').orderByChild('type').equalTo('plan_change').on('value', snap => {
+      const data = snap.val() || {};
+      const pending = Object.values(data).filter(t => t.status === 'open' || t.status === 'pending' || t.status === 'awaiting_payment').length;
+      const badge = document.getElementById('cp-badge');
+      if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? '' : 'none'; }
+      const sec = document.getElementById('change-plans-section');
+      if (sec && sec.classList.contains('active')) loadChangePlans();
+    });
+  } catch(e) { console.warn('cp listener:', e); }
 }
 
-// Patch closeModal: parar listener ao fechar ticket-modal
-const _origCloseModal = window.closeModal;
-window.closeModal = function(id) {
-  if (id === 'ticket-modal') stopDevChatListener();
-  if (_origCloseModal) _origCloseModal(id);
-};
+function planLabelToKey(label) {
+  if (!label) return '1gb';
+  const l = label.toLowerCase().replace(/\s/g, '');
+  const map = { '50mb':  '50mb', '100mb': '100mb', '512mb': '512mb',
+    '1gb': '1gb', '2gb': '2gb', '5gb': '5gb', '10gb': '10gb', '20gb': '20gb' };
+  return map[l] || '1gb';
+}
+
+// ========== SETTINGS ==========
+
+const PLAN_KEYS = ['50mb','100mb','512mb','1gb','2gb','5gb','10gb','20gb'];
+
+async function loadSettings() {
+  const container = document.getElementById('settings-plans-container');
+  if (!container) return;
+  container.innerHTML = '<div class="loading" style="padding:24px;text-align:center"><div class="spinner"></div>Carregando...</div>';
+
+  const snap = await db.ref('dev_settings/plans').once('value');
+  const settings = snap.val() || {};
+
+  container.innerHTML = '';
+
+  for (const key of PLAN_KEYS) {
+    const cfg = PLAN_CONFIGS[key];
+    const s   = settings[key] || {};
+
+    const card = document.createElement('div');
+    card.className = 'table-card';
+    card.style.padding = '16px';
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div>
+          <div style="font-weight:700;font-size:15px">${cfg.label}</div>
+          <div style="font-size:11px;font-family:var(--mono);color:var(--ink-dim)">${key}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-family:var(--mono);color:var(--ink-dim)">R$</span>
+          <input class="edit-input" id="s-price-${key}" type="number" step="0.01" min="0" placeholder="0,00"
+            value="${s.price || ''}" style="width:90px;text-align:right;font-weight:700;font-size:15px">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="edit-field" style="margin:0">
+          <div class="edit-label">Chave Pix</div>
+          <input class="edit-input" id="s-pixkey-${key}" type="text" placeholder="CPF, email, telefone ou aleatória"
+            value="${s.pixKey || ''}">
+        </div>
+        <div class="edit-field" style="margin:0">
+          <div class="edit-label">Nome do Favorecido</div>
+          <input class="edit-input" id="s-pixname-${key}" type="text" placeholder="Nome completo"
+            value="${s.pixName || ''}">
+        </div>
+        <div class="edit-field" style="margin:0">
+          <div class="edit-label">Banco</div>
+          <input class="edit-input" id="s-pixbank-${key}" type="text" placeholder="Ex: Nubank, Itaú..."
+            value="${s.pixBank || ''}">
+        </div>
+        <div class="edit-field" style="margin:0">
+          <div class="edit-label">URL do QR Code (imagem)</div>
+          <input class="edit-input" id="s-qr-${key}" type="url" placeholder="https://..."
+            value="${s.qrCodeUrl || ''}">
+        </div>
+      </div>
+      ${s.qrCodeUrl ? `<img src="${s.qrCodeUrl}" alt="QR Code ${cfg.label}"
+        style="margin-top:12px;width:120px;height:120px;border-radius:8px;border:1px solid var(--border);object-fit:contain;background:#fff">` : ''}
+    `;
+    container.appendChild(card);
+  }
+}
+
+async function saveSettings() {
+  const btn = document.querySelector('[onclick="saveSettings()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+  try {
+    const updates = {};
+    for (const key of PLAN_KEYS) {
+      updates[key] = {
+        price:     document.getElementById(`s-price-${key}`)?.value   || '',
+        pixKey:    document.getElementById(`s-pixkey-${key}`)?.value  || '',
+        pixName:   document.getElementById(`s-pixname-${key}`)?.value || '',
+        pixBank:   document.getElementById(`s-pixbank-${key}`)?.value || '',
+        qrCodeUrl: document.getElementById(`s-qr-${key}`)?.value      || '',
+      };
+    }
+    await db.ref('dev_settings/plans').set(updates);
+    toast('Settings salvas com sucesso!', 'success');
+    loadSettings(); // recarrega para mostrar QR Codes
+  } catch(e) {
+    console.error('saveSettings:', e);
+    toast('Erro ao salvar settings', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Salvar tudo'; }
+  }
+}
 
 // ========== RULES VIEWER ==========
 
