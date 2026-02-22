@@ -3,6 +3,7 @@ import { isOnline, tvSlugFromName } from './utils.js';
 import { showToast } from './toast.js';
 import { getTVs, getCurrentUserId, getUploadMode, getDzSelectedFiles, setDzSelectedFiles, getPlaylistEnabled } from './state.js';
 import { updateActiveMediaStatus } from './firebase-sync.js';
+import { canUpload } from './media-manager.js';
 
 const authModule = window.authModule;
 
@@ -84,6 +85,13 @@ async function uploadMidia() {
       return;
     }
     const currentUserId = getCurrentUserId();
+
+    // Verifica cota de armazenamento
+    const allowed = await canUpload(currentUserId);
+    if (!allowed) {
+      showToast('Armazenamento cheio! Exclua mídias ou atualize seu plano.', 'error');
+      return;
+    }
     const tvs = getTVs();
     const uploadMode = getUploadMode();
     const playlistEnabled = getPlaylistEnabled();

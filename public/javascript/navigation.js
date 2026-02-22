@@ -1,5 +1,7 @@
 // ======================== navigation.js ==========================
 import { loadMidiasView } from './media-manager.js';
+import { initSupport } from './support.js';
+import { initProfile } from './profile.js';
 
 export function initNavigation() {
   const navItems = document.querySelectorAll('.nav-item');
@@ -26,6 +28,16 @@ export function initNavigation() {
     // Reset app section view when navigating to it
     if (sectionId === 'app-section') {
       resetAppView();
+    }
+
+    // Inicializa suporte ao navegar para a seção
+    if (sectionId === 'support-section') {
+      initSupport();
+    }
+
+    // Inicializa perfil ao navegar para a seção
+    if (sectionId === 'perfil-section') {
+      initProfile();
     }
   }
 
@@ -70,7 +82,7 @@ function initAppIframe() {
     btn.addEventListener('click', () => {
       const url = btn.getAttribute('data-app-url');
       const title = btn.closest('.app-card').querySelector('h3').textContent;
-      
+
       if (url) {
         openAppIframe(url, title);
       }
@@ -85,18 +97,14 @@ function initAppIframe() {
   }
 
   function openAppIframe(url, title) {
-    // Hide menu and show iframe container
     if (appMenu) appMenu.style.display = 'none';
     if (iframeContainer) iframeContainer.style.display = 'flex';
-    
-    // Set iframe title
+
     if (iframeTitle) iframeTitle.textContent = title;
-    
-    // Load URL in iframe
+
     if (iframe) {
       iframe.src = url;
-      
-      // Show loading state
+
       iframe.addEventListener('load', () => {
         if (iframeTitle) iframeTitle.textContent = title;
       }, { once: true });
@@ -104,11 +112,9 @@ function initAppIframe() {
   }
 
   function resetAppView() {
-    // Show menu and hide iframe container
     if (appMenu) appMenu.style.display = 'block';
     if (iframeContainer) iframeContainer.style.display = 'none';
-    
-    // Clear iframe
+
     if (iframe) iframe.src = 'about:blank';
   }
 
@@ -121,7 +127,7 @@ function resetAppView() {
   const appMenu = document.getElementById('app-menu');
   const iframeContainer = document.getElementById('app-iframe-container');
   const iframe = document.getElementById('app-iframe');
-  
+
   if (appMenu) appMenu.style.display = 'block';
   if (iframeContainer) iframeContainer.style.display = 'none';
   if (iframe) iframe.src = 'about:blank';

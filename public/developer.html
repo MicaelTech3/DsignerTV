@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DevConsole · DSigner</title>
-<link rel="shortcut icon" href="imagens/favicon.png" type="image/x-icon">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
@@ -878,6 +877,15 @@ textarea.edit-input {
       <span>Rules Viewer</span>
     </div>
 
+    <div class="nav-item" data-section="plans-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM3 8a5 5 0 1110 0A5 5 0 013 8zm4.5-3v3.25l2.5 1.5-.5.86L6.5 8.75V5h1z"/></svg>
+      <span>Planos</span>
+    </div>
+    <div class="nav-item" data-section="tickets-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v9H9l-3 3v-3H2V2zm1 1v7h3v2l2-2h4V3H3z"/></svg>
+      <span>Chamados <span id="ticket-badge" style="display:none;background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:4px;font-family:var(--mono)">0</span></span>
+    </div>
+
     <div class="sidebar-section" style="margin-top:8px">Produto</div>
     <div class="nav-item" data-section="apps-section">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h4v4H3zm6 0h4v4H9zM3 9h4v4H3zm6 0h4v4H9z"/></svg>
@@ -945,7 +953,7 @@ textarea.edit-input {
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>ID (email codificado)</th><th>Email</th><th>TVs</th><th>Cats</th><th>Mídias</th><th>Ações</th></tr></thead>
+            <thead><tr><th>ID (email codificado)</th><th>Email</th><th>TVs</th><th>Cats</th><th>Mídias</th><th>Storage</th><th>Plano</th><th>Ações</th></tr></thead>
             <tbody id="users-body"><tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando...</td></tr></tbody>
           </table>
         </div>
@@ -1319,7 +1327,216 @@ textarea.edit-input {
       </div>
     </div>
 
+
+    <!-- ===== PLANOS ===== -->
+    <div class="section" id="plans-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Planos de Armazenamento</div>
+          <div class="page-sub">Gerencie cotas individualmente ou em lote</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm" onclick="loadPlans()">↻ Atualizar</button>
+          <button class="btn-sm primary" onclick="openBulkPlanModal()">⚡ Aplicar em lote</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:16px">
+        <div class="stat-card"><div class="stat-label">Usuários</div><div class="stat-value" id="plan-stat-users">—</div></div>
+        <div class="stat-card"><div class="stat-label">Storage Total</div><div class="stat-value" id="plan-stat-total">—</div></div>
+        <div class="stat-card"><div class="stat-label">Storage Usado</div><div class="stat-value" id="plan-stat-used">—</div></div>
+        <div class="stat-card"><div class="stat-label">Acima de 80%</div><div class="stat-value" id="plan-stat-warn" style="color:var(--yellow)">—</div></div>
+        <div class="stat-card"><div class="stat-label">Cheios (100%)</div><div class="stat-value" id="plan-stat-full" style="color:var(--red)">—</div></div>
+      </div>
+
+      <!-- Tabela de planos -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">USUÁRIOS & PLANOS</div>
+          <div class="table-actions">
+            <input class="search-input" id="plan-search" placeholder="Filtrar..." oninput="filterTable('plans-body', this.value)">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:32px"><input type="checkbox" id="plan-select-all" onchange="toggleSelectAllPlans(this.checked)"></th>
+                <th>Email</th>
+                <th>Plano</th>
+                <th>Usado</th>
+                <th style="min-width:140px">Uso</th>
+                <th>%</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="plans-body"><tr><td colspan="7" class="loading"><div class="spinner"></div>Carregando...</td></tr></tbody>
+          </table>
+        </div>
+        <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span id="plans-selected-count" style="font-size:12px;font-family:var(--mono);color:var(--ink-dim)">0 selecionados</span>
+          <button class="btn-sm" id="bulk-apply-selected-btn" onclick="openBulkPlanModal()" style="display:none">⚡ Alterar selecionados</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CHAMADOS ===== -->
+    <div class="section" id="tickets-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Chamados de Suporte</div>
+          <div class="page-sub">Mensagens enviadas pelos usuários pelo painel</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <select class="search-input" id="ticket-filter-email" style="width:220px;max-width:100%;" onchange="loadTickets()">
+            <option value="">Todos os usuários</option>
+          </select>
+          <button class="btn-sm" onclick="loadTickets()">↻ Atualizar</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:16px">
+        <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="ticket-stat-total">—</div></div>
+        <div class="stat-card"><div class="stat-label">Abertos</div><div class="stat-value" id="ticket-stat-open" style="color:var(--blue)">—</div></div>
+        <div class="stat-card"><div class="stat-label">Aguardando</div><div class="stat-value" id="ticket-stat-pending" style="color:var(--yellow)">—</div></div>
+        <div class="stat-card"><div class="stat-label">Resolvidos</div><div class="stat-value" id="ticket-stat-done" style="color:var(--green)">—</div></div>
+        <div class="stat-card"><div class="stat-label">Não lidos</div><div class="stat-value" id="ticket-stat-unread" style="color:var(--red)">—</div></div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">CHAMADOS</div>
+          <div class="table-actions" style="gap:8px;flex-wrap:wrap;">
+            <select class="search-input" id="ticket-filter-status" style="width:140px" onchange="loadTickets()">
+              <option value="">Todos</option>
+              <option value="open">Abertos</option>
+              <option value="pending">Aguardando</option>
+              <option value="closed">Resolvidos</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Usuário</th><th>Assunto</th><th>Mensagem</th><th>Data</th><th>Status</th><th>Não lido</th><th>Ações</th></tr></thead>
+            <tbody id="tickets-body"><tr><td colspan="7" class="loading"><div class="spinner"></div>Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </main>
+</div>
+
+
+<!-- MODAL: Bulk Plan -->
+<div class="modal-overlay" id="bulk-plan-modal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head">
+      <div class="modal-head-title" id="bulk-plan-modal-title">⚡ Aplicar Plano em Lote</div>
+      <button class="modal-close" onclick="closeModal('bulk-plan-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="bulk-plan-target-info" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:12px;font-family:var(--mono);color:var(--ink-muted);line-height:1.6;"></div>
+      <div class="edit-field">
+        <div class="edit-label">Cota de armazenamento</div>
+        <select class="edit-input" id="bulk-quota-select" onchange="onBulkQuotaChange()">
+          <option value="536870912">512 MB</option>
+          <option value="1073741824" selected>1 GB (padrão)</option>
+          <option value="2147483648">2 GB</option>
+          <option value="5368709120">5 GB</option>
+          <option value="10737418240">10 GB</option>
+          <option value="21474836480">20 GB</option>
+          <option value="custom">Personalizado…</option>
+        </select>
+      </div>
+      <div class="edit-field" id="bulk-custom-row" style="display:none">
+        <div class="edit-label">Valor em GB</div>
+        <input class="edit-input" id="bulk-custom-gb" type="number" min="0.1" step="0.5" placeholder="ex: 3">
+      </div>
+      <div class="edit-field">
+        <div class="edit-label">Rótulo (opcional)</div>
+        <input class="edit-input" id="bulk-label-input" placeholder="ex: Plano Pro">
+      </div>
+      <div id="bulk-plan-progress" style="display:none;margin-top:10px">
+        <div style="font-size:12px;font-family:var(--mono);color:var(--ink-muted);margin-bottom:4px" id="bulk-plan-progress-text">Aplicando...</div>
+        <div style="height:4px;background:var(--bg);border-radius:2px;overflow:hidden">
+          <div id="bulk-plan-progress-bar" style="height:100%;width:0%;background:var(--ink);border-radius:2px;transition:width .3s"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('bulk-plan-modal')">Cancelar</button>
+      <button class="btn-sm primary" id="bulk-plan-save-btn" onclick="applyBulkPlan()">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Ticket Detail / Chat em tempo real -->
+<div class="modal-overlay" id="ticket-modal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-head">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <div class="modal-head-title" id="ticket-modal-title">Chamado</div>
+        <div style="font-size:11px;font-family:var(--mono);color:var(--ink-dim);display:flex;align-items:center;gap:8px">
+          <span id="ticket-modal-sub"></span>
+          <span id="ticket-modal-status-badge" style="font-size:10px;font-weight:700;padding:1px 8px;border-radius:3px;"></span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="dev-live-dot" title="Conectado ao chat" style="width:8px;height:8px;border-radius:50%;background:var(--green,#22c55e);display:none;flex-shrink:0;"></span>
+        <button class="modal-close" onclick="closeModal('ticket-modal')">×</button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:0;display:flex;flex-direction:column;max-height:72vh;">
+
+      <!-- Mensagem original (colapsável) -->
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <div style="font-size:10px;font-family:var(--mono);color:var(--ink-dim);display:flex;justify-content:space-between;align-items:center;">
+          <span>MENSAGEM ORIGINAL</span><span style="opacity:.5">clique para expandir</span>
+        </div>
+      </div>
+      <div id="ticket-original-wrap" style="display:none;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;">
+        <div id="ticket-original-msg" style="font-size:13px;color:var(--ink);line-height:1.6;white-space:pre-wrap;max-height:120px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- Chat em tempo real -->
+      <div style="padding:10px 16px 6px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:11px;font-family:var(--mono);color:var(--ink-dim);">CHAT EM TEMPO REAL</span>
+        <span id="dev-conn-label" style="font-size:10px;font-family:var(--mono);color:var(--ink-dim);">desconectado</span>
+      </div>
+      <div id="ticket-chat-messages" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-height:140px;max-height:300px;"></div>
+
+      <!-- Input dev -->
+      <div id="dev-chat-input-area" style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;">
+        <textarea id="dev-chat-input" rows="2" placeholder="Responder ao usuário... (Enter para enviar)"
+          style="flex:1;background:var(--bg);color:var(--ink);border:1px solid var(--border);border-radius:6px;padding:8px 10px;resize:none;font-family:var(--sans);font-size:13px;outline:none;"></textarea>
+        <button class="btn-sm primary" onclick="sendDevMessage()" style="white-space:nowrap;padding:8px 14px;">Enviar</button>
+      </div>
+
+      <!-- Status + nota interna -->
+      <div style="padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:10px;">
+        <div class="edit-field" style="margin:0">
+          <div class="edit-label">Status do chamado</div>
+          <select class="edit-input" id="ticket-status-select" onchange="onTicketStatusChange()">
+            <option value="open">Aberto</option>
+            <option value="pending">Aguardando usuário</option>
+            <option value="closed">Resolvido</option>
+          </select>
+        </div>
+        <div class="edit-field" style="margin:0">
+          <div class="edit-label">Nota interna (só visível aqui)</div>
+          <textarea class="edit-input" id="ticket-note-input" rows="2" placeholder="Observações internas..." style="resize:vertical;min-height:56px;font-family:var(--sans);"></textarea>
+        </div>
+      </div>
+      <input type="hidden" id="ticket-modal-id">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm danger" onclick="deleteTicket()">Excluir</button>
+      <button class="btn-sm" onclick="closeModal('ticket-modal')">Fechar</button>
+      <button class="btn-sm primary" onclick="saveTicket()">Salvar Status</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL: Node Detail -->
@@ -1353,6 +1570,53 @@ textarea.edit-input {
     <div class="modal-footer">
       <button class="btn-sm" onclick="copyRaw()">⎘ Copiar</button>
       <button class="btn-sm" onclick="closeModal('raw-modal')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Gerenciar Plano do Usuário -->
+<div class="modal-overlay" id="plan-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div class="modal-head-title">⚙ Plano de Armazenamento</div>
+      <button class="modal-close" onclick="closeModal('plan-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-family:var(--mono);font-size:13px;color:var(--ink-muted);margin-bottom:4px;" id="plan-modal-email"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-dim);margin-bottom:16px;" id="plan-modal-usage"></div>
+      <input type="hidden" id="plan-modal-uid">
+
+      <div class="edit-field">
+        <div class="edit-label">Cota de armazenamento</div>
+        <select class="edit-input" id="plan-quota-select" onchange="onPlanSelectChange()">
+          <option value="536870912">512 MB</option>
+          <option value="1073741824" selected>1 GB (padrão)</option>
+          <option value="2147483648">2 GB</option>
+          <option value="5368709120">5 GB</option>
+          <option value="10737418240">10 GB</option>
+          <option value="21474836480">20 GB</option>
+          <option value="custom">Personalizado…</option>
+        </select>
+      </div>
+
+      <div class="edit-field" id="plan-custom-row" style="display:none">
+        <div class="edit-label">Valor personalizado (GB)</div>
+        <input class="edit-input" id="plan-custom-gb" type="number" min="0.1" step="0.5" placeholder="ex: 7.5">
+      </div>
+
+      <div class="edit-field">
+        <div class="edit-label">Rótulo do plano (opcional)</div>
+        <input class="edit-input" id="plan-label-input" placeholder="ex: Plano Pro, Cortesia, etc">
+      </div>
+
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-top:8px;font-size:11px;font-family:var(--mono);color:var(--ink-dim);line-height:1.6;">
+        ℹ O plano é salvo em <code>users/{uid}/plan</code> no Realtime Database.<br>
+        O painel lê esse valor em tempo real e bloqueia uploads ao atingir 100%.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('plan-modal')">Cancelar</button>
+      <button class="btn-sm primary" id="save-plan-btn" onclick="savePlan()">Salvar Plano</button>
     </div>
   </div>
 </div>
@@ -1500,6 +1764,9 @@ const db = firebase.database();
 // ========== STATE ==========
 let currentUser = null;
 let allUsersData = {};
+let plansData = {};
+let selectedPlanUids = new Set();
+let ticketListener = null;
 let currentNodePath = null;
 let currentNodeData = null;
 let rtListener = null;
@@ -1584,10 +1851,13 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (sec === 'db-browser') browsePath('');
     if (sec === 'rules-section') loadRules();
     if (sec === 'sites-section') initSitesSection();
+    if (sec === 'plans-section') loadPlans();
+    if (sec === 'tickets-section') loadTickets();
   });
 });
 
 document.getElementById('refresh-overview').addEventListener('click', loadOverview);
+startTicketListener();
 
 // ========== HELPERS ==========
 function toast(msg, type = 'info') {
@@ -1716,12 +1986,13 @@ async function loadOverview() {
 // ========== USERS ==========
 async function loadUsers() {
   const tbody = document.getElementById('users-body');
-  tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
   try {
     const snap = await db.ref('users').once('value');
     const data = snap.val() || {};
     allUsersData = data;
     tbody.innerHTML = '';
+
     for (const uid of Object.keys(data)) {
       const u = data[uid];
       const email = uid.replace(/,/g, '.');
@@ -1730,21 +2001,137 @@ async function loadUsers() {
       let mediaCount = 0;
       if (u.tv_midias) for (const s of Object.values(u.tv_midias)) mediaCount += Object.keys(s).length;
 
+      // Plano
+      const plan = u.plan || { quota: 1073741824, label: '1 GB' };
+      const quotaBytes = plan.quota || 1073741824;
+
       const tr = document.createElement('tr');
+      tr.dataset.uid = uid;
       tr.innerHTML = `
         <td class="mono" style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${uid}</td>
         <td class="mono">${email}</td>
         <td>${tvCount}</td>
         <td>${catCount}</td>
         <td>${mediaCount}</td>
+        <td class="mono storage-cell-${uid.replace(/[^a-z0-9]/gi,'_')}">
+          <span style="color:var(--ink-dim);font-size:11px;">calculando…</span>
+        </td>
+        <td>
+          <span class="badge badge-gray" style="font-family:var(--mono);font-size:11px;">${plan.label || '1 GB'}</span>
+        </td>
         <td>
           <button class="action-btn" onclick="viewUserRaw('${uid}')">JSON</button>
           <button class="action-btn danger" onclick="deleteUser('${uid}', '${email}')">Excluir</button>
         </td>`;
       tbody.appendChild(tr);
+
+      // Calcula storage em background para este usuário
+      calcUserStorage(uid, u.tv_midias || {});
     }
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red)">Erro ao carregar</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--red)">Erro ao carregar</td></tr>';
+  }
+}
+
+// Calcula storage real via getMetadata() para cada storagePath único do usuário
+async function calcUserStorage(uid, tvMidias) {
+  const seen = new Set();
+  const tasks = [];
+  let totalBytes = 0;
+
+  for (const tvSlug in tvMidias) {
+    for (const mediaName in tvMidias[tvSlug]) {
+      const path = tvMidias[tvSlug][mediaName]?.storagePath;
+      if (!path || seen.has(path)) continue;
+      seen.add(path);
+      tasks.push(
+        firebase.storage().ref().child(path).getMetadata()
+          .then(m => { totalBytes += m.size || 0; })
+          .catch(() => {})
+      );
+    }
+  }
+
+  await Promise.all(tasks);
+
+  const plan = (allUsersData[uid] && allUsersData[uid].plan) || { quota: 1073741824, label: '1 GB' };
+  const quota = plan.quota || 1073741824;
+  const pct = Math.min((totalBytes / quota) * 100, 100);
+  const fmt = b => b >= 1073741824 ? (b/1073741824).toFixed(2)+' GB' : b >= 1048576 ? (b/1048576).toFixed(1)+' MB' : (b/1024).toFixed(0)+' KB';
+
+  const safeId = uid.replace(/[^a-z0-9]/gi,'_');
+  const cell = document.querySelector(`.storage-cell-${safeId}`);
+  if (!cell) return;
+
+  const color = pct >= 95 ? 'var(--red)' : pct >= 80 ? 'var(--yellow)' : 'var(--green)';
+  cell.innerHTML = `
+    <div style="font-size:11px;font-family:var(--mono);color:var(--ink-muted);margin-bottom:4px;">${fmt(totalBytes)} / ${fmt(quota)}</div>
+    <div style="height:4px;background:var(--bg);border-radius:2px;overflow:hidden;width:100px;">
+      <div style="height:100%;width:${pct.toFixed(1)}%;background:${color};border-radius:2px;transition:width .4s;"></div>
+    </div>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--ink-dim);margin-top:2px;">${pct.toFixed(1)}%</div>
+  `;
+
+  // Salva no allUsersData para uso local
+  if (allUsersData[uid]) allUsersData[uid]._usedBytes = totalBytes;
+}
+
+// ========== PLANO DO USUÁRIO ==========
+function openPlanModal(uid, email) {
+  const u = allUsersData[uid] || {};
+  const plan = u.plan || { quota: 1073741824, label: '1 GB' };
+
+  document.getElementById('plan-modal-email').textContent = email;
+  document.getElementById('plan-modal-uid').value = uid;
+  document.getElementById('plan-quota-select').value = String(plan.quota || 1073741824);
+  document.getElementById('plan-custom-gb').value = '';
+  document.getElementById('plan-label-input').value = plan.label || '';
+
+  const usedBytes = u._usedBytes || 0;
+  const fmt = b => b >= 1073741824 ? (b/1073741824).toFixed(2)+' GB' : b >= 1048576 ? (b/1048576).toFixed(1)+' MB' : (b/1024).toFixed(0)+' KB';
+  document.getElementById('plan-modal-usage').textContent = usedBytes > 0 ? `Uso atual: ${fmt(usedBytes)}` : 'Calculando uso...';
+
+  onPlanSelectChange();
+  openModal('plan-modal');
+}
+
+function onPlanSelectChange() {
+  const sel = document.getElementById('plan-quota-select');
+  const customRow = document.getElementById('plan-custom-row');
+  customRow.style.display = sel.value === 'custom' ? 'block' : 'none';
+}
+
+async function savePlan() {
+  const uid = document.getElementById('plan-modal-uid').value;
+  const selVal = document.getElementById('plan-quota-select').value;
+  const customGb = parseFloat(document.getElementById('plan-custom-gb').value);
+  const label = document.getElementById('plan-label-input').value.trim();
+  const btn = document.getElementById('save-plan-btn');
+
+  let quota;
+  if (selVal === 'custom') {
+    if (!customGb || customGb <= 0) { toast('Informe um valor válido em GB', 'error'); return; }
+    quota = Math.round(customGb * 1073741824);
+  } else {
+    quota = parseInt(selVal);
+  }
+
+  const planLabel = label || (quota >= 1073741824 ? (quota/1073741824).toFixed(0)+' GB' : (quota/1048576).toFixed(0)+' MB');
+
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+
+  try {
+    await db.ref(`users/${uid}/plan`).set({ quota, label: planLabel, updatedAt: Date.now(), updatedBy: 'dev-console' });
+    if (allUsersData[uid]) allUsersData[uid].plan = { quota, label: planLabel };
+    toast(`Plano de ${uid.replace(/,/g,'.')} atualizado para ${planLabel}`, 'success');
+    closeModal('plan-modal');
+    loadUsers(); // recarrega para atualizar badge
+  } catch(e) {
+    toast('Erro ao salvar plano: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Salvar Plano';
   }
 }
 
@@ -2165,7 +2552,417 @@ async function createTv() {
   }
 }
 
+// ========== PLANOS ==========
+
+async function loadPlans() {
+  const tbody = document.getElementById('plans-body');
+  tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
+  selectedPlanUids.clear();
+  updateSelectedCount();
+  try {
+    const snap = await db.ref('users').once('value');
+    const data = snap.val() || {};
+    allUsersData = data;
+    plansData = {};
+    const uids = Object.keys(data);
+    document.getElementById('plan-stat-users').textContent = uids.length;
+    tbody.innerHTML = '';
+    for (const uid of uids) {
+      const u = data[uid];
+      const email = uid.replace(/,/g, '.');
+      const plan = u.plan || { quota: 1073741824, label: '1 GB' };
+      plansData[uid] = { email, plan, usedBytes: 0, quota: plan.quota || 1073741824 };
+      const safeId = uid.replace(/[^a-z0-9]/gi, '_');
+      const tr = document.createElement('tr');
+      tr.dataset.uid = uid;
+      tr.innerHTML = `
+        <td><input type="checkbox" class="plan-checkbox" data-uid="${uid}" onchange="onPlanCheckChange('${uid}', this.checked)"></td>
+        <td class="mono" style="font-size:12px">${email}</td>
+        <td><span class="badge badge-gray" style="font-family:var(--mono);font-size:11px" id="plan-badge-${safeId}">${plan.label || '1 GB'}</span></td>
+        <td class="mono" id="plan-used-${safeId}" style="font-size:11px;color:var(--ink-dim)">calc…</td>
+        <td id="plan-bar-${safeId}">
+          <div style="height:5px;background:var(--bg);border-radius:2px;overflow:hidden;width:120px">
+            <div style="height:100%;width:0%;background:var(--ink);border-radius:2px;transition:width .5s" id="plan-barfill-${safeId}"></div>
+          </div>
+        </td>
+        <td class="mono" id="plan-pct-${safeId}" style="font-size:11px;color:var(--ink-dim)">—</td>
+        <td><button class="action-btn" onclick="openSinglePlanModal('${uid}', '${email}')">Editar</button></td>`;
+      tbody.appendChild(tr);
+      calcPlanStorage(uid, u.tv_midias || {});
+    }
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red)">Erro</td></tr>';
+  }
+}
+
+async function calcPlanStorage(uid, tvMidias) {
+  const seen = new Set(); const tasks = []; let totalBytes = 0;
+  for (const tvSlug in tvMidias) {
+    for (const mediaName in tvMidias[tvSlug]) {
+      const path = tvMidias[tvSlug][mediaName]?.storagePath;
+      if (!path || seen.has(path)) continue;
+      seen.add(path);
+      tasks.push(firebase.storage().ref().child(path).getMetadata().then(m => { totalBytes += m.size||0; }).catch(()=>{}));
+    }
+  }
+  await Promise.all(tasks);
+  const d = plansData[uid]; if (!d) return;
+  d.usedBytes = totalBytes;
+  if (allUsersData[uid]) allUsersData[uid]._usedBytes = totalBytes;
+  const quota = d.quota;
+  const pct = Math.min((totalBytes/quota)*100, 100);
+  const fmt = b => b>=1073741824?(b/1073741824).toFixed(2)+' GB':b>=1048576?(b/1048576).toFixed(1)+' MB':(b/1024).toFixed(0)+' KB';
+  const color = pct>=95?'var(--red)':pct>=80?'var(--yellow)':'var(--green)';
+  const s = uid.replace(/[^a-z0-9]/gi,'_');
+  const usedEl = document.getElementById(`plan-used-${s}`);
+  const fillEl = document.getElementById(`plan-barfill-${s}`);
+  const pctEl  = document.getElementById(`plan-pct-${s}`);
+  if (usedEl) usedEl.textContent = fmt(totalBytes);
+  if (fillEl) { fillEl.style.width=pct.toFixed(1)+'%'; fillEl.style.background=color; }
+  if (pctEl)  { pctEl.textContent=pct.toFixed(1)+'%'; pctEl.style.color=color; }
+  updatePlanStats();
+}
+
+function updatePlanStats() {
+  const vals = Object.values(plansData);
+  const totalUsed  = vals.reduce((a,d)=>a+(d.usedBytes||0),0);
+  const totalQuota = vals.reduce((a,d)=>a+(d.quota||1073741824),0);
+  const warn = vals.filter(d=>d.quota&&(d.usedBytes/d.quota)>=0.8).length;
+  const full = vals.filter(d=>d.quota&&(d.usedBytes/d.quota)>=1).length;
+  const fmt = b => b>=1073741824?(b/1073741824).toFixed(1)+' GB':(b/1048576).toFixed(0)+' MB';
+  const tu=document.getElementById('plan-stat-total'); if(tu) tu.textContent=fmt(totalQuota);
+  const uu=document.getElementById('plan-stat-used');  if(uu) uu.textContent=fmt(totalUsed);
+  const wu=document.getElementById('plan-stat-warn');  if(wu) wu.textContent=warn;
+  const fu=document.getElementById('plan-stat-full');  if(fu) fu.textContent=full;
+}
+
+function onPlanCheckChange(uid, checked) {
+  if (checked) selectedPlanUids.add(uid); else selectedPlanUids.delete(uid);
+  updateSelectedCount();
+}
+function toggleSelectAllPlans(checked) {
+  document.querySelectorAll('.plan-checkbox').forEach(cb => { cb.checked=checked; onPlanCheckChange(cb.dataset.uid,checked); });
+}
+function updateSelectedCount() {
+  const n = selectedPlanUids.size;
+  const el=document.getElementById('plans-selected-count'); if(el) el.textContent=n>0?`${n} selecionado${n>1?'s':''}`:'0 selecionados';
+  const btn=document.getElementById('bulk-apply-selected-btn'); if(btn) btn.style.display=n>0?'':'none';
+}
+function openBulkPlanModal() {
+  const targets = selectedPlanUids.size>0 ? [...selectedPlanUids].map(u=>u.replace(/,/g,'.')).join(', ') : 'Todos os usuários ('+Object.keys(plansData).length+')';
+  document.getElementById('bulk-plan-target-info').innerHTML = `<b>Destino:</b> ${targets}<br><span style="color:var(--red)">Isso sobrescreve o plano dos usuários selecionados.</span>`;
+  document.getElementById('bulk-plan-progress').style.display='none';
+  document.getElementById('bulk-plan-save-btn').disabled=false;
+  openModal('bulk-plan-modal');
+}
+function onBulkQuotaChange() {
+  document.getElementById('bulk-custom-row').style.display = document.getElementById('bulk-quota-select').value==='custom'?'block':'none';
+}
+async function applyBulkPlan() {
+  const selVal=document.getElementById('bulk-quota-select').value;
+  const customGb=parseFloat(document.getElementById('bulk-custom-gb').value);
+  const label=document.getElementById('bulk-label-input').value.trim();
+  const btn=document.getElementById('bulk-plan-save-btn');
+  const pw=document.getElementById('bulk-plan-progress');
+  const pt=document.getElementById('bulk-plan-progress-text');
+  const pb=document.getElementById('bulk-plan-progress-bar');
+  let quota;
+  if (selVal==='custom') { if(!customGb||customGb<=0){toast('Informe um valor válido em GB','error');return;} quota=Math.round(customGb*1073741824); }
+  else quota=parseInt(selVal);
+  const planLabel=label||(quota>=1073741824?(quota/1073741824).toFixed(0)+' GB':(quota/1048576).toFixed(0)+' MB');
+  const targets=selectedPlanUids.size>0?[...selectedPlanUids]:Object.keys(plansData);
+  btn.disabled=true; pw.style.display='block'; let done=0;
+  for (const uid of targets) {
+    pt.textContent=`Aplicando ${done+1}/${targets.length}…`;
+    pb.style.width=((done/targets.length)*100).toFixed(0)+'%';
+    try {
+      await db.ref(`users/${uid}/plan`).set({quota,label:planLabel,updatedAt:Date.now(),updatedBy:'dev-console'});
+      if(allUsersData[uid]) allUsersData[uid].plan={quota,label:planLabel};
+      if(plansData[uid]) { plansData[uid].plan={quota,label:planLabel}; plansData[uid].quota=quota; }
+      const s=uid.replace(/[^a-z0-9]/gi,'_');
+      const badgeEl=document.getElementById(`plan-badge-${s}`); if(badgeEl) badgeEl.textContent=planLabel;
+    } catch(e){ console.warn('plan error',uid,e); }
+    done++;
+  }
+  pb.style.width='100%'; pt.textContent=`Concluído! ${done} usuários atualizados.`;
+  toast(`Plano ${planLabel} aplicado em ${done} usuário${done>1?'s':''}`, 'success');
+  setTimeout(()=>closeModal('bulk-plan-modal'),1400);
+  selectedPlanUids.clear(); updateSelectedCount();
+  document.getElementById('plan-select-all').checked=false;
+}
+function openSinglePlanModal(uid,email) { openPlanModal(uid,email); }
+
+// ========== CHAMADOS ==========
+
+let devChatListener = null;
+let devCurrentTicketId = null;
+
+async function loadTickets() {
+  const tbody = document.getElementById('tickets-body');
+  tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
+  const filterStatus = document.getElementById('ticket-filter-status')?.value || '';
+  const filterEmail  = document.getElementById('ticket-filter-email')?.value  || '';
+  try {
+    const snap = await db.ref('support_tickets').once('value');
+    const data = snap.val() || {};
+
+    // Preenche filtro de email
+    const emailSelect = document.getElementById('ticket-filter-email');
+    if (emailSelect && emailSelect.options.length <= 1) {
+      const emails = [...new Set(Object.values(data).map(t => (t.email || t.userId || '').replace(/,/g,'.')).filter(Boolean))].sort();
+      emails.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e; opt.textContent = e;
+        emailSelect.appendChild(opt);
+      });
+    }
+
+    let tickets = Object.entries(data)
+      .map(([id, t]) => ({ id, ...t }))
+      .filter(t => !filterStatus || t.status === filterStatus)
+      .filter(t => !filterEmail  || (t.email || t.userId || '').replace(/,/g,'.') === filterEmail)
+      .sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+
+    const total   = Object.keys(data).length;
+    const open    = Object.values(data).filter(t => t.status === 'open').length;
+    const pending = Object.values(data).filter(t => t.status === 'pending').length;
+    const closed  = Object.values(data).filter(t => t.status === 'closed').length;
+    const unread  = Object.values(data).filter(t => t.unreadDev === true).length;
+
+    document.getElementById('ticket-stat-total').textContent   = total;
+    document.getElementById('ticket-stat-open').textContent    = open;
+    document.getElementById('ticket-stat-pending').textContent = pending;
+    document.getElementById('ticket-stat-done').textContent    = closed;
+    const unreadEl = document.getElementById('ticket-stat-unread');
+    if (unreadEl) unreadEl.textContent = unread;
+
+    const badge = document.getElementById('ticket-badge');
+    if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? '' : 'none'; }
+
+    tbody.innerHTML = '';
+    if (tickets.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--ink-dim);padding:20px;font-family:var(--mono);font-size:12px">Nenhum chamado encontrado</td></tr>';
+      return;
+    }
+
+    for (const t of tickets) {
+      const isUnread    = t.unreadDev === true;
+      const statusColor = t.status === 'open' ? 'var(--blue)' : t.status === 'pending' ? 'var(--yellow)' : 'var(--green)';
+      const statusLabel = { open: 'Aberto', pending: 'Aguardando', closed: 'Resolvido' }[t.status] || t.status;
+      const date = t.createdAt
+        ? new Date(t.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+        : '—';
+      const msgPreview = (t.message || '').slice(0, 60) + ((t.message || '').length > 60 ? '\u2026' : '');
+      const emailDisplay = (t.email || t.userId || '?').replace(/,/g, '.');
+
+      const tr = document.createElement('tr');
+      if (isUnread) tr.style.background = 'rgba(100,163,251,0.07)';
+      tr.innerHTML = `
+        <td class="mono" style="font-size:11px">${devEscapeHtml(emailDisplay)}</td>
+        <td style="font-size:13px;font-weight:500">${devEscapeHtml(t.subject || 'Sem assunto')}</td>
+        <td style="font-size:12px;color:var(--ink-muted);max-width:200px">${devEscapeHtml(msgPreview)}</td>
+        <td class="mono" style="font-size:11px;white-space:nowrap">${date}</td>
+        <td><span style="background:${statusColor}20;color:${statusColor};border:1px solid ${statusColor};padding:2px 8px;border-radius:3px;font-size:10px;font-family:var(--mono);font-weight:600">${statusLabel}</span></td>
+        <td style="text-align:center">${isUnread ? '<span style="width:8px;height:8px;border-radius:50%;background:var(--red,#ef4444);display:inline-block;" title="N\u00e3o lido"></span>' : ''}</td>
+        <td>
+          <button class="action-btn" onclick="openTicket('${t.id}')">\u{1F4AC} Chat</button>
+          <button class="action-btn danger" onclick="deleteTicketById('${t.id}')">Del</button>
+        </td>`;
+      tbody.appendChild(tr);
+    }
+  } catch(e) {
+    console.error('loadTickets:', e);
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red)">Erro ao carregar</td></tr>';
+  }
+}
+
+function startTicketListener() {
+  if (ticketListener) return;
+  try {
+    ticketListener = db.ref('support_tickets').on('value', snap => {
+      const data  = snap.val() || {};
+      const unread = Object.values(data).filter(t => t.unreadDev === true).length;
+      const badge = document.getElementById('ticket-badge');
+      if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? '' : 'none'; }
+      const section = document.getElementById('tickets-section');
+      if (section && section.classList.contains('active')) loadTickets();
+    });
+  } catch(e) { console.warn('ticket listener:', e); }
+}
+
+async function openTicket(id) {
+  devCurrentTicketId = id;
+
+  // Marca como lido pelo dev
+  await db.ref(`support_tickets/${id}`).update({ unreadDev: false, updatedAt: Date.now() }).catch(() => {});
+
+  const snap = await db.ref(`support_tickets/${id}`).once('value');
+  const t    = snap.val();
+  if (!t) return;
+
+  const date = t.createdAt ? new Date(t.createdAt).toLocaleString('pt-BR') : '';
+  document.getElementById('ticket-modal-title').textContent = t.subject || 'Sem assunto';
+  document.getElementById('ticket-modal-sub').textContent   = `${(t.email || t.userId || '?').replace(/,/g,'.')} \u00b7 ${date}`;
+  document.getElementById('ticket-original-msg').textContent = t.message || '';
+  document.getElementById('ticket-status-select').value      = t.status || 'open';
+  document.getElementById('ticket-note-input').value         = t.devNote || '';
+  document.getElementById('ticket-modal-id').value           = id;
+
+  // Badge de status no modal
+  const sb = document.getElementById('ticket-modal-status-badge');
+  if (sb) {
+    const colors = { open: '#3b82f6', pending: '#f59e0b', closed: '#22c55e' };
+    const labels = { open: 'Aberto', pending: 'Aguardando', closed: 'Resolvido' };
+    sb.textContent = labels[t.status] || t.status;
+    sb.style.cssText = `background:${colors[t.status] || '#666'}22;color:${colors[t.status] || '#666'};border:1px solid ${colors[t.status] || '#666'};`;
+  }
+
+  // Input ativo/desativado conforme status
+  onTicketStatusChange();
+
+  openModal('ticket-modal');
+  startDevChatListener(id);
+}
+
+function onTicketStatusChange() {
+  const status   = document.getElementById('ticket-status-select')?.value;
+  const inputArea = document.getElementById('dev-chat-input-area');
+  if (inputArea) inputArea.style.display = status === 'closed' ? 'none' : 'flex';
+}
+
+function startDevChatListener(ticketId) {
+  stopDevChatListener();
+
+  const messagesEl    = document.getElementById('ticket-chat-messages');
+  const connLabel     = document.getElementById('dev-conn-label');
+  const liveDot       = document.getElementById('dev-live-dot');
+  if (!messagesEl) return;
+
+  messagesEl.innerHTML = '<div style="text-align:center;color:var(--ink-dim);font-size:12px;font-family:var(--mono);padding:16px">Conectando...</div>';
+  if (connLabel) { connLabel.textContent = 'conectado'; connLabel.style.color = 'var(--green,#22c55e)'; }
+  if (liveDot)   { liveDot.style.display = 'block'; }
+
+  devChatListener = db.ref(`support_tickets/${ticketId}/messages`).on('value', (snap) => {
+    const data     = snap.val() || {};
+    const messages = Object.entries(data)
+      .map(([id, m]) => ({ id, ...m }))
+      .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+    messagesEl.innerHTML = '';
+
+    if (messages.length === 0) {
+      messagesEl.innerHTML = '<div style="text-align:center;color:var(--ink-dim);font-size:12px;font-family:var(--mono);padding:24px 0">Nenhuma mensagem ainda.</div>';
+      return;
+    }
+
+    for (const msg of messages) {
+      const isDev  = msg.sender === 'dev';
+      const bubble = document.createElement('div');
+      bubble.style.cssText = `max-width:80%;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.5;align-self:${isDev ? 'flex-end' : 'flex-start'};background:${isDev ? 'var(--ink,#e0e0e0)' : 'var(--bg,#1a1a2e)'};color:${isDev ? 'var(--bg,#111)' : 'var(--ink)'};border:1px solid var(--border);`;
+      bubble.innerHTML = `
+        <div style="font-size:10px;font-weight:700;font-family:var(--mono);margin-bottom:4px;opacity:.7">${isDev ? '\u{1F6E0} Você (Suporte)' : '\u{1F464} Usuário'}</div>
+        <div>${devEscapeHtml(msg.text || '')}</div>
+        <div style="font-size:10px;opacity:.5;margin-top:4px;text-align:right;font-family:var(--mono)">${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</div>
+      `;
+      messagesEl.appendChild(bubble);
+    }
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
+
+  // Enter para enviar
+  const input = document.getElementById('dev-chat-input');
+  if (input && !input._devListener) {
+    input._devListener = (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendDevMessage(); }
+    };
+    input.addEventListener('keydown', input._devListener);
+  }
+}
+
+function stopDevChatListener() {
+  if (devChatListener && devCurrentTicketId) {
+    db.ref(`support_tickets/${devCurrentTicketId}/messages`).off('value', devChatListener);
+    devChatListener = null;
+  }
+  const connLabel = document.getElementById('dev-conn-label');
+  const liveDot   = document.getElementById('dev-live-dot');
+  if (connLabel) { connLabel.textContent = 'desconectado'; connLabel.style.color = 'var(--ink-dim)'; }
+  if (liveDot)   { liveDot.style.display = 'none'; }
+}
+
+async function sendDevMessage() {
+  if (!devCurrentTicketId) return;
+  const inputEl = document.getElementById('dev-chat-input');
+  const text    = inputEl?.value.trim();
+  if (!text) return;
+
+  inputEl.value    = '';
+  inputEl.disabled = true;
+
+  try {
+    const msgId = Date.now().toString();
+    await db.ref(`support_tickets/${devCurrentTicketId}/messages/${msgId}`).set({
+      sender: 'dev', senderId: 'dev', text, timestamp: Date.now()
+    });
+    await db.ref(`support_tickets/${devCurrentTicketId}`).update({
+      unreadUser:  true,
+      unreadDev:   false,
+      updatedAt:   Date.now(),
+      status:      'pending',
+    });
+    document.getElementById('ticket-status-select').value = 'pending';
+    onTicketStatusChange();
+  } catch(e) {
+    console.error('sendDevMessage:', e);
+    toast('Falha ao enviar', 'error');
+  } finally {
+    inputEl.disabled = false;
+    inputEl.focus();
+  }
+}
+
+async function saveTicket() {
+  const id     = document.getElementById('ticket-modal-id').value;
+  const status = document.getElementById('ticket-status-select').value;
+  const note   = document.getElementById('ticket-note-input').value.trim();
+  try {
+    await db.ref(`support_tickets/${id}`).update({ status, devNote: note, updatedAt: Date.now() });
+    toast('Chamado atualizado', 'success');
+    closeModal('ticket-modal');
+    loadTickets();
+  } catch(e) { toast('Erro ao salvar', 'error'); }
+}
+
+async function deleteTicket() {
+  const id = document.getElementById('ticket-modal-id').value;
+  await deleteTicketById(id);
+  closeModal('ticket-modal');
+}
+
+async function deleteTicketById(id) {
+  const ok = await showConfirm('Excluir chamado', 'Excluir este chamado permanentemente?');
+  if (!ok) return;
+  try {
+    await db.ref(`support_tickets/${id}`).remove();
+    toast('Chamado excluído', 'success');
+    loadTickets();
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+function devEscapeHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+}
+
+// Patch closeModal: parar listener ao fechar ticket-modal
+const _origCloseModal = window.closeModal;
+window.closeModal = function(id) {
+  if (id === 'ticket-modal') stopDevChatListener();
+  if (_origCloseModal) _origCloseModal(id);
+};
+
 // ========== RULES VIEWER ==========
+
 const CURRENT_RULES = {
   "Realtime Database": {
     "rules": {
