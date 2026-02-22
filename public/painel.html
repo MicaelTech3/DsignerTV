@@ -163,25 +163,53 @@
         </div>
       </section>
 
-      <!-- ===== APP ===== -->
+<!-- ===== APP — SUBSTITUIR O BLOCO <section id="app-section"> inteiro no painel.html ===== -->
       <section id="app-section" class="content-section">
         <div id="app-menu" class="app-menu-view">
-          <h2 style="color:var(--accent); text-align:center; margin-bottom:24px;">Downloads DSigner TV</h2>
+          <h2 style="color:var(--accent); text-align:center; margin-bottom:8px;">Downloads DSigner TV</h2>
+
+          <!-- Aviso de atualização (gerado automaticamente) -->
+          <div id="app-update-banner" style="display:none; margin:0 auto 24px; max-width:680px; padding:10px 16px; background:color-mix(in oklab,var(--accent),transparent 85%); border:1px solid color-mix(in oklab,var(--accent),transparent 50%); border-radius:10px; font-size:13px; color:var(--accent); text-align:center; font-family:'IBM Plex Mono',monospace;"></div>
+
           <div class="app-simple-wrapper">
-            <div class="app-card">
-              <svg viewBox="0 0 24 24" width="80" height="80" fill="var(--accent)" style="margin-bottom:20px;"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-2.86-1.21-6.08-1.21-8.94 0L5.65 5.67c-.19-.28-.54-.37-.83-.22-.3.16-.42.54-.26.85l1.84 3.18C4.25 11.24 2.5 13.89 2.5 17h19c0-3.11-1.75-5.76-3.9-7.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg>
-              <h3>Aplicativo para TV (APK)</h3>
+
+            <!-- Card APK -->
+            <div class="app-card" id="card-apk">
+              <svg viewBox="0 0 24 24" width="64" height="64" fill="var(--accent)" style="margin-bottom:16px;"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-2.86-1.21-6.08-1.21-8.94 0L5.65 5.67c-.19-.28-.54-.37-.83-.22-.3.16-.42.54-.26.85l1.84 3.18C4.25 11.24 2.5 13.89 2.5 17h19c0-3.11-1.75-5.76-3.9-7.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg>
+              <h3>Aplicativo TV</h3>
               <p>Instale o DSigner TV em Android TV ou TV Box.</p>
-              <button class="app-btn" data-app-url="https://baixar-dskey.vercel.app/" type="button">DOWNLOAD APP</button>
+              <div id="apk-update-note" style="display:none;font-size:11px;color:var(--accent);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;"></div>
+              <button class="app-btn" id="btn-download-apk" onclick="downloadRelease('apk')" type="button">
+                ⬇ DOWNLOAD APK
+              </button>
             </div>
-            <div class="app-card">
-              <svg viewBox="0 0 24 24" width="80" height="80" fill="var(--accent)" style="margin-bottom:20px;"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>
+
+            <!-- Card Windows -->
+            <div class="app-card" id="card-win">
+              <svg viewBox="0 0 24 24" width="64" height="64" fill="var(--accent)" style="margin-bottom:16px;"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg>
               <h3>Software Active</h3>
-              <p>Instalador para Windows/Linux com ADB automático.</p>
-              <button class="app-btn secondary" data-app-url="https://baixar-dskey-software.vercel.app/" type="button">DOWNLOAD ACTIVE</button>
+              <p>Instalador Windows — controle via ADB automático.</p>
+              <div id="win-update-note" style="display:none;font-size:11px;color:var(--accent);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;"></div>
+              <button class="app-btn secondary" id="btn-download-win" onclick="downloadRelease('win')" type="button">
+                ⬇ DOWNLOAD WINDOWS
+              </button>
             </div>
+
+            <!-- Card Linux -->
+            <div class="app-card" id="card-linux">
+              <svg viewBox="0 0 24 24" width="64" height="64" fill="var(--accent)" style="margin-bottom:16px;"><path d="M12 2C9 2 7 4.5 7 7c0 1.5.5 2.8 1.3 3.8-.5.6-.8 1.4-.8 2.2 0 1 .4 1.9 1 2.6-.3.5-.5 1.1-.5 1.7 0 .8.3 1.6.8 2.1C8.3 19.9 8 20.4 8 21h8c0-.6-.3-1.1-.8-1.6.5-.5.8-1.3.8-2.1 0-.6-.2-1.2-.5-1.7.6-.7 1-1.6 1-2.6 0-.8-.3-1.6-.8-2.2C17.5 9.8 18 8.5 18 7c0-2.5-2-5-6-5zm-1.5 7c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm3 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z"/></svg>
+              <h3>Software Linux</h3>
+              <p>Instalador Linux — Ubuntu, Debian e derivados.</p>
+              <div id="linux-update-note" style="display:none;font-size:11px;color:var(--accent);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;"></div>
+              <button class="app-btn secondary" id="btn-download-linux" onclick="downloadRelease('linux')" type="button">
+                ⬇ DOWNLOAD LINUX
+              </button>
+            </div>
+
           </div>
         </div>
+
+        <!-- iframe container (mantém o que já existe) -->
         <div id="app-iframe-container" class="app-iframe-container" style="display:none;">
           <div class="app-iframe-header">
             <button class="app-back-btn" type="button" title="Voltar">
@@ -659,6 +687,88 @@
         updateIcon();
       });
     });
+
+// ========== DOWNLOADS - busca do Firebase ==========
+async function loadAppReleasesInfo() {
+  const types = ['apk', 'win', 'linux'];
+  const latestDates = [];
+
+  for (const type of types) {
+    try {
+      const snap = await window.authModule.database.ref(`app_releases/${type}/current`).once('value');
+      const data = snap.val();
+      if (!data) continue;
+
+      latestDates.push(data.publishedAt || 0);
+
+      // Mostra nota de atualização no card
+      if (data.note) {
+        const noteEl = document.getElementById(`${type}-update-note`);
+        if (noteEl) {
+          noteEl.textContent = '✦ ' + data.note;
+          noteEl.style.display = 'block';
+        }
+      }
+
+      // Habilita botão com URL real
+      const btn = document.getElementById(`btn-download-${type}`);
+      if (btn && data.url) {
+        btn.dataset.url = data.url;
+        btn.disabled = false;
+      } else if (btn) {
+        btn.textContent = 'Indisponível';
+        btn.disabled = true;
+      }
+
+    } catch(e) {
+      console.warn('loadAppReleasesInfo:', type, e);
+    }
+  }
+
+  // Banner de atualização mais recente
+  if (latestDates.length > 0) {
+    const most = Math.max(...latestDates);
+    const dateStr = new Date(most).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+    const banner = document.getElementById('app-update-banner');
+    if (banner) {
+      banner.textContent = `✦ App atualizado em ${dateStr}`;
+      banner.style.display = 'block';
+    }
+  }
+}
+
+function downloadRelease(type) {
+  const btn = document.getElementById(`btn-download-${type}`);
+  const url = btn?.dataset.url;
+  if (!url) {
+    alert('Download ainda não disponível.');
+    return;
+  }
+  // Abre diretamente o arquivo para download
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// Chama quando a seção app for ativada
+// No navigation.js, adicionar dentro de activateSection:
+//   if (sectionId === 'app-section') loadAppReleasesInfo();
+//
+// OU chamar direto no DOMContentLoaded como fallback:
+document.addEventListener('DOMContentLoaded', () => {
+  // Carrega ao abrir a seção app
+  const appNavBtn = document.querySelector('[data-section="app-section"]');
+  if (appNavBtn) {
+    appNavBtn.addEventListener('click', () => {
+      setTimeout(loadAppReleasesInfo, 100);
+    });
+  }
+});
+
   </script>
 </body>
 </html>

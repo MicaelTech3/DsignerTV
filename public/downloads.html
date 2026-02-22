@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Downloads · DSigner TV</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="imagens/favicon.png" type="image/x-icon">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a09;
+      --bg2: #111110;
+      --bg3: #1a1a18;
+      --border: #2a2a27;
+      --text: #f0f0ec;
+      --text2: #a0a09a;
+      --text3: #5a5a56;
+      --accent: #00e676;
+      --accent2: #00c853;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- BACKGROUND ---- */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,230,118,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,230,118,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glow {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(0,230,118,.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ---- HEADER ---- */
+    header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 72px 24px 48px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-mark svg { fill: #000; }
+
+    .logo-text {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: .06em;
+    }
+
+    h1 {
+      font-size: clamp(32px, 6vw, 56px);
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.02em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--text2);
+      max-width: 480px;
+      margin: 0 auto 8px;
+      line-height: 1.6;
+    }
+
+    /* ---- UPDATE BADGE ---- */
+    .update-badge {
+      display: none;
+      margin: 24px auto 0;
+      width: fit-content;
+      padding: 6px 16px;
+      background: rgba(0,230,118,.1);
+      border: 1px solid rgba(0,230,118,.3);
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: .04em;
+    }
+
+    .update-badge::before {
+      content: '✦ ';
+    }
+
+    /* ---- CARDS ---- */
+    .cards-section {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform .3s;
+    }
+
+    .card:hover {
+      border-color: rgba(0,230,118,.3);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,.4), 0 0 0 1px rgba(0,230,118,.1);
+    }
+
+    .card:hover::before { transform: scaleX(1); }
+
+    .card-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      transition: background .2s;
+    }
+
+    .card:hover .card-icon {
+      background: rgba(0,230,118,.1);
+      border-color: rgba(0,230,118,.2);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .card-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      min-height: 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .card-meta .note {
+      color: rgba(0,230,118,.7);
+      font-size: 10px;
+      max-width: 220px;
+    }
+
+    /* ---- DOWNLOAD BUTTON ---- */
+    .btn-download {
+      width: 100%;
+      padding: 14px 20px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: background .15s, transform .1s, box-shadow .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-download:hover {
+      background: var(--accent2);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0,230,118,.3);
+    }
+
+    .btn-download:active { transform: translateY(0); }
+
+    .btn-download:disabled,
+    .btn-download.unavailable {
+      background: var(--bg3);
+      color: var(--text3);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      border: 1px solid var(--border);
+    }
+
+    .btn-download svg { flex-shrink: 0; }
+
+    /* ---- LOADING SKELETON ---- */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg3) 25%, var(--border) 50%, var(--bg3) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      height: 14px;
+      width: 100%;
+    }
+
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ---- FOOTER ---- */
+    footer {
+      position: relative;
+      z-index: 1;
+      margin-top: auto;
+      padding: 24px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    footer a { color: var(--text2); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 600px) {
+      header { padding: 48px 20px 32px; }
+      .cards-section { grid-template-columns: 1fr; padding: 0 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <header>
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 10 10" width="20"><path d="M2 2h6v2H5v4H3V4H2z"/></svg>
+      </div>
+      <span class="logo-text">DSIGNER TV</span>
+    </div>
+
+    <h1>Baixe o <span>DSigner TV</span></h1>
+    <p class="subtitle">Escolha a versão para o seu dispositivo e comece a usar o melhor sistema de sinalização digital.</p>
+
+    <div class="update-badge" id="update-badge"></div>
+  </header>
+
+  <div class="cards-section">
+
+    <!-- Card APK -->
+    <div class="card">
+      <div class="card-icon">📱</div>
+      <div class="card-title">App Android</div>
+      <p class="card-desc">Para Android TV, TV Box e tablets Android. Instale o APK diretamente no seu dispositivo.</p>
+      <div class="card-meta" id="meta-apk">
+        <div class="skeleton" style="width:140px;height:12px"></div>
+      </div>
+      <button class="btn-download unavailable" id="btn-apk" onclick="doDownload('apk')" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
+        Baixar APK
+      </button>
+    </div>
+
+    <!-- Card Windows -->
+    <div class="card">
+      <div class="card-icon">🖥️</div>
+      <div class="card-title">Software Windows</div>
+      <p class="card-desc">Instalador para Windows com ativação via ADB automático. Compatível com Windows 10 e 11.</p>
+      <div class="card-meta" id="meta-win">
+        <div class="skeleton" style="width:140px;height:12px"></div>
+      </div>
+      <button class="btn-download unavailable" id="btn-win" onclick="doDownload('win')" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
+        Baixar para Windows
+      </button>
+    </div>
+
+    <!-- Card Linux -->
+    <div class="card">
+      <div class="card-icon">🐧</div>
+      <div class="card-title">Software Linux</div>
+      <p class="card-desc">Instalador para distribuições Linux. Compatível com Ubuntu 20.04+, Debian e derivados.</p>
+      <div class="card-meta" id="meta-linux">
+        <div class="skeleton" style="width:140px;height:12px"></div>
+      </div>
+      <button class="btn-download unavailable" id="btn-linux" onclick="doDownload('linux')" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
+        Baixar para Linux
+      </button>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>© 2025 DSigner TV · </span>
+    <a href="https://dsignertv.com.br" target="_blank">dsignertv.com.br</a>
+    <span> · </span>
+    <a href="painel.html">Acessar Painel</a>
+  </footer>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBhj6nv3QcIHyuznWPNM4t_0NjL0ghMwFw",
+      authDomain: "dsignertv.firebaseapp.com",
+      databaseURL: "https://dsignertv-default-rtdb.firebaseio.com",
+      projectId: "dsignertv",
+      storageBucket: "dsignertv.firebasestorage.app",
+      messagingSenderId: "930311416952",
+      appId: "1:930311416952:web:d0e7289f0688c46492d18d"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const releaseUrls = { apk: null, win: null, linux: null };
+
+    async function loadReleases() {
+      const types = ['apk', 'win', 'linux'];
+      const latestDates = [];
+
+      for (const type of types) {
+        try {
+          const snap = await db.ref('app_releases/' + type + '/current').once('value');
+          const data = snap.val();
+          const metaEl = document.getElementById('meta-' + type);
+          const btn    = document.getElementById('btn-' + type);
+
+          if (!data || !data.url) {
+            if (metaEl) metaEl.innerHTML = '<span style="color:var(--text3)">Em breve</span>';
+            continue;
+          }
+
+          releaseUrls[type] = data.url;
+          latestDates.push(data.publishedAt || 0);
+
+          const dateStr = data.publishedAt
+            ? new Date(data.publishedAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' })
+            : '—';
+          const sizeStr = data.size
+            ? (data.size > 1048576 ? (data.size/1048576).toFixed(1)+' MB' : (data.size/1024).toFixed(0)+' KB')
+            : '';
+
+          if (metaEl) {
+            metaEl.innerHTML =
+              '<span>' + (sizeStr ? sizeStr + ' · ' : '') + dateStr + '</span>' +
+              (data.note ? '<span class="note">✦ ' + data.note + '</span>' : '');
+          }
+
+          if (btn) {
+            btn.classList.remove('unavailable');
+            btn.disabled = false;
+          }
+
+        } catch(e) {
+          console.error('loadReleases ' + type + ':', e);
+          const metaEl = document.getElementById('meta-' + type);
+          if (metaEl) metaEl.innerHTML = '<span style="color:var(--text3)">Em breve</span>';
+        }
+      }
+
+      // Badge de atualização
+      if (latestDates.length > 0) {
+        const most = Math.max.apply(null, latestDates);
+        const dateStr = new Date(most).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+        const badge = document.getElementById('update-badge');
+        if (badge) {
+          badge.textContent = 'Atualizado em ' + dateStr;
+          badge.style.display = 'block';
+        }
+      }
+    }
+
+    function doDownload(type) {
+      const url = releaseUrls[type];
+      if (!url) return;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    loadReleases();
+  </script>
+
+</body>
+</html>
