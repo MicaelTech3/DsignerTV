@@ -1,7 +1,6 @@
 // ======================== navigation.js ==========================
 import { loadMidiasView } from './media-manager.js';
-import { initSupport } from './support.js';
-import { initProfile } from './profile.js';
+import { initProfile, reloadPlanForUser } from './profile.js';
 
 export function initNavigation() {
   const navItems = document.querySelectorAll('.nav-item');
@@ -30,14 +29,26 @@ export function initNavigation() {
       resetAppView();
     }
 
-    // Inicializa suporte ao navegar para a seção
-    if (sectionId === 'support-section') {
-      initSupport();
+    if (sectionId === 'perfil-section') {
+      reloadPlanForUser();
     }
 
-    // Inicializa perfil ao navegar para a seção
-    if (sectionId === 'perfil-section') {
-      initProfile();
+    if (sectionId === 'academy-section') {
+      if (typeof window.loadAcademyUser === 'function') {
+        window.loadAcademyUser();
+      }
+    }
+
+    if (sectionId === 'support-section') {
+      const user = window.authModule.auth.currentUser;
+      if (user) {
+        import('./support.js').then(m => {
+          m.loadTicketHistory(
+            user.email.replace(/\./g, ','),
+            document.getElementById('toggle-ticket-list-btn')
+          );
+        }).catch(() => {});
+      }
     }
   }
 
@@ -55,6 +66,13 @@ export function initNavigation() {
       window.open('https://tvdsigner.com.br/', '_blank');
     });
   }
+
+  // Inicializa perfil quando usuário autentica
+  window.authModule.onAuthStateChanged(user => {
+    if (user) {
+      initProfile(user);
+    }
+  });
 
   const logout = document.getElementById('logout-link');
   const authModule = window.authModule;
@@ -82,7 +100,7 @@ function initAppIframe() {
     btn.addEventListener('click', () => {
       const url = btn.getAttribute('data-app-url');
       const title = btn.closest('.app-card').querySelector('h3').textContent;
-
+      
       if (url) {
         openAppIframe(url, title);
       }
@@ -97,14 +115,18 @@ function initAppIframe() {
   }
 
   function openAppIframe(url, title) {
+    // Hide menu and show iframe container
     if (appMenu) appMenu.style.display = 'none';
     if (iframeContainer) iframeContainer.style.display = 'flex';
-
+    
+    // Set iframe title
     if (iframeTitle) iframeTitle.textContent = title;
-
+    
+    // Load URL in iframe
     if (iframe) {
       iframe.src = url;
-
+      
+      // Show loading state
       iframe.addEventListener('load', () => {
         if (iframeTitle) iframeTitle.textContent = title;
       }, { once: true });
@@ -112,9 +134,11 @@ function initAppIframe() {
   }
 
   function resetAppView() {
+    // Show menu and hide iframe container
     if (appMenu) appMenu.style.display = 'block';
     if (iframeContainer) iframeContainer.style.display = 'none';
-
+    
+    // Clear iframe
     if (iframe) iframe.src = 'about:blank';
   }
 
@@ -127,7 +151,7 @@ function resetAppView() {
   const appMenu = document.getElementById('app-menu');
   const iframeContainer = document.getElementById('app-iframe-container');
   const iframe = document.getElementById('app-iframe');
-
+  
   if (appMenu) appMenu.style.display = 'block';
   if (iframeContainer) iframeContainer.style.display = 'none';
   if (iframe) iframe.src = 'about:blank';

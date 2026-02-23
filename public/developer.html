@@ -122,6 +122,12 @@
       <span>Settings</span>
     </div>
 
+    <div class="sidebar-section" style="margin-top:8px">Conteúdo</div>
+    <div class="nav-item" data-section="academy-section">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l7 4-7 4-7-4 7-4zm0 2.3L3.5 5 8 6.7 12.5 5 8 3.3zM1 10l7 4 7-4-1.2-.7-5.8 3.3-5.8-3.3L1 10zm0 3l7 4 7-4-1.2-.7-5.8 3.3-5.8-3.3L1 13z"/></svg>
+      <span>Academy</span>
+    </div>
+
     <div class="sidebar-section" style="margin-top:8px">Produto</div>
     <div class="nav-item" data-section="apps-section">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h4v4H3zm6 0h4v4H9zM3 9h4v4H3zm6 0h4v4H9z"/></svg>
@@ -732,9 +738,161 @@
       </div>
     </div>
 
+
+    <!-- ===== ACADEMY ===== -->
+    <div class="section" id="academy-section">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Academy</div>
+          <div class="page-sub">Gerencie as aulas e tutoriais exibidos no painel dos usuários</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm" onclick="loadAcademy()">↻ Atualizar</button>
+          <button class="btn-sm primary" onclick="openAcademyModal()">+ Nova Aula</button>
+        </div>
+      </div>
+
+      <!-- Seções -->
+      <div class="table-card" style="margin-bottom:16px">
+        <div class="table-header">
+          <div class="table-title">SEÇÕES</div>
+          <div class="table-actions">
+            <button class="btn-sm" onclick="openSectionModal()">+ Nova Seção</button>
+          </div>
+        </div>
+        <div id="academy-sections-list" style="padding:12px;display:flex;flex-wrap:wrap;gap:8px">
+          <div class="loading" style="padding:16px"><div class="spinner"></div>Carregando...</div>
+        </div>
+      </div>
+
+      <!-- Aulas -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">AULAS</div>
+          <div class="table-actions">
+            <input class="search-input" id="academy-search" placeholder="Buscar aula..." oninput="filterTable('academy-body', this.value)" style="width:180px">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:36px">Ordem</th>
+                <th>Título</th>
+                <th>Seção</th>
+                <th>Tipo</th>
+                <th style="width:80px">Visível</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="academy-body">
+              <tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
+
+<!-- MODAL: Academy Aula -->
+<div class="modal-overlay" id="academy-modal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-head">
+      <div>
+        <div class="modal-head-title" id="academy-modal-title">Nova Aula</div>
+        <div style="font-size:11px;font-family:var(--mono);color:var(--ink-dim)">Preencha os dados da aula</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('academy-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="edit-field">
+          <div class="edit-label">Título da Aula *</div>
+          <input class="edit-input" id="am-title" type="text" placeholder="Ex: Aula 01 - Como instalar o app">
+        </div>
+        <div class="edit-field">
+          <div class="edit-label">Descrição (opcional)</div>
+          <textarea class="edit-input" id="am-desc" rows="2" placeholder="Breve descrição do conteúdo..." style="resize:vertical;font-family:var(--sans)"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="edit-field" style="margin:0">
+            <div class="edit-label">Seção</div>
+            <select class="edit-input" id="am-section"></select>
+          </div>
+          <div class="edit-field" style="margin:0">
+            <div class="edit-label">Tipo de vídeo</div>
+            <select class="edit-input" id="am-type" onchange="updateAcademyUrlHint()">
+              <option value="youtube">YouTube</option>
+              <option value="drive">Google Drive</option>
+              <option value="embed">Embed (outro)</option>
+            </select>
+          </div>
+        </div>
+        <div class="edit-field">
+          <div class="edit-label">URL / Link do vídeo *</div>
+          <input class="edit-input" id="am-url" type="url" placeholder="https://...">
+          <div id="am-url-hint" style="font-size:11px;color:var(--ink-dim);margin-top:4px">
+            Cole o link do YouTube (ex: https://youtu.be/XXXXX ou https://www.youtube.com/watch?v=XXXXX)
+          </div>
+        </div>
+        <div class="edit-field">
+          <div class="edit-label">URL da Miniatura (opcional)</div>
+          <input class="edit-input" id="am-thumb" type="url" placeholder="https://... (deixe em branco para gerar automaticamente do YouTube)">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="edit-field" style="margin:0">
+            <div class="edit-label">Ordem de exibição</div>
+            <input class="edit-input" id="am-order" type="number" min="1" value="1">
+          </div>
+          <div class="edit-field" style="margin:0">
+            <div class="edit-label">Visível para usuários</div>
+            <select class="edit-input" id="am-visible">
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <input type="hidden" id="am-id">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm danger" onclick="closeModal('academy-modal')">Cancelar</button>
+      <button class="btn-sm primary" onclick="saveAcademyLesson()">💾 Salvar Aula</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Academy Seção -->
+<div class="modal-overlay" id="academy-section-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div>
+        <div class="modal-head-title" id="asm-title">Nova Seção</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('academy-section-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="edit-field">
+          <div class="edit-label">Nome da Seção *</div>
+          <input class="edit-input" id="asm-name" type="text" placeholder="Ex: Treinamento Básico">
+        </div>
+        <div class="edit-field">
+          <div class="edit-label">Ordem</div>
+          <input class="edit-input" id="asm-order" type="number" min="1" value="1">
+        </div>
+      </div>
+      <input type="hidden" id="asm-id">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm danger" onclick="closeModal('academy-section-modal')">Cancelar</button>
+      <button class="btn-sm primary" onclick="saveAcademySection()">💾 Salvar Seção</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL: Change Plan Detail -->
 <div class="modal-overlay" id="cp-modal">

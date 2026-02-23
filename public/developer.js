@@ -42,13 +42,14 @@ if (localStorage.getItem('dev-theme') === 'dark') setTheme('dark');
 
 // ========== AUTH ==========
 auth.onAuthStateChanged(user => {
-  if (user) {
+  if (user && user.email === 'micaelbardimtech@gmail.com') {
     currentUser = user;
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('topbar-email').textContent = user.email;
     loadOverview();
   } else {
+    if (user) auth.signOut(); // força logout se email não autorizado
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
     currentUser = null;
@@ -63,6 +64,14 @@ document.getElementById('login-btn').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = 'Entrando...';
   errEl.style.display = 'none';
+  // Bloqueia qualquer email que não seja o do developer
+  if (email !== 'micaelbardimtech@gmail.com') {
+    errEl.textContent = 'Acesso restrito. Apenas administradores podem entrar.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
   try {
     await auth.signInWithEmailAndPassword(email, pass);
   } catch(e) {
@@ -110,6 +119,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (sec === 'change-plans-section') loadChangePlans();
     if (sec === 'settings-section') loadSettings();
     if (sec === 'apps-section') loadAppsSection();
+    if (sec === 'academy-section') loadAcademy();
   });
 });
 
@@ -2216,4 +2226,253 @@ async function uploadRelease(type) {
     var labels = { apk: 'APK', win: 'Windows', linux: 'Linux' };
     btn.textContent = '⬆ Publicar ' + (labels[type] || type);
   }
+}
+// ========== ACADEMY ==========
+
+let academySections = {};
+let academyLessons  = {};
+
+async function loadAcademy() {
+  await Promise.all([loadAcademySections(), loadAcademyLessons()]);
+}
+
+async function loadAcademySections() {
+  const container = document.getElementById('academy-sections-list');
+  if (!container) return;
+
+  try {
+    const snap = await db.ref('academy/sections').once('value');
+    academySections = snap.val() || {};
+
+    container.innerHTML = '';
+
+    if (Object.keys(academySections).length === 0) {
+      container.innerHTML = '<span style="font-size:12px;color:var(--ink-dim)">Nenhuma seção criada ainda. Clique em "+ Nova Seção".</span>';
+      return;
+    }
+
+    Object.entries(academySections)
+      .sort((a,b) => (a[1].order||0) - (b[1].order||0))
+      .forEach(([id, sec]) => {
+        const tag = document.createElement('div');
+        tag.style.cssText = 'display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;cursor:default';
+        tag.innerHTML = `
+          <span style="font-weight:600">${escDev(sec.name)}</span>
+          <span style="color:var(--ink-dim);font-size:10px">#${sec.order||1}</span>
+          <button onclick="editSectionModal('${id}')" style="background:none;border:none;cursor:pointer;color:var(--ink-dim);font-size:11px;padding:0 2px" title="Editar">✏</button>
+          <button onclick="deleteAcademySection('${id}')" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:11px;padding:0 2px" title="Excluir">✕</button>
+        `;
+        container.appendChild(tag);
+      });
+  } catch(e) {
+    console.error('loadAcademySections:', e);
+  }
+}
+
+async function loadAcademyLessons() {
+  const tbody = document.getElementById('academy-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando...</td></tr>';
+
+  try {
+    const snap = await db.ref('academy/lessons').once('value');
+    academyLessons = snap.val() || {};
+
+    tbody.innerHTML = '';
+
+    const lessons = Object.entries(academyLessons)
+      .sort((a,b) => (a[1].order||0) - (b[1].order||0));
+
+    if (lessons.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--ink-dim);padding:20px;font-size:12px">Nenhuma aula cadastrada</td></tr>';
+      return;
+    }
+
+    for (const [id, l] of lessons) {
+      const sectionName = (academySections[l.sectionId] || {}).name || '—';
+      const typeLabel = { youtube: '▶ YouTube', drive: '🔵 Drive', embed: '⬡ Embed' }[l.type] || l.type;
+      const visible = l.visible !== false;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="mono" style="text-align:center;font-size:12px">${l.order||'—'}</td>
+        <td style="font-size:13px;font-weight:500">${escDev(l.title)}</td>
+        <td style="font-size:11px;color:var(--ink-dim)">${escDev(sectionName)}</td>
+        <td style="font-size:11px">${typeLabel}</td>
+        <td style="text-align:center">
+          <span style="font-size:11px;font-weight:600;color:${visible ? 'var(--green)' : 'var(--red)'}">${visible ? 'Sim' : 'Não'}</span>
+        </td>
+        <td style="display:flex;gap:4px">
+          <button class="action-btn" onclick="editLessonModal('${id}')">✏ Editar</button>
+          <button class="action-btn danger" onclick="deleteAcademyLesson('${id}')">✕</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+  } catch(e) {
+    console.error('loadAcademyLessons:', e);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red)">Erro ao carregar</td></tr>';
+  }
+}
+
+// ─── Modais ────────────────────────────────────────────────────────────────────
+
+function openAcademyModal(lessonId) {
+  document.getElementById('academy-modal-title').textContent = lessonId ? 'Editar Aula' : 'Nova Aula';
+  document.getElementById('am-id').value    = lessonId || '';
+  document.getElementById('am-title').value = '';
+  document.getElementById('am-desc').value  = '';
+  document.getElementById('am-url').value   = '';
+  document.getElementById('am-thumb').value = '';
+  document.getElementById('am-order').value = Object.keys(academyLessons).length + 1;
+  document.getElementById('am-visible').value = 'true';
+  document.getElementById('am-type').value  = 'youtube';
+  updateAcademyUrlHint();
+
+  // Preencher select de seções
+  const sel = document.getElementById('am-section');
+  sel.innerHTML = '<option value="">— Sem seção —</option>';
+  Object.entries(academySections)
+    .sort((a,b) => (a[1].order||0)-(b[1].order||0))
+    .forEach(([id, s]) => {
+      const opt = document.createElement('option');
+      opt.value = id; opt.textContent = s.name;
+      sel.appendChild(opt);
+    });
+
+  // Preencher campos se for edição
+  if (lessonId && academyLessons[lessonId]) {
+    const l = academyLessons[lessonId];
+    document.getElementById('am-title').value   = l.title   || '';
+    document.getElementById('am-desc').value    = l.desc    || '';
+    document.getElementById('am-url').value     = l.url     || '';
+    document.getElementById('am-thumb').value   = l.thumb   || '';
+    document.getElementById('am-order').value   = l.order   || 1;
+    document.getElementById('am-type').value    = l.type    || 'youtube';
+    document.getElementById('am-visible').value = String(l.visible !== false);
+    if (l.sectionId) sel.value = l.sectionId;
+    updateAcademyUrlHint();
+  }
+
+  openModal('academy-modal');
+}
+
+function editLessonModal(id) { openAcademyModal(id); }
+
+function updateAcademyUrlHint() {
+  const type  = document.getElementById('am-type')?.value;
+  const hints = {
+    youtube: 'Cole o link do YouTube (ex: https://youtu.be/XXXXX ou https://www.youtube.com/watch?v=XXXXX)',
+    drive:   'Cole o link de compartilhamento do Google Drive (deve estar público ou "qualquer pessoa com o link")',
+    embed:   'Cole a URL de embed do vídeo (iframe src)',
+  };
+  const el = document.getElementById('am-url-hint');
+  if (el) el.textContent = hints[type] || '';
+}
+
+async function saveAcademyLesson() {
+  const id    = document.getElementById('am-id').value;
+  const title = document.getElementById('am-title').value.trim();
+  const url   = document.getElementById('am-url').value.trim();
+
+  if (!title || !url) { toast('Título e URL são obrigatórios', 'error'); return; }
+
+  const lesson = {
+    title,
+    desc:      document.getElementById('am-desc').value.trim(),
+    url,
+    thumb:     document.getElementById('am-thumb').value.trim(),
+    type:      document.getElementById('am-type').value,
+    sectionId: document.getElementById('am-section').value || null,
+    order:     parseInt(document.getElementById('am-order').value) || 1,
+    visible:   document.getElementById('am-visible').value === 'true',
+    updatedAt: Date.now(),
+  };
+  if (!id) lesson.createdAt = Date.now();
+
+  const btn = document.querySelector('#academy-modal .modal-footer .btn-sm.primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+  try {
+    const ref = id
+      ? db.ref(`academy/lessons/${id}`)
+      : db.ref('academy/lessons').push();
+    await ref.set(id ? lesson : lesson);
+    toast(`Aula ${id ? 'atualizada' : 'criada'} com sucesso!`, 'success');
+    closeModal('academy-modal');
+    loadAcademy();
+  } catch(e) {
+    console.error('saveAcademyLesson:', e);
+    toast('Erro ao salvar aula', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Salvar Aula'; }
+  }
+}
+
+async function deleteAcademyLesson(id) {
+  const ok = await showConfirm('Excluir Aula', 'Tem certeza? Esta ação não pode ser desfeita.');
+  if (!ok) return;
+  try {
+    await db.ref(`academy/lessons/${id}`).remove();
+    toast('Aula excluída', 'success');
+    loadAcademy();
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+// ─── Seções ────────────────────────────────────────────────────────────────────
+
+function openSectionModal(sectionId) {
+  document.getElementById('asm-title').textContent = sectionId ? 'Editar Seção' : 'Nova Seção';
+  document.getElementById('asm-id').value    = sectionId || '';
+  document.getElementById('asm-name').value  = '';
+  document.getElementById('asm-order').value = Object.keys(academySections).length + 1;
+
+  if (sectionId && academySections[sectionId]) {
+    const s = academySections[sectionId];
+    document.getElementById('asm-name').value  = s.name  || '';
+    document.getElementById('asm-order').value = s.order || 1;
+  }
+
+  openModal('academy-section-modal');
+}
+
+function editSectionModal(id) { openSectionModal(id); }
+
+async function saveAcademySection() {
+  const id   = document.getElementById('asm-id').value;
+  const name = document.getElementById('asm-name').value.trim();
+  if (!name) { toast('Nome obrigatório', 'error'); return; }
+
+  const section = {
+    name,
+    order: parseInt(document.getElementById('asm-order').value) || 1,
+  };
+
+  try {
+    if (id) {
+      await db.ref(`academy/sections/${id}`).set(section);
+    } else {
+      await db.ref('academy/sections').push(section);
+    }
+    toast(`Seção ${id ? 'atualizada' : 'criada'}!`, 'success');
+    closeModal('academy-section-modal');
+    loadAcademy();
+  } catch(e) {
+    toast('Erro ao salvar seção', 'error');
+  }
+}
+
+async function deleteAcademySection(id) {
+  const ok = await showConfirm('Excluir Seção', 'Remover esta seção? As aulas vinculadas ficam sem seção.');
+  if (!ok) return;
+  try {
+    await db.ref(`academy/sections/${id}`).remove();
+    toast('Seção excluída', 'success');
+    loadAcademy();
+  } catch(e) { toast('Erro ao excluir', 'error'); }
+}
+
+function escDev(str) {
+  return String(str||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
