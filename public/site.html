@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>D'SignerTV | Mídia Digital Indoor | Digital Signage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Raleway:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Lato', sans-serif; background: #fff; color: #333; overflow-x: hidden; }
+    a { text-decoration: none; transition: opacity .2s; }
+    a:hover { opacity: .8; }
+    img { max-width: 100%; height: auto; }
+    ul { list-style: none; }
+
+    /* HEADER */
+    #header-fixo {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(255,255,255,.97);
+      border-bottom: 1px solid #e8e8e8;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      height: 64px; display: flex; align-items: center;
+      padding: 0 40px; justify-content: space-between;
+    }
+    #header-fixo .logo {
+      font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 22px;
+      color: #1a1a2e; letter-spacing: -0.5px;
+    }
+    #header-fixo .logo span { color: #3a7bd5; }
+    #header-fixo nav { display: flex; align-items: center; gap: 26px; }
+    #header-fixo nav a { font-size: 13px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: .6px; }
+    #header-fixo nav a:hover { color: #3a7bd5; opacity: 1; }
+    .btn-manager-header {
+      background: #3a7bd5; color: #fff !important; padding: 9px 22px;
+      border-radius: 22px; font-size: 13px; font-weight: 700; letter-spacing: .5px;
+      box-shadow: 0 4px 14px rgba(58,123,213,.25);
+    }
+    .btn-manager-header:hover { background: #2f6bc4; opacity: 1 !important; }
+    .hamburger-btn { display: none; background: none; border: none; font-size: 22px; color: #333; cursor: pointer; }
+
+    .mobile-nav {
+      display: none; position: fixed; inset: 64px 0 0;
+      background: #fff; z-index: 999; padding: 32px 40px;
+      flex-direction: column; gap: 28px; border-top: 1px solid #eee;
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav a { font-size: 18px; font-weight: 700; color: #333; text-transform: uppercase; }
+
+    /* HERO */
+    #hero {
+      margin-top: 64px; min-height: 560px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 55%, #0f3460 100%);
+      display: flex; align-items: center; position: relative; overflow: hidden;
+    }
+    .hero-bg-pattern {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size: 52px 52px;
+    }
+    .hero-glow {
+      position: absolute; width: 520px; height: 520px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(58,123,213,.22), transparent 70%);
+      top: -120px; right: -60px;
+    }
+    .hero-inner { position: relative; z-index: 1; max-width: 1160px; margin: 0 auto; padding: 90px 40px; }
+    .hero-inner h1 {
+      font-family: 'Raleway', sans-serif; font-weight: 800;
+      font-size: clamp(32px, 5vw, 60px); color: #fff;
+      line-height: 1.1; max-width: 660px; margin-bottom: 22px; letter-spacing: -1px;
+    }
+    .hero-inner h1 span { color: #5da0f7; }
+    .hero-inner p { font-size: 17px; color: rgba(255,255,255,.72); max-width: 500px; line-height: 1.75; margin-bottom: 38px; }
+    .btn-hero {
+      display: inline-block; background: #3a7bd5; color: #fff; font-weight: 700;
+      font-size: 15px; padding: 14px 36px; border-radius: 4px; letter-spacing: .5px;
+      box-shadow: 0 6px 24px rgba(58,123,213,.35); transition: background .2s, transform .1s;
+    }
+    .btn-hero:hover { background: #2f6bc4; transform: translateY(-2px); opacity: 1; }
+    .btn-hero-outline {
+      display: inline-block; background: transparent; color: #fff; font-weight: 700;
+      font-size: 15px; padding: 13px 36px; border-radius: 4px;
+      border: 2px solid rgba(255,255,255,.32); margin-left: 14px;
+      transition: border-color .2s, background .2s;
+    }
+    .btn-hero-outline:hover { border-color: #fff; background: rgba(255,255,255,.07); opacity: 1; }
+
+    /* LAYOUT */
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 40px; }
+    .section-white { background: #fff; padding: 90px 0; }
+    .section-gray  { background: #f7f8fc; padding: 90px 0; }
+
+    .section-title-center { text-align: center; margin-bottom: 56px; }
+    .section-title-center h2 {
+      font-family: 'Raleway', sans-serif; font-weight: 800;
+      font-size: clamp(26px, 3.5vw, 40px); color: #1a1a2e;
+      letter-spacing: -.5px; margin-bottom: 14px;
+    }
+    .section-title-center p { font-size: 16px; color: #777; max-width: 520px; margin: 0 auto; line-height: 1.65; }
+    .section-badge {
+      display: inline-block; background: #eef3fc; color: #3a7bd5;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 14px;
+    }
+
+    /* ABOUT */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center; }
+    .about-text h2 {
+      font-family: 'Raleway', sans-serif; font-weight: 800;
+      font-size: clamp(24px, 3vw, 36px); color: #1a1a2e; margin-bottom: 18px; letter-spacing: -.5px;
+    }
+    .about-text p { font-size: 15px; color: #555; line-height: 1.8; margin-bottom: 14px; }
+    .about-text strong { color: #3a7bd5; }
+    .visual-screens-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+    .vis-card {
+      background: #fff; border-radius: 12px; border: 1px solid #e4ecf8;
+      padding: 30px 20px; text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,.05); transition: transform .2s, box-shadow .2s;
+    }
+    .vis-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(58,123,213,.12); }
+    .vis-card i { font-size: 32px; color: #3a7bd5; margin-bottom: 10px; display: block; }
+    .vis-card span { font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: .5px; }
+
+    /* FEATURES */
+    .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .feat-card {
+      background: #fff; border-radius: 12px; border: 1px solid #e8eef8;
+      padding: 28px 22px; transition: transform .2s, box-shadow .2s, border-color .2s;
+      box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    }
+    .feat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(58,123,213,.1); border-color: #c2d6f5; }
+    .feat-icon {
+      width: 48px; height: 48px; border-radius: 10px; background: #eef3fc;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: #3a7bd5; margin-bottom: 16px;
+    }
+    .feat-title { font-weight: 700; font-size: 14px; color: #1a1a2e; margin-bottom: 8px; }
+    .feat-desc { font-size: 13px; color: #777; line-height: 1.6; }
+
+    /* NUMBERS */
+    .numbers-strip { background: linear-gradient(135deg, #1a1a2e, #0f3460); padding: 70px 0; }
+    .numbers-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; text-align: center; }
+    .num-item { border-right: 1px solid rgba(255,255,255,.1); padding: 0 20px; }
+    .num-item:last-child { border-right: none; }
+    .num-val {
+      font-family: 'Raleway', sans-serif; font-weight: 900;
+      font-size: clamp(36px, 4vw, 52px); color: #5da0f7;
+      display: block; line-height: 1; margin-bottom: 8px;
+    }
+    .num-label { font-size: 14px; color: rgba(255,255,255,.65); font-weight: 600; }
+
+    /* GESTÃO */
+    .gestao-strip { background: linear-gradient(135deg, #2563ae, #3a7bd5 60%, #5da0f7); padding: 80px 0; }
+    .gestao-strip h2 {
+      font-family: 'Raleway', sans-serif; font-weight: 800; color: #fff;
+      font-size: clamp(24px, 3vw, 36px); margin-bottom: 16px; text-align: center;
+    }
+    .gestao-strip > .container > p {
+      color: rgba(255,255,255,.85); font-size: 15px; line-height: 1.75;
+      max-width: 780px; margin: 0 auto 40px; text-align: center;
+    }
+    .screenshots-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    .screenshot-card {
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      border-radius: 10px; aspect-ratio: 16/10; display: flex; align-items: center;
+      justify-content: center; font-size: 40px; color: rgba(255,255,255,.5);
+      transition: background .2s; position: relative; overflow: hidden;
+    }
+    .screenshot-card:hover { background: rgba(255,255,255,.2); }
+    .sc-label {
+      position: absolute; bottom: 12px; left: 14px;
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,.7);
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+
+    /* APLICAÇÕES */
+    .cases-grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+    .case-item {
+      background: #f7f8fc; border: 1px solid #e4ecf8; border-radius: 8px;
+      padding: 13px 16px; display: flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 600; color: #444; transition: all .2s;
+    }
+    .case-item i { color: #3a7bd5; font-size: 13px; width: 16px; text-align: center; }
+    .case-item:hover { border-color: #3a7bd5; color: #3a7bd5; background: #fff; transform: translateX(4px); }
+
+    /* TESTIMONIALS */
+    .testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+    .testi-card {
+      background: #fff; border: 1px solid #e4ecf8; border-radius: 14px; padding: 30px 28px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.04); transition: transform .2s, box-shadow .2s;
+    }
+    .testi-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(58,123,213,.1); }
+    .testi-stars { color: #f5a623; font-size: 13px; margin-bottom: 16px; }
+    .testi-text { font-size: 14px; color: #555; line-height: 1.75; margin-bottom: 22px; font-style: italic; }
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, #3a7bd5, #5da0f7);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px; color: #fff; flex-shrink: 0;
+    }
+    .testi-name { font-weight: 700; font-size: 14px; color: #1a1a2e; }
+    .testi-company { font-size: 12px; color: #999; }
+
+    /* CTA */
+    .cta-section { background: #f7f8fc; padding: 100px 0; text-align: center; border-top: 1px solid #e8eef8; }
+    .cta-section h2 {
+      font-family: 'Raleway', sans-serif; font-weight: 800;
+      font-size: clamp(26px, 3.5vw, 40px); color: #1a1a2e; margin-bottom: 16px;
+    }
+    .cta-section p { font-size: 16px; color: #777; max-width: 460px; margin: 0 auto 40px; line-height: 1.7; }
+    .cta-buttons { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-block; background: #3a7bd5; color: #fff; font-weight: 700;
+      font-size: 15px; padding: 14px 36px; border-radius: 4px;
+      box-shadow: 0 6px 20px rgba(58,123,213,.3); transition: background .2s, transform .1s;
+    }
+    .btn-primary:hover { background: #2f6bc4; transform: translateY(-2px); opacity: 1; }
+    .btn-secondary {
+      display: inline-block; background: #fff; color: #3a7bd5; font-weight: 700;
+      font-size: 15px; padding: 14px 36px; border-radius: 4px; border: 2px solid #3a7bd5;
+      transition: background .2s, color .2s;
+    }
+    .btn-secondary:hover { background: #3a7bd5; color: #fff; opacity: 1; }
+
+    /* FOOTER */
+    footer { background: #1a1a2e; padding: 64px 0 28px; color: rgba(255,255,255,.7); }
+    .footer-grid {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+      margin-bottom: 48px; padding-bottom: 48px; border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .footer-logo { font-family: 'Raleway', sans-serif; font-weight: 800; font-size: 22px; color: #fff; margin-bottom: 14px; display: block; }
+    .footer-logo span { color: #5da0f7; }
+    .footer-desc { font-size: 14px; line-height: 1.7; margin-bottom: 24px; }
+    .footer-socials { display: flex; gap: 10px; flex-wrap: wrap; }
+    .soc-btn {
+      width: 36px; height: 36px; border-radius: 6px;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,.6); font-size: 14px; transition: all .2s;
+    }
+    .soc-btn:hover { background: #3a7bd5; border-color: #3a7bd5; color: #fff; opacity: 1; }
+    .footer-col-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,.4); margin-bottom: 18px; }
+    .footer-links { display: flex; flex-direction: column; gap: 11px; }
+    .footer-links a { font-size: 14px; color: rgba(255,255,255,.6); transition: color .2s; }
+    .footer-links a:hover { color: #5da0f7; opacity: 1; }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: rgba(255,255,255,.35); }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .55s ease, transform .55s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .features-grid { grid-template-columns: repeat(2,1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .screenshots-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      #header-fixo { padding: 0 20px; }
+      #header-fixo nav { display: none; }
+      .hamburger-btn { display: block; }
+      .about-grid { grid-template-columns: 1fr; gap: 40px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .numbers-grid { grid-template-columns: repeat(2,1fr); }
+      .num-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.1); padding-bottom: 20px; }
+      .testi-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+      .screenshots-row { grid-template-columns: 1fr; }
+      .container { padding: 0 20px; }
+      .section-white, .section-gray { padding: 64px 0; }
+      .hero-inner { padding: 60px 20px; }
+      .btn-hero-outline { margin-left: 0; margin-top: 12px; display: block; text-align: center; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header-fixo">
+  <a href="#" class="logo">D'<span>Signer</span>TV</a>
+  <nav>
+    <a href="#sobre">Sobre</a>
+    <a href="#sistema">Nosso Sistema</a>
+    <a href="#gestao">Gestão</a>
+    <a href="#aplicacoes">Aplicações</a>
+    <a href="#depoimentos">Feedbacks</a>
+    <a href="index.html" class="btn-manager-header"><i class="fas fa-user" style="margin-right:6px"></i>Web Manager</a>
+  </nav>
+  <button class="hamburger-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+</header>
+
+<nav class="mobile-nav" id="mobileNav">
+  <a href="#sobre" onclick="toggleMenu()">Sobre</a>
+  <a href="#sistema" onclick="toggleMenu()">Nosso Sistema</a>
+  <a href="#gestao" onclick="toggleMenu()">Gestão</a>
+  <a href="#aplicacoes" onclick="toggleMenu()">Aplicações</a>
+  <a href="#depoimentos" onclick="toggleMenu()">Feedbacks</a>
+  <a href="index.html" class="btn-manager-header" style="text-align:center;padding:12px 22px">Web Manager</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg-pattern"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="reveal">
+      <h1>Sua empresa nos olhos<br>do seu <span>público</span></h1>
+      <p>O D'SignerTV é a mais moderna ferramenta de soluções integradas de Digital Signage. Teste grátis por 15 dias e sem cartão de crédito.</p>
+      <a href="index.html" class="btn-hero">Testar Grátis</a>
+      <a href="#sobre" class="btn-hero-outline">Saiba Mais</a>
+    </div>
+  </div>
+</section>
+
+<!-- SOBRE -->
+<section id="sobre" class="section-white">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <div class="section-badge">Sobre a Plataforma</div>
+        <h2>Software inteligente para seu negócio</h2>
+        <p><strong>TV Corporativa, Mídia Digital, Out-of-home</strong></p>
+        <p>Que tal ter a sua rede de telas digitais com conteúdo 100% focado no seu negócio? O <strong>D'SignerTV</strong> é a mais moderna ferramenta de soluções integradas de Digital Signage. Aqui você tem todo o controle do conteúdo executado, podendo abordar seus clientes com as últimas novidades da sua empresa, ações promocionais, endomarketing, comunicados internos e vídeos estratégicos para provocar um maior engajamento do público-alvo.</p>
+        <p>Independente do tamanho de sua empresa, o <strong>D'SignerTV</strong> pode começar a provocar uma experiência única para os seus clientes. Seja uma grande corporação, supermercados, cafés, academias, estações de trem, restaurantes, espaços públicos ou instituições de ensino — as possibilidades são inúmeras.</p>
+      </div>
+      <div class="reveal">
+        <div class="visual-screens-grid">
+          <div class="vis-card"><i class="fas fa-desktop"></i><span>TV Corporativa</span></div>
+          <div class="vis-card"><i class="fas fa-utensils"></i><span>Menu Board</span></div>
+          <div class="vis-card"><i class="fas fa-chart-bar"></i><span>BI Dashboard</span></div>
+          <div class="vis-card"><i class="fas fa-qrcode"></i><span>On Demand</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOSSO SISTEMA -->
+<section id="sistema" class="section-gray">
+  <div class="container">
+    <div class="section-title-center reveal">
+      <div class="section-badge">Funcionalidades</div>
+      <h2>Nosso Sistema</h2>
+      <p>Descubra porque o D'SignerTV é ideal para sua empresa</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fab fa-android"></i></div><div class="feat-title">Android Nativo</div><div class="feat-desc">Nosso player é projetado para Android e faz uso de seus melhores recursos.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fab fa-html5"></i></div><div class="feat-title">HTML5</div><div class="feat-desc">Todos os modelos são construídos utilizando HTML5 e CSS3.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-rss"></i></div><div class="feat-title">Conteúdo Pronto</div><div class="feat-desc">Diversos conteúdos prontos disponíveis, além de pontos de extensão.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-sync-alt"></i></div><div class="feat-title">Auto-Sincronização</div><div class="feat-desc">O conteúdo dos terminais é sincronizado automaticamente com o servidor.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-cog"></i></div><div class="feat-title">Personalizável</div><div class="feat-desc">Não gostou dos templates padrão? Você pode criar os seus.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-calendar-alt"></i></div><div class="feat-title">Agendamento</div><div class="feat-desc">Escolha o período, dias da semana e horários que a mídia deve ser exibida.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-wifi"></i></div><div class="feat-title">Funciona Off-line</div><div class="feat-desc">Sem conexão? O D'SignerTV continua exibindo conteúdo do cache local.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-cloud-upload-alt"></i></div><div class="feat-title">Servidor na Nuvem</div><div class="feat-desc">Faça upload das suas mídias e gerencie suas campanhas de qualquer lugar.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-chart-line"></i></div><div class="feat-title">Monitoramento Remoto</div><div class="feat-desc">Saiba quais terminais estão on-line, quais mídias foram baixadas e mais.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-film"></i></div><div class="feat-title">Listas de Execução</div><div class="feat-desc">Crie playlists para controlar a ordem e duração de exibição das mídias.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-tag"></i></div><div class="feat-title">White Label</div><div class="feat-desc">Utilize o D'SignerTV diretamente no seu domínio e com a sua marca.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-users"></i></div><div class="feat-title">Níveis de Acesso</div><div class="feat-desc">Crie usuários e defina exatamente o que cada um pode acessar.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-share-alt"></i></div><div class="feat-title">Redes Sociais</div><div class="feat-desc">Tenha seus posts refletidos automaticamente em suas telas.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-shield-alt"></i></div><div class="feat-title">Seguro</div><div class="feat-desc">Toda comunicação com o servidor é feita por canal criptografado.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-power-off"></i></div><div class="feat-title">Inicialização Automática</div><div class="feat-desc">O app inicia no boot do sistema, após atualizações ou falhas inesperadas.</div></div>
+      <div class="feat-card reveal"><div class="feat-icon"><i class="fas fa-plus-circle"></i></div><div class="feat-title">E muito mais!</div><div class="feat-desc">O D'SignerTV evolui e inova a cada dia para superar suas expectativas.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- NÚMEROS -->
+<div class="numbers-strip">
+  <div class="container">
+    <div class="numbers-grid">
+      <div class="num-item reveal"><span class="num-val">+1100</span><div class="num-label">Clientes Ativos</div></div>
+      <div class="num-item reveal"><span class="num-val">+5K</span><div class="num-label">Aparelhos Conectados</div></div>
+      <div class="num-item reveal"><span class="num-val">5</span><div class="num-label">Continentes</div></div>
+      <div class="num-item reveal"><span class="num-val">97</span><div class="num-label">Países Atendidos</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- GESTÃO -->
+<div id="gestao" class="gestao-strip">
+  <div class="container">
+    <div class="reveal">
+      <h2>Gestão do Sistema</h2>
+      <p>Para gerenciar as informações do D'SignerTV basta você ter o login, senha e conexão com a internet. Crie e gerencie a programação dos seus terminais quando quiser. Faça uploads de vídeos e animações, importe do YouTube, gerencie playlists, agendamentos e campanhas. Acesse os terminais em tempo real de qualquer lugar.</p>
+    </div>
+    <div class="screenshots-row reveal">
+      <div class="screenshot-card"><i class="fas fa-th-large"></i><span class="sc-label">Dashboard</span></div>
+      <div class="screenshot-card"><i class="fas fa-play-circle"></i><span class="sc-label">Playlists</span></div>
+      <div class="screenshot-card"><i class="fas fa-calendar-check"></i><span class="sc-label">Agendamentos</span></div>
+      <div class="screenshot-card"><i class="fas fa-photo-video"></i><span class="sc-label">Mídias</span></div>
+      <div class="screenshot-card"><i class="fas fa-chart-pie"></i><span class="sc-label">Relatórios</span></div>
+      <div class="screenshot-card"><i class="fas fa-sliders-h"></i><span class="sc-label">Configurações</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEÚDOS PRONTOS -->
+<section class="section-white">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <div class="section-badge">Conteúdos Prontos</div>
+        <h2>Conteúdos prontos para usar</h2>
+        <p>Canais de notícias do Brasil e do Mundo atualizados online direto dos sites que possuem tecnologia <strong>RSS</strong>. Horóscopo atualizado diariamente. Clima das maiores cidades do país e do mundo atualizado em tempo real. Resultados da loteria atualizados online.</p>
+        <p>Todos os conteúdos são automaticamente exibidos nas suas telas, sem nenhuma intervenção manual — sempre frescos e relevantes para o seu público.</p>
+      </div>
+      <div class="reveal" style="display:flex;align-items:center;justify-content:center">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%">
+          <div class="vis-card"><i class="fas fa-newspaper"></i><span>Notícias Brasil</span></div>
+          <div class="vis-card"><i class="fas fa-globe"></i><span>Notícias Mundo</span></div>
+          <div class="vis-card"><i class="fas fa-cloud-sun"></i><span>Clima em Tempo Real</span></div>
+          <div class="vis-card"><i class="fas fa-star"></i><span>Horóscopo Diário</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APLICAÇÕES -->
+<section id="aplicacoes" class="section-gray">
+  <div class="container">
+    <div class="about-grid" style="direction:rtl">
+      <div class="about-text reveal" style="direction:ltr">
+        <div class="section-badge">On Demand</div>
+        <h2>Aplicações para Display</h2>
+        <p>O <strong>D'SignerTV</strong> oferece suporte para a criação e gestão de conteúdo exclusivo para sua empresa. Seja qual for sua necessidade, geramos uma grade de programação com chamadas e notícias 100% alinhadas com a estratégia do seu negócio. Comunicação eficiente, inteligente e sem distorções.</p>
+        <div style="margin-top:28px"><a href="index.html" class="btn-primary">Começar Agora</a></div>
+      </div>
+      <div class="reveal" style="direction:ltr">
+        <div class="cases-grid-2">
+          <div class="case-item"><i class="fas fa-building"></i>TV Corporativa</div>
+          <div class="case-item"><i class="fas fa-store"></i>Franquias</div>
+          <div class="case-item"><i class="fas fa-utensils"></i>Menu Board</div>
+          <div class="case-item"><i class="fas fa-hotel"></i>Hotéis</div>
+          <div class="case-item"><i class="fas fa-dumbbell"></i>Academias</div>
+          <div class="case-item"><i class="fas fa-graduation-cap"></i>Universidades</div>
+          <div class="case-item"><i class="fas fa-bus"></i>Ônibus</div>
+          <div class="case-item"><i class="fas fa-shopping-cart"></i>Pontos de Venda</div>
+          <div class="case-item"><i class="fas fa-tv"></i>Vídeo Wall</div>
+          <div class="case-item"><i class="fas fa-store-alt"></i>Vitrine Digital</div>
+          <div class="case-item"><i class="fas fa-concierge-bell"></i>Recepções</div>
+          <div class="case-item"><i class="fas fa-hamburger"></i>Bares/Restaurantes</div>
+          <div class="case-item"><i class="fas fa-subway"></i>Estações de Trem</div>
+          <div class="case-item"><i class="fas fa-arrow-up"></i>Elevadores</div>
+          <div class="case-item"><i class="fas fa-tags"></i>Quiosques</div>
+          <div class="case-item"><i class="fas fa-plus"></i>E muito mais</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEPOIMENTOS -->
+<section id="depoimentos" class="section-white">
+  <div class="container">
+    <div class="section-title-center reveal">
+      <div class="section-badge">Feedbacks</div>
+      <h2>O que nossos clientes falam</h2>
+      <p>Veja o que nossos clientes estão dizendo sobre o D'SignerTV</p>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Sem dúvidas, um software de altíssima qualidade e funcionalidades diversas que adaptam para qualquer ramo. Utilizamos a plataforma há anos, concretizando uma parceria duradoura."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">G</div>
+          <div><div class="testi-name">Guilherme Nóbrega</div><div class="testi-company">Cativa PB</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Após experimentar diversas soluções, o D'SignerTV se demonstrou ser o melhor Custo x Benefício do mercado. Altamente confiável e robusto, com diversas funcionalidades interessantes."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,#6c3bd5,#8b5cf6)">L</div>
+          <div><div class="testi-name">Lucas Lugão</div><div class="testi-company">Mega Mídia</div></div>
+        </div>
+      </div>
+      <div class="testi-card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Sou cliente há mais de 3 anos. Com certeza absoluta o melhor do mercado. Layout intuitivo e muito seguro. Recomendo a todos!"</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,#1d9e6f,#34d399)">V</div>
+          <div><div class="testi-name">Vinícius Svizzero</div><div class="testi-company">Luvymídia</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<div class="cta-section">
+  <div class="container">
+    <div class="reveal">
+      <h2>Pronto para transformar suas telas?</h2>
+      <p>Teste grátis por 15 dias, sem cartão de crédito. Configure em minutos e veja seus terminais ganharem vida.</p>
+      <div class="cta-buttons">
+        <a href="index.html" class="btn-primary">Criar conta gratuita</a>
+        <a href="mailto:contato@dsignertv.com" class="btn-secondary">Falar com a equipe</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer id="contato">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a href="#" class="footer-logo">D'<span>Signer</span>TV</a>
+        <p class="footer-desc">A plataforma de Digital Signage para empresas que querem comunicar com inteligência. Gerencie suas telas de qualquer lugar do mundo.</p>
+        <div class="footer-socials">
+          <a href="#" class="soc-btn"><i class="fab fa-youtube"></i></a>
+          <a href="#" class="soc-btn"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="soc-btn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="#" class="soc-btn"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="soc-btn"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="soc-btn"><i class="fab fa-github"></i></a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Produto</div>
+        <div class="footer-links">
+          <a href="#sobre">Sobre</a>
+          <a href="#sistema">Funcionalidades</a>
+          <a href="#gestao">Gestão</a>
+          <a href="index.html">Web Manager</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Empresa</div>
+        <div class="footer-links">
+          <a href="#aplicacoes">Aplicações</a>
+          <a href="#depoimentos">Feedbacks</a>
+          <a href="#">Blog</a>
+          <a href="#">Contato</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Suporte</div>
+        <div class="footer-links">
+          <a href="#">Documentação</a>
+          <a href="#">Tutoriais</a>
+          <a href="#">Status</a>
+          <a href="#">Privacidade</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 D'SignerTV. Todos os direitos reservados.</span>
+      <span>Digital Signage Software</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function toggleMenu() {
+    document.getElementById('mobileNav').classList.toggle('open');
+  }
+  const els = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  els.forEach(el => obs.observe(el));
+  window.addEventListener('scroll', () => {
+    document.getElementById('header-fixo').style.boxShadow =
+      window.scrollY > 10 ? '0 2px 20px rgba(0,0,0,.1)' : '0 2px 12px rgba(0,0,0,.06)';
+  });
+</script>
+</body>
+</html>
