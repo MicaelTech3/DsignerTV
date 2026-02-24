@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DSigner TV · Documentação do Sistema</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b14;
+  --bg2: #0d1221;
+  --bg3: #111827;
+  --card: #0f1628;
+  --border: #1e2d47;
+  --border2: #243352;
+  --text: #e8f0ff;
+  --text2: #8fa8cc;
+  --text3: #4a6080;
+  --accent: #00d4ff;
+  --accent2: #0099bb;
+  --green: #00ff88;
+  --yellow: #ffcc00;
+  --orange: #ff8800;
+  --red: #ff4444;
+  --purple: #9966ff;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Syne', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============ LOGIN PAGE ============ */
+#login-page {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 24px;
+}
+
+.login-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.login-bg::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  left: -20%;
+  width: 80vw;
+  height: 80vh;
+  background: radial-gradient(ellipse, rgba(0,212,255,.07) 0%, transparent 60%);
+  animation: bgpulse 6s ease-in-out infinite alternate;
+}
+
+.login-bg::after {
+  content: '';
+  position: absolute;
+  bottom: -20%;
+  right: -20%;
+  width: 60vw;
+  height: 60vh;
+  background: radial-gradient(ellipse, rgba(0,255,136,.04) 0%, transparent 60%);
+  animation: bgpulse 8s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes bgpulse {
+  from { opacity: 0.5; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.1); }
+}
+
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+.login-box {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 48px 40px;
+  box-shadow: 0 0 80px rgba(0,212,255,.08), 0 32px 64px rgba(0,0,0,.6);
+  animation: fadeUp .5s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  justify-content: center;
+}
+
+.login-logo-mark {
+  width: 44px;
+  height: 44px;
+  background: var(--accent);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-logo-mark svg { fill: #000; }
+
+.login-logo-text {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--text);
+}
+
+.login-title {
+  font-size: 26px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.login-subtitle {
+  font-size: 13px;
+  color: var(--text3);
+  text-align: center;
+  margin-bottom: 32px;
+  font-family: var(--mono);
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: .08em;
+  margin-bottom: 8px;
+}
+
+.field input {
+  width: 100%;
+  height: 48px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 16px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,212,255,.12);
+}
+
+.field input::placeholder { color: var(--text3); }
+
+.login-demo-note {
+  background: rgba(0,212,255,.06);
+  border: 1px solid rgba(0,212,255,.15);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.btn-login {
+  width: 100%;
+  height: 50px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: .04em;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-login:hover {
+  background: #00b8d9;
+  box-shadow: 0 8px 24px rgba(0,212,255,.3);
+  transform: translateY(-1px);
+}
+
+.btn-login:active { transform: translateY(0); }
+
+.login-error {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(255,68,68,.08);
+  border: 1px solid rgba(255,68,68,.2);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--red);
+  display: none;
+  text-align: center;
+}
+
+.login-error.show { display: block; }
+
+/* ============ DOCS PAGE ============ */
+#docs-page {
+  display: none;
+  min-height: 100vh;
+}
+
+#docs-page.visible { display: block; }
+
+/* ---- HEADER ---- */
+.docs-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8,11,20,.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-logo-mark {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-logo-mark svg { fill: #000; }
+
+.header-logo-text {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+
+.header-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  background: rgba(0,212,255,.1);
+  border: 1px solid rgba(0,212,255,.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: .06em;
+}
+
+.header-right { display: flex; align-items: center; gap: 16px; }
+
+.btn-logout {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  background: none;
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color .2s, border-color .2s;
+}
+
+.btn-logout:hover { color: var(--text); border-color: var(--border2); }
+
+/* ---- HERO ---- */
+.hero {
+  position: relative;
+  text-align: center;
+  padding: 80px 24px 64px;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(0,212,255,.07) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  background: rgba(0,212,255,.08);
+  border: 1px solid rgba(0,212,255,.2);
+  padding: 6px 16px;
+  border-radius: 20px;
+  letter-spacing: .08em;
+  margin-bottom: 24px;
+}
+
+.hero-tag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: blink 1.2s ease infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .2; }
+}
+
+.hero h1 {
+  font-size: clamp(36px, 6vw, 68px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #e8f0ff 0%, var(--accent) 60%, var(--green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 17px;
+  color: var(--text2);
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ---- STATS ---- */
+.stats-bar {
+  max-width: 900px;
+  margin: 0 auto 64px;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.stat-num {
+  font-family: var(--mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text3);
+  font-family: var(--mono);
+  letter-spacing: .04em;
+}
+
+/* ---- ARCH DIAGRAM ---- */
+.arch-section {
+  max-width: 1000px;
+  margin: 0 auto 80px;
+  padding: 0 24px;
+}
+
+.section-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: .12em;
+  margin-bottom: 12px;
+}
+
+.section-heading {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  letter-spacing: -.01em;
+}
+
+.section-sub {
+  font-size: 14px;
+  color: var(--text2);
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.arch-diagram {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px 32px;
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr 60px 1fr;
+  gap: 0;
+  align-items: center;
+}
+
+.arch-layer {
+  text-align: center;
+}
+
+.arch-layer-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: .1em;
+  margin-bottom: 16px;
+}
+
+.arch-files {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.arch-file {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color .2s;
+}
+
+.arch-file:hover { border-color: var(--accent); color: var(--accent); }
+
+.arch-file .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.arch-arrow {
+  text-align: center;
+  color: var(--text3);
+  font-size: 20px;
+}
+
+/* ---- MODULE CARDS ---- */
+.modules-section {
+  max-width: 1000px;
+  margin: 0 auto 80px;
+  padding: 0 24px;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.module-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s, transform .2s;
+  cursor: default;
+}
+
+.module-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--module-color, var(--accent));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .3s;
+}
+
+.module-card:hover {
+  border-color: rgba(0,212,255,.2);
+  transform: translateY(-3px);
+}
+
+.module-card:hover::before { transform: scaleX(1); }
+
+.module-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.module-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.module-info { flex: 1; min-width: 0; }
+
+.module-name {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.module-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--module-color, var(--accent));
+  background: rgba(0,212,255,.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: .04em;
+}
+
+.module-desc {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.module-ops {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.module-op {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.module-op-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--module-color, var(--accent));
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.module-deps {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.module-deps-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: .06em;
+  margin-bottom: 8px;
+}
+
+.dep-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.dep-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+/* ---- FLOW SECTION ---- */
+.flow-section {
+  max-width: 1000px;
+  margin: 0 auto 80px;
+  padding: 0 24px;
+}
+
+.flow-timeline {
+  position: relative;
+  padding-left: 40px;
+}
+
+.flow-timeline::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.flow-step {
+  position: relative;
+  margin-bottom: 28px;
+}
+
+.flow-step::before {
+  content: '';
+  position: absolute;
+  left: -30px;
+  top: 16px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--step-color, var(--accent));
+  box-shadow: 0 0 0 3px rgba(0,212,255,.15);
+}
+
+.flow-step-inner {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  transition: border-color .2s;
+}
+
+.flow-step-inner:hover { border-color: var(--border2); }
+
+.flow-step-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--step-color, var(--accent));
+  letter-spacing: .08em;
+  margin-bottom: 6px;
+}
+
+.flow-step-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.flow-step-desc {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.flow-code {
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  background: rgba(0,212,255,.06);
+  border: 1px solid rgba(0,212,255,.12);
+  border-radius: 6px;
+  padding: 8px 12px;
+  line-height: 1.8;
+}
+
+/* ---- FIREBASE SECTION ---- */
+.firebase-section {
+  max-width: 1000px;
+  margin: 0 auto 80px;
+  padding: 0 24px;
+}
+
+.firebase-tree {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 2;
+  overflow-x: auto;
+}
+
+.fb-root { color: var(--yellow); }
+.fb-key { color: var(--accent); }
+.fb-val { color: var(--green); }
+.fb-comment { color: var(--text3); }
+.fb-indent1 { padding-left: 24px; }
+.fb-indent2 { padding-left: 48px; }
+.fb-indent3 { padding-left: 72px; }
+
+/* ---- DATA FLOW MAP ---- */
+.dataflow-section {
+  max-width: 1000px;
+  margin: 0 auto 80px;
+  padding: 0 24px;
+}
+
+.dataflow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  background: var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.df-cell {
+  background: var(--card);
+  padding: 20px;
+}
+
+.df-cell-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: .06em;
+  margin-bottom: 10px;
+}
+
+.df-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 5px;
+}
+
+.df-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---- FOOTER ---- */
+.docs-footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 32px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+}
+
+.docs-footer a { color: var(--text2); text-decoration: none; }
+.docs-footer a:hover { color: var(--accent); }
+
+/* ---- SEARCH BAR ---- */
+.search-bar {
+  max-width: 1000px;
+  margin: 0 auto 48px;
+  padding: 0 24px;
+}
+
+.search-input-wrap {
+  position: relative;
+}
+
+.search-input-wrap svg {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+}
+
+.search-input {
+  width: 100%;
+  height: 48px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 16px 0 46px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s;
+}
+
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text3); }
+
+/* ---- NAV TABS ---- */
+.nav-tabs {
+  max-width: 1000px;
+  margin: 0 auto 48px;
+  padding: 0 24px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nav-tab {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text3);
+  letter-spacing: .04em;
+  transition: all .2s;
+}
+
+.nav-tab:hover { color: var(--text); border-color: var(--border2); }
+.nav-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* ---- HIGHLIGHT ---- */
+.highlight-box {
+  background: rgba(0,212,255,.05);
+  border: 1px solid rgba(0,212,255,.15);
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin: 24px 0;
+}
+
+.highlight-box p {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+@media (max-width: 768px) {
+  .arch-diagram {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .arch-arrow { transform: rotate(90deg); }
+  .dataflow-grid { grid-template-columns: 1fr; }
+  .docs-header { padding: 0 16px; }
+  .login-box { padding: 36px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN PAGE ==================== -->
+<div id="login-page">
+  <div class="login-bg"></div>
+  <div class="grid-overlay"></div>
+
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-mark">
+        <svg viewBox="0 0 10 10" width="22"><path d="M2 2h6v2H5v4H3V4H2z"/></svg>
+      </div>
+      <span class="login-logo-text">DSIGNER TV</span>
+    </div>
+
+    <h2 class="login-title">Documentação</h2>
+    <p class="login-subtitle">// acesso restrito ao sistema</p>
+
+    <div class="login-demo-note">
+      🔑 Acesso demo disponível<br>
+      Email: <strong>dev@dsignertv.com</strong><br>
+      Senha: <strong>dsigner2025</strong>
+    </div>
+
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div class="field">
+        <label>E-MAIL</label>
+        <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>SENHA</label>
+        <input type="password" id="login-pass" placeholder="••••••••" required autocomplete="current-password"/>
+      </div>
+      <div class="login-error" id="login-error"></div>
+      <button class="btn-login" type="submit" id="login-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg>
+        Entrar
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== DOCS PAGE ==================== -->
+<div id="docs-page">
+
+  <!-- HEADER -->
+  <header class="docs-header">
+    <div class="header-logo">
+      <div class="header-logo-mark">
+        <svg viewBox="0 0 10 10" width="16"><path d="M2 2h6v2H5v4H3V4H2z"/></svg>
+      </div>
+      <span class="header-logo-text">DSIGNER TV</span>
+      <span class="header-badge">SYSTEM DOCS</span>
+    </div>
+    <div class="header-right">
+      <span id="user-greeting" style="font-family:var(--mono);font-size:11px;color:var(--text3);"></span>
+      <button class="btn-logout" onclick="doLogout()">Sair</button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-tag">Documentação Técnica v1.0</div>
+    <h1>DSigner TV<br>System Architecture</h1>
+    <p>Guia completo de todos os módulos JavaScript, seus papéis, dependências e como o sistema funciona de ponta a ponta.</p>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-num">18</div>
+      <div class="stat-label">Módulos JS</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Serviços Firebase</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">5</div>
+      <div class="stat-label">Páginas HTML</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">TVs Gerenciadas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">RT</div>
+      <div class="stat-label">Realtime Sync</div>
+    </div>
+  </div>
+
+  <!-- NAV TABS -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('all', this)">Todos</button>
+    <button class="nav-tab" onclick="showSection('core', this)">Core</button>
+    <button class="nav-tab" onclick="showSection('firebase', this)">Firebase</button>
+    <button class="nav-tab" onclick="showSection('ui', this)">Interface</button>
+    <button class="nav-tab" onclick="showSection('media', this)">Mídia</button>
+    <button class="nav-tab" onclick="showSection('support', this)">Suporte</button>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" type="text" placeholder="Buscar módulo, função ou conceito..." oninput="searchModules(this.value)"/>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE DIAGRAM -->
+  <section class="arch-section">
+    <div class="section-title">// VISÃO GERAL</div>
+    <h2 class="section-heading">Arquitetura do Sistema</h2>
+    <p class="section-sub">O DSigner TV é um sistema de gerenciamento de sinalização digital com 3 camadas: interface, lógica de negócio e persistência Firebase.</p>
+
+    <div class="arch-diagram">
+      <div class="arch-layer">
+        <div class="arch-layer-title">// FRONTEND PAGES</div>
+        <div class="arch-files">
+          <div class="arch-file"><span class="dot" style="background:#00d4ff"></span>index.html</div>
+          <div class="arch-file"><span class="dot" style="background:#00d4ff"></span>painel.html</div>
+          <div class="arch-file"><span class="dot" style="background:#00d4ff"></span>downloads.html</div>
+          <div class="arch-file"><span class="dot" style="background:#00d4ff"></span>developer.html</div>
+          <div class="arch-file"><span class="dot" style="background:#00d4ff"></span>site.html</div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">→</div>
+
+      <div class="arch-layer">
+        <div class="arch-layer-title">// JS MODULES</div>
+        <div class="arch-files">
+          <div class="arch-file"><span class="dot" style="background:#00ff88"></span>main.js</div>
+          <div class="arch-file"><span class="dot" style="background:#00ff88"></span>auth.js</div>
+          <div class="arch-file"><span class="dot" style="background:#00ff88"></span>state.js</div>
+          <div class="arch-file"><span class="dot" style="background:#ffcc00"></span>tv-manager.js</div>
+          <div class="arch-file"><span class="dot" style="background:#ffcc00"></span>media-manager.js</div>
+          <div class="arch-file"><span class="dot" style="background:#ff8800"></span>firebase-sync.js</div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">→</div>
+
+      <div class="arch-layer">
+        <div class="arch-layer-title">// FIREBASE</div>
+        <div class="arch-files">
+          <div class="arch-file"><span class="dot" style="background:#ff8800"></span>Auth</div>
+          <div class="arch-file"><span class="dot" style="background:#ff8800"></span>Realtime DB</div>
+          <div class="arch-file"><span class="dot" style="background:#ff8800"></span>Storage</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE CARDS -->
+  <section class="modules-section">
+    <div class="section-title">// MÓDULOS</div>
+    <h2 class="section-heading">Todos os Arquivos JS</h2>
+    <p class="section-sub">Cada módulo tem uma responsabilidade clara. Clique para explorar o que cada um faz.</p>
+
+    <div class="module-grid" id="module-grid">
+
+      <!-- state.js -->
+      <div class="module-card" data-cat="core" style="--module-color:#00ff88">
+        <div class="module-header">
+          <div class="module-icon">🗄️</div>
+          <div class="module-info">
+            <div class="module-name">state.js</div>
+            <div class="module-tag">CORE · Estado Global</div>
+          </div>
+        </div>
+        <p class="module-desc">O "cérebro" de dados da aplicação. Armazena todas as variáveis compartilhadas entre módulos: TVs, categorias, usuário logado, arquivos selecionados, modo de upload e estado da playlist.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Exporta getters e setters para cada variável de estado</div>
+          <div class="module-op"><span class="module-op-dot"></span>Gerencia: <code>categories, tvs, currentUserId, selectedCategoryId, uploadMode, playlistEnabled, dzSelectedFiles</code></div>
+          <div class="module-op"><span class="module-op-dot"></span>Qualquer módulo pode ler/escrever estado sem acoplamento direto</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">nenhuma</span></div>
+        </div>
+      </div>
+
+      <!-- firebase.js / auth2.js -->
+      <div class="module-card" data-cat="firebase" style="--module-color:#ff8800">
+        <div class="module-header">
+          <div class="module-icon">🔥</div>
+          <div class="module-info">
+            <div class="module-name">firebase.js / auth2.js</div>
+            <div class="module-tag">FIREBASE · Inicialização</div>
+          </div>
+        </div>
+        <p class="module-desc">Inicializa o Firebase SDK (Auth, Realtime Database, Storage) e expõe globalmente via <code>window.authModule</code>. É o primeiro script a carregar no painel, criando a ponte com todos os serviços Firebase.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Cria a instância única do Firebase (guard <code>!firebase.apps.length</code>)</div>
+          <div class="module-op"><span class="module-op-dot"></span>Expõe: <code>auth, database, storage, onAuthStateChanged, signOut</code></div>
+          <div class="module-op"><span class="module-op-dot"></span>Todos os módulos acessam Firebase via <code>window.authModule</code></div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">Firebase SDK CDN</span></div>
+        </div>
+      </div>
+
+      <!-- auth.js -->
+      <div class="module-card" data-cat="core firebase" style="--module-color:#00ff88">
+        <div class="module-header">
+          <div class="module-icon">🔒</div>
+          <div class="module-info">
+            <div class="module-name">auth.js</div>
+            <div class="module-tag">CORE · Autenticação</div>
+          </div>
+        </div>
+        <p class="module-desc">Gerencia o ciclo de vida da autenticação no painel. Observa mudanças de estado do usuário e redireciona para login se não autenticado. Define o <code>currentUserId</code> baseado no email do usuário.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Usa <code>onAuthStateChanged</code> para monitorar o usuário</div>
+          <div class="module-op"><span class="module-op-dot"></span>Converte email em chave segura: <code>email.replace(/\./g, ',')</code></div>
+          <div class="module-op"><span class="module-op-dot"></span>Dispara <code>syncWithFirebase()</code> ao autenticar</div>
+          <div class="module-op"><span class="module-op-dot"></span>Redireciona para <code>index.html</code> se não logado</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">utils.js</span><span class="dep-tag">state.js</span><span class="dep-tag">firebase-sync.js</span></div>
+        </div>
+      </div>
+
+      <!-- main.js -->
+      <div class="module-card" data-cat="core" style="--module-color:#00ff88">
+        <div class="module-header">
+          <div class="module-icon">🚀</div>
+          <div class="module-info">
+            <div class="module-name">main.js</div>
+            <div class="module-tag">CORE · Ponto de Entrada</div>
+          </div>
+        </div>
+        <p class="module-desc">O orquestrador do painel. Importa e inicializa todos os módulos em sequência após o DOM carregar. Também gerencia os listeners de conexão (online/offline) e atualiza o indicador de rede.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Aguarda <code>DOMContentLoaded</code> para disparar tudo</div>
+          <div class="module-op"><span class="module-op-dot"></span>Ouve eventos <code>online/offline</code> para sincronizar</div>
+          <div class="module-op"><span class="module-op-dot"></span>Inicializa: auth, sidebar, navigation, modals, categories, TVs, media, support, profile</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">todos os módulos</span></div>
+        </div>
+      </div>
+
+      <!-- firebase-sync.js -->
+      <div class="module-card" data-cat="firebase" style="--module-color:#ff8800">
+        <div class="module-header">
+          <div class="module-icon">🔄</div>
+          <div class="module-info">
+            <div class="module-name">firebase-sync.js</div>
+            <div class="module-tag">FIREBASE · Sincronização</div>
+          </div>
+        </div>
+        <p class="module-desc">Responsável por buscar e sincronizar dados do Realtime Database com o estado local. É chamado após qualquer operação que mude dados (adicionar TV, deletar categoria, etc).</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>syncWithFirebase()</strong> — busca categorias e TVs, calcula mídias ativas e re-renderiza a UI</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>updateActiveMediaStatus()</strong> — marca quais mídias estão ativas no DB por TV</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>sendStopToTv()</strong> — envia comando de parar para TV via chave de ativação</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">utils.js</span><span class="dep-tag">state.js</span><span class="dep-tag">ui-render.js</span><span class="dep-tag">toast.js</span></div>
+        </div>
+      </div>
+
+      <!-- tv-manager.js -->
+      <div class="module-card" data-cat="ui media" style="--module-color:#ffcc00">
+        <div class="module-header">
+          <div class="module-icon">📺</div>
+          <div class="module-info">
+            <div class="module-name">tv-manager.js</div>
+            <div class="module-tag">UI · Gerenciamento de TVs</div>
+          </div>
+        </div>
+        <p class="module-desc">O módulo mais completo. Gerencia todo o ciclo de vida das TVs: criar, deletar, ligar/desligar, editar chave de ativação, abrir modal de upload e visualizar mídia. Opera sobre o grid de TVs do painel.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>Adicionar TV</strong> — salva no DB, ativa via chave de ativação se informada</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>Toggle ON/OFF</strong> — salva última mídia, envia imagem preta, restaura ao ligar</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>Editar chave</strong> — atualiza chave de ativação e registra no nó <code>midia/</code></div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>Deletar TV</strong> — remove TV, seus dados de mídia e envia stop para o dispositivo</div>
+          <div class="module-op"><span class="module-op-dot"></span>Todos os botões de ação usam delegação de eventos no <code>document</code></div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">utils.js</span><span class="dep-tag">state.js</span><span class="dep-tag">firebase-sync.js</span><span class="dep-tag">upload-tabs.js</span><span class="dep-tag">tv-media-viewer.js</span></div>
+        </div>
+      </div>
+
+      <!-- media-manager.js -->
+      <div class="module-card" data-cat="media" style="--module-color:#9966ff">
+        <div class="module-header">
+          <div class="module-icon">🖼️</div>
+          <div class="module-info">
+            <div class="module-name">media-manager.js</div>
+            <div class="module-tag">MEDIA · Biblioteca de Mídias</div>
+          </div>
+        </div>
+        <p class="module-desc">Gerencia a seção "My Cloud" — a biblioteca de todas as mídias enviadas. Calcula o uso real de armazenamento via Firebase Storage metadata, exibe barra de progresso e permite renomear/deletar mídias.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>calcStorageUsage()</strong> — chama <code>getMetadata()</code> de cada arquivo no Storage</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>renderStorageBar()</strong> — exibe % usado, muda cor ao atingir 80% e 95%</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>loadMidiasView()</strong> — carrega grid de mídias com filtros por TV e status</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>deleteMedia()</strong> — remove do DB, do Storage e atualiza playlist da TV</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>canUpload()</strong> — verifica se cota não foi excedida antes de permitir upload</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">utils.js</span><span class="dep-tag">state.js</span><span class="dep-tag">toast.js</span><span class="dep-tag">config.js</span></div>
+        </div>
+      </div>
+
+      <!-- upload-handler.js -->
+      <div class="module-card" data-cat="media" style="--module-color:#9966ff">
+        <div class="module-header">
+          <div class="module-icon">⬆️</div>
+          <div class="module-info">
+            <div class="module-name">upload-handler.js</div>
+            <div class="module-tag">MEDIA · Upload de Arquivos</div>
+          </div>
+        </div>
+        <p class="module-desc">Executa o upload de arquivos para o Firebase Storage e registra os metadados no Realtime Database. Suporta 3 modos: arquivo (drag&drop), link URL e reutilização do iCloud interno.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>uploadMediaToStorage()</strong> — envia arquivo com barra de progresso, limite 190MB</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>registerMediaInDB()</strong> — salva metadados em <code>users/{id}/tv_midias/{tvSlug}/{mediaName}</code></div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>uploadMidia()</strong> — orquestra o fluxo completo: verifica cota → faz upload → atualiza DB → envia para TV → fecha modal</div>
+          <div class="module-op"><span class="module-op-dot"></span>Suporta modo playlist (múltiplos arquivos) e mídia única</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">utils.js</span><span class="dep-tag">state.js</span><span class="dep-tag">firebase-sync.js</span><span class="dep-tag">media-manager.js</span></div>
+        </div>
+      </div>
+
+      <!-- tv-media-viewer.js -->
+      <div class="module-card" data-cat="ui media" style="--module-color:#9966ff">
+        <div class="module-header">
+          <div class="module-icon">👁️</div>
+          <div class="module-info">
+            <div class="module-name">tv-media-viewer.js</div>
+            <div class="module-tag">UI · Visualizador de Mídia</div>
+          </div>
+        </div>
+        <p class="module-desc">Exibe no modal a mídia atual de uma TV — imagem, vídeo ou playlist completa. Quando em modo playlist, permite reordenar itens via drag & drop, ajustar duração e adicionar novos arquivos.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>showTvMedia(tvId)</strong> — detecta se é playlist ou mídia simples e renderiza adequadamente</div>
+          <div class="module-op"><span class="module-op-dot"></span>Playlist com drag & drop nativo HTML5 para reordenar itens</div>
+          <div class="module-op"><span class="module-op-dot"></span>Botão "Atualizar Playlist" envia para Firebase e para o dispositivo físico</div>
+          <div class="module-op"><span class="module-op-dot"></span>Suporte a adicionar mais arquivos à playlist existente</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">utils.js</span><span class="dep-tag">state.js</span><span class="dep-tag">upload-handler.js</span><span class="dep-tag">firebase-sync.js</span></div>
+        </div>
+      </div>
+
+      <!-- category-manager.js -->
+      <div class="module-card" data-cat="ui" style="--module-color:#00d4ff">
+        <div class="module-header">
+          <div class="module-icon">📁</div>
+          <div class="module-info">
+            <div class="module-name">category-manager.js</div>
+            <div class="module-tag">UI · Grupos/Categorias</div>
+          </div>
+        </div>
+        <p class="module-desc">CRUD completo de categorias (grupos de TVs). Permite criar, renomear e deletar grupos. Ao deletar um grupo, remove também todas as TVs associadas a ele em cascata.</div>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Adiciona categorias com ID auto-incrementado</div>
+          <div class="module-op"><span class="module-op-dot"></span>Deletar categoria apaga em cascata todas as TVs do grupo</div>
+          <div class="module-op"><span class="module-op-dot"></span>Editar abre modal com nome atual pré-preenchido</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">utils.js</span><span class="dep-tag">state.js</span><span class="dep-tag">firebase-sync.js</span><span class="dep-tag">ui-render.js</span></div>
+        </div>
+      </div>
+
+      <!-- ui-render.js -->
+      <div class="module-card" data-cat="ui" style="--module-color:#00d4ff">
+        <div class="module-header">
+          <div class="module-icon">🎨</div>
+          <div class="module-info">
+            <div class="module-name">ui-render.js</div>
+            <div class="module-tag">UI · Renderização</div>
+          </div>
+        </div>
+        <p class="module-desc">Renderiza a lista de categorias na sidebar e o grid de TVs no painel. Lê dados do estado global e constrói o HTML dinamicamente. É chamado toda vez que o estado muda.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>updateCategoryList()</strong> — reconstrói a sidebar de grupos, preserva botão de adicionar</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>updateTvGrid()</strong> — filtra TVs por categoria selecionada e renderiza cards com todos os botões de ação</div>
+          <div class="module-op"><span class="module-op-dot"></span>TVs offline recebem classe CSS especial para indicação visual</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">state.js</span></div>
+        </div>
+      </div>
+
+      <!-- navigation.js -->
+      <div class="module-card" data-cat="ui" style="--module-color:#00d4ff">
+        <div class="module-header">
+          <div class="module-icon">🧭</div>
+          <div class="module-info">
+            <div class="module-name">navigation.js</div>
+            <div class="module-tag">UI · Navegação</div>
+          </div>
+        </div>
+        <p class="module-desc">Controla a navegação entre seções do painel (Dashboard, Mídias, Suporte, Perfil, etc). Ao trocar de seção, dispara carregamentos específicos. Gerencia também o iframe da seção App.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Ativa a seção correta e marca o nav-item como ativo</div>
+          <div class="module-op"><span class="module-op-dot"></span>Ao entrar em "Mídias" → chama <code>loadMidiasView()</code></div>
+          <div class="module-op"><span class="module-op-dot"></span>Ao entrar em "Perfil" → chama <code>reloadPlanForUser()</code></div>
+          <div class="module-op"><span class="module-op-dot"></span>Ao entrar em "Suporte" → carrega histórico de tickets</div>
+          <div class="module-op"><span class="module-op-dot"></span>Controla iframe da seção "App" com botão voltar</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">media-manager.js</span><span class="dep-tag">profile.js</span><span class="dep-tag">support.js</span></div>
+        </div>
+      </div>
+
+      <!-- modals.js -->
+      <div class="module-card" data-cat="ui" style="--module-color:#00d4ff">
+        <div class="module-header">
+          <div class="module-icon">🪟</div>
+          <div class="module-info">
+            <div class="module-name">modals.js</div>
+            <div class="module-tag">UI · Modais</div>
+          </div>
+        </div>
+        <p class="module-desc">Gerencia a abertura/fechamento de todos os modais do painel: categorias, adicionar TV, upload de mídia. Também conecta os listeners dos tabs de upload e do switch de playlist.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Delegação de clique para botões de seleção de categoria</div>
+          <div class="module-op"><span class="module-op-dot"></span>FAB (botão flutuante de ação) com toggle e fechamento ao clicar fora</div>
+          <div class="module-op"><span class="module-op-dot"></span>Conecta tabs: Arquivo / Link / iCloud</div>
+          <div class="module-op"><span class="module-op-dot"></span>Escuta mudança no tipo de link (vídeo/imagem) para ajustar campos</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">upload-tabs.js</span><span class="dep-tag">state.js</span><span class="dep-tag">icloud-manager.js</span></div>
+        </div>
+      </div>
+
+      <!-- sidebar.js -->
+      <div class="module-card" data-cat="ui" style="--module-color:#00d4ff">
+        <div class="module-header">
+          <div class="module-icon">📋</div>
+          <div class="module-info">
+            <div class="module-name">sidebar.js</div>
+            <div class="module-tag">UI · Sidebar</div>
+          </div>
+        </div>
+        <p class="module-desc">Gerencia o comportamento da barra lateral: colapsar no desktop (salva preferência no localStorage) e abrir/fechar no mobile com overlay.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Toggle collapsed com persistência em <code>localStorage</code></div>
+          <div class="module-op"><span class="module-op-dot"></span>Botão hambúrguer no mobile abre sidebar + overlay</div>
+          <div class="module-op"><span class="module-op-dot"></span>Restaura estado salvo ao carregar a página</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">nenhuma</span></div>
+        </div>
+      </div>
+
+      <!-- profile.js -->
+      <div class="module-card" data-cat="ui firebase" style="--module-color:#00d4ff">
+        <div class="module-header">
+          <div class="module-icon">👤</div>
+          <div class="module-info">
+            <div class="module-name">profile.js</div>
+            <div class="module-tag">UI · Perfil e Plano</div>
+          </div>
+        </div>
+        <p class="module-desc">Exibe e gerencia o perfil do usuário: plano de armazenamento atual, barra de uso, formulário de solicitação de upgrade de plano, e seção de cobrança com QR Code Pix e upload de comprovante.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>initProfile(user)</strong> — carrega email, plano e inicia listeners</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>loadPlanCard()</strong> — calcula uso, exibe barra colorida por %</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>watchBilling()</strong> — listener em tempo real para seção de cobrança Pix</div>
+          <div class="module-op"><span class="module-op-dot"></span>Upload de comprovante de pagamento direto para Firebase Storage</div>
+          <div class="module-op"><span class="module-op-dot"></span>Formulário de solicitação de upgrade cria ticket em <code>support_tickets</code></div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">window.authModule</span></div>
+        </div>
+      </div>
+
+      <!-- support.js -->
+      <div class="module-card" data-cat="support" style="--module-color:#ff4444">
+        <div class="module-header">
+          <div class="module-icon">🎧</div>
+          <div class="module-info">
+            <div class="module-name">support.js</div>
+            <div class="module-tag">SUPORTE · Chamados e Chat</div>
+          </div>
+        </div>
+        <p class="module-desc">Sistema completo de suporte: criação de chamados, histórico de tickets com status em tempo real, e chat por ticket com mensagens em tempo real via Firebase listeners.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>injectSupportUI()</strong> — injeta dinamicamente o modal de chat no DOM</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>setupSupportForm()</strong> — conecta formulário de novo chamado</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>loadTicketHistory()</strong> — lista tickets do usuário ordenados por data</div>
+          <div class="module-op"><span class="module-op-dot"></span>Chat em tempo real com <code>.on('value')</code> no nó de mensagens</div>
+          <div class="module-op"><span class="module-op-dot"></span>Badge de "NOVO" para mensagens não lidas da equipe</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">window.authModule</span></div>
+        </div>
+      </div>
+
+      <!-- icloud-manager.js -->
+      <div class="module-card" data-cat="media" style="--module-color:#9966ff">
+        <div class="module-header">
+          <div class="module-icon">☁️</div>
+          <div class="module-info">
+            <div class="module-name">icloud-manager.js</div>
+            <div class="module-tag">MEDIA · Biblioteca Interna</div>
+          </div>
+        </div>
+        <p class="module-desc">"iCloud" interno do sistema — permite reutilizar mídias já enviadas anteriormente para qualquer TV sem fazer novo upload, economizando cota de armazenamento. Deduplica por URL.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>loadICloudList()</strong> — lista todas as mídias de todas as TVs, deduplica por URL</div>
+          <div class="module-op"><span class="module-op-dot"></span>Busca por nome, TV ou nome de mídia</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>assignExistingMediaToTv()</strong> — atribui mídia existente a nova TV sem reuplodar</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">utils.js</span><span class="dep-tag">state.js</span><span class="dep-tag">firebase-sync.js</span></div>
+        </div>
+      </div>
+
+      <!-- dropzone.js -->
+      <div class="module-card" data-cat="ui media" style="--module-color:#9966ff">
+        <div class="module-header">
+          <div class="module-icon">🎯</div>
+          <div class="module-info">
+            <div class="module-name">dropzone.js</div>
+            <div class="module-tag">UI · Drag & Drop</div>
+          </div>
+        </div>
+        <p class="module-desc">Componente de drag & drop para seleção de arquivos de mídia. Exibe preview da imagem selecionada e lista de arquivos no modo playlist.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Suporta drag & drop e clique para selecionar</div>
+          <div class="module-op"><span class="module-op-dot"></span>Preview de imagem via FileReader</div>
+          <div class="module-op"><span class="module-op-dot"></span>Valida quantidade de arquivos conforme modo playlist</div>
+          <div class="module-op"><span class="module-op-dot"></span>Usa flag <code>dzInit</code> para evitar listeners duplicados</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">state.js</span><span class="dep-tag">toast.js</span></div>
+        </div>
+      </div>
+
+      <!-- utils.js -->
+      <div class="module-card" data-cat="core" style="--module-color:#00ff88">
+        <div class="module-header">
+          <div class="module-icon">🔧</div>
+          <div class="module-info">
+            <div class="module-name">utils.js</div>
+            <div class="module-tag">CORE · Utilitários</div>
+          </div>
+        </div>
+        <p class="module-desc">Funções utilitárias puras reutilizadas em todo o sistema. Não tem dependências e não tem efeitos colaterais.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>isOnline()</strong> — verifica <code>navigator.onLine</code></div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>tvSlugFromName()</strong> — converte nome de TV em slug para usar como chave no DB</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>getMediaNameFromUrl()</strong> — extrai nome do arquivo a partir da URL do Storage</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>updateNetIndicator()</strong> — atualiza ícone visual de conexão no header</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">nenhuma</span></div>
+        </div>
+      </div>
+
+      <!-- toast.js -->
+      <div class="module-card" data-cat="ui" style="--module-color:#00d4ff">
+        <div class="module-header">
+          <div class="module-icon">🍞</div>
+          <div class="module-info">
+            <div class="module-name">toast.js</div>
+            <div class="module-tag">UI · Notificações</div>
+          </div>
+        </div>
+        <p class="module-desc">Sistema de notificações toast com suporte a 3 tipos (success, error, info). Máximo de 4 toasts simultâneos, com auto-dismiss em 4.2s e pausa no hover.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Cria container <code>#toast-container</code> automaticamente se não existir</div>
+          <div class="module-op"><span class="module-op-dot"></span>Máx. 4 toasts: remove o mais antigo ao atingir o limite</div>
+          <div class="module-op"><span class="module-op-dot"></span>Hover pausa o timer de auto-dismiss</div>
+          <div class="module-op"><span class="module-op-dot"></span>Botão X para fechar manualmente</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">nenhuma</span></div>
+        </div>
+      </div>
+
+      <!-- upload-tabs.js -->
+      <div class="module-card" data-cat="ui media" style="--module-color:#9966ff">
+        <div class="module-header">
+          <div class="module-icon">📑</div>
+          <div class="module-info">
+            <div class="module-name">upload-tabs.js</div>
+            <div class="module-tag">UI · Tabs de Upload</div>
+          </div>
+        </div>
+        <p class="module-desc">Controla a troca entre os 3 modos de upload (Arquivo, Link URL, iCloud interno) e o toggle de modo Playlist. Ajusta atributo <code>multiple</code> do input conforme o modo.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><strong>changeUploadMode(mode)</strong> — mostra/esconde painéis, atualiza tab ativa</div>
+          <div class="module-op"><span class="module-op-dot"></span><strong>changePlaylistState(enabled)</strong> — ativa/desativa seleção múltipla de arquivos</div>
+          <div class="module-op"><span class="module-op-dot"></span>Ao trocar de modo limpa seleções anteriores</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">state.js</span><span class="dep-tag">dropzone.js</span><span class="dep-tag">icloud-manager.js</span></div>
+        </div>
+      </div>
+
+      <!-- config.js -->
+      <div class="module-card" data-cat="core" style="--module-color:#00ff88">
+        <div class="module-header">
+          <div class="module-icon">⚙️</div>
+          <div class="module-info">
+            <div class="module-name">config.js</div>
+            <div class="module-tag">CORE · Constantes</div>
+          </div>
+        </div>
+        <p class="module-desc">Armazena constantes globais do sistema: ícone de play em SVG base64 (usado como thumbnail de vídeos) e imagem preta base64 (usada quando TV é desligada).</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span><code>PLAY_ICON</code> — SVG base64 para thumbnail de vídeos na grid</div>
+          <div class="module-op"><span class="module-op-dot"></span><code>BLACK_IMAGE_URL</code> — PNG 1x1 preto para TVs desligadas</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">nenhuma</span></div>
+        </div>
+      </div>
+
+      <!-- login.js -->
+      <div class="module-card" data-cat="core firebase" style="--module-color:#00ff88">
+        <div class="module-header">
+          <div class="module-icon">🔑</div>
+          <div class="module-info">
+            <div class="module-name">login.js</div>
+            <div class="module-tag">CORE · Página de Login</div>
+          </div>
+        </div>
+        <p class="module-desc">Controla a página de login (index.html). Faz autenticação com Firebase Auth via email/senha, trata erros com mensagens amigáveis em português, redireciona para painel se já logado.</p>
+        <div class="module-ops">
+          <div class="module-op"><span class="module-op-dot"></span>Redireciona automaticamente se já autenticado</div>
+          <div class="module-op"><span class="module-op-dot"></span>Validação de email com regex antes de chamar Firebase</div>
+          <div class="module-op"><span class="module-op-dot"></span>Mapeamento de todos os códigos de erro Firebase em PT-BR</div>
+        </div>
+        <div class="module-deps">
+          <div class="module-deps-title">DEPENDÊNCIAS</div>
+          <div class="dep-tags"><span class="dep-tag">firebase.js</span><span class="dep-tag">window.authModule</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FLOW SECTION -->
+  <section class="flow-section">
+    <div class="section-title">// FLUXO DE DADOS</div>
+    <h2 class="section-heading">Como o Sistema Funciona</h2>
+    <p class="section-sub">Do login até a mídia aparecer na TV — passo a passo.</p>
+
+    <div class="flow-timeline">
+      <div class="flow-step" style="--step-color:#00ff88">
+        <div class="flow-step-inner">
+          <div class="flow-step-label">PASSO 01 · AUTENTICAÇÃO</div>
+          <div class="flow-step-title">Login via Firebase Auth</div>
+          <p class="flow-step-desc">O usuário acessa <code>index.html</code>. O <strong>login.js</strong> escuta o submit do form, valida o email e chama <code>signInWithEmailAndPassword()</code>. O <strong>firebase.js</strong> já está carregado e disponibiliza <code>window.authModule</code>. Ao autenticar, o <code>onAuthStateChanged</code> redireciona para <code>painel.html</code>.</p>
+          <div class="flow-code">login.js → firebase.auth.signInWithEmailAndPassword() → redirect painel.html</div>
+        </div>
+      </div>
+
+      <div class="flow-step" style="--step-color:#00d4ff">
+        <div class="flow-step-inner">
+          <div class="flow-step-label">PASSO 02 · INICIALIZAÇÃO</div>
+          <div class="flow-step-title">Painel carrega e inicializa módulos</div>
+          <p class="flow-step-desc">O <strong>main.js</strong> espera o DOM e inicializa todos os módulos em ordem. O <strong>auth.js</strong> detecta o usuário logado, define o <code>currentUserId</code> (email com pontos trocados por vírgulas) e dispara a sincronização inicial com Firebase.</p>
+          <div class="flow-code">main.js → initAuth() → syncWithFirebase() → setCategories() + setTVs()</div>
+        </div>
+      </div>
+
+      <div class="flow-step" style="--step-color:#ffcc00">
+        <div class="flow-step-inner">
+          <div class="flow-step-label">PASSO 03 · SINCRONIZAÇÃO</div>
+          <div class="flow-step-title">Dados chegam do Firebase</div>
+          <p class="flow-step-desc">O <strong>firebase-sync.js</strong> busca <code>users/{userId}/categories</code> e <code>users/{userId}/tvs</code>, armazena no estado via <strong>state.js</strong> e chama <strong>ui-render.js</strong> para atualizar a sidebar e o grid. Para cada TV, calcula quais mídias estão ativas.</p>
+          <div class="flow-code">syncWithFirebase() → setCategories() + setTVs() → updateCategoryList() + updateTvGrid()</div>
+        </div>
+      </div>
+
+      <div class="flow-step" style="--step-color:#ff8800">
+        <div class="flow-step-inner">
+          <div class="flow-step-label">PASSO 04 · UPLOAD DE MÍDIA</div>
+          <div class="flow-step-title">Usuário envia arquivo para a TV</div>
+          <p class="flow-step-desc">Clica em "Enviar mídia". O <strong>tv-manager.js</strong> abre o modal. O <strong>dropzone.js</strong> recebe o arquivo. O usuário clica em enviar: o <strong>upload-handler.js</strong> verifica a cota (via <strong>media-manager.js</strong>), faz upload para Storage, registra no DB e atualiza o nó <code>midia/{activationKey}</code> que o dispositivo físico escuta.</p>
+          <div class="flow-code">canUpload() → uploadMediaToStorage() → registerMediaInDB() → midia/{key}.set()</div>
+        </div>
+      </div>
+
+      <div class="flow-step" style="--step-color:#00ff88">
+        <div class="flow-step-inner">
+          <div class="flow-step-label">PASSO 05 · DISPOSITIVO RECEBE</div>
+          <div class="flow-step-title">TV exibe o conteúdo</div>
+          <p class="flow-step-desc">O app Android/Windows instalado na TV escuta o nó <code>midia/{activationKey}</code> em tempo real. Quando detecta mudança, exibe a nova mídia (imagem, vídeo ou playlist). Toda a comunicação é unidirecional via Firebase Realtime Database.</p>
+          <div class="flow-code">Firebase Realtime DB → App DSigner (TV) → exibe mídia</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIREBASE STRUCTURE -->
+  <section class="firebase-section">
+    <div class="section-title">// BANCO DE DADOS</div>
+    <h2 class="section-heading">Estrutura do Firebase</h2>
+    <p class="section-sub">Como os dados estão organizados no Realtime Database.</p>
+
+    <div class="firebase-tree">
+      <div class="fb-root">dsignertv-default-rtdb/</div>
+      <div class="fb-indent1">
+        <span class="fb-key">users/</span>
+        <span class="fb-comment">  // dados de cada usuário (chave = email com '.' → ',')</span>
+      </div>
+      <div class="fb-indent2">
+        <span class="fb-key">{userId}/</span>
+      </div>
+      <div class="fb-indent3">
+        <span class="fb-key">categories/</span> <span class="fb-val">{ id, name, status }</span>
+        <span class="fb-comment">  // grupos de TVs</span>
+      </div>
+      <div class="fb-indent3">
+        <span class="fb-key">tvs/</span> <span class="fb-val">{ id, name, categoryId, status, activationKey, media, playlist }</span>
+      </div>
+      <div class="fb-indent3">
+        <span class="fb-key">tv_midias/</span>
+        <span class="fb-comment">  // metadados de todas mídias enviadas</span>
+      </div>
+      <div class="fb-indent3" style="padding-left:96px">
+        <span class="fb-key">{tvSlug}/</span> <span class="fb-key">{mediaName}/</span>
+        <span class="fb-val">{ url, type, active, storagePath, timestamp... }</span>
+      </div>
+      <div class="fb-indent3">
+        <span class="fb-key">plan/</span> <span class="fb-val">{ label, quota }</span>
+        <span class="fb-comment">  // plano de armazenamento</span>
+      </div>
+      <div class="fb-indent3">
+        <span class="fb-key">billing/</span> <span class="fb-val">{ status, planLabel, price, qrCodeUrl, pixKey... }</span>
+      </div>
+      <div class="fb-indent1 " style="margin-top:8px">
+        <span class="fb-key">midia/</span>
+        <span class="fb-comment">  // canal de comunicação com os dispositivos físicos (TVs)</span>
+      </div>
+      <div class="fb-indent2">
+        <span class="fb-key">{activationKey}/</span>
+        <span class="fb-val">{ tipo: 'image'|'video'|'playlist'|'stop', url, items, timestamp }</span>
+      </div>
+      <div class="fb-indent1" style="margin-top:8px">
+        <span class="fb-key">support_tickets/</span>
+        <span class="fb-comment">  // chamados de suporte</span>
+      </div>
+      <div class="fb-indent2">
+        <span class="fb-key">{ticketId}/</span>
+        <span class="fb-val">{ userId, email, subject, message, status, messages/, unreadDev, unreadUser }</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATA FLOW MAP -->
+  <section class="dataflow-section">
+    <div class="section-title">// MAPA DE RESPONSABILIDADES</div>
+    <h2 class="section-heading">Quem faz o quê</h2>
+    <p class="section-sub">Divisão clara de responsabilidades entre os módulos.</p>
+
+    <div class="dataflow-grid">
+      <div class="df-cell">
+        <div class="df-cell-title">LÊ DO ESTADO</div>
+        <div class="df-item"><span class="df-dot" style="background:#00d4ff"></span>ui-render.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#00d4ff"></span>upload-handler.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#00d4ff"></span>tv-manager.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#00d4ff"></span>category-manager.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#00d4ff"></span>firebase-sync.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#00d4ff"></span>modals.js</div>
+      </div>
+      <div class="df-cell">
+        <div class="df-cell-title">ESCREVE NO ESTADO</div>
+        <div class="df-item"><span class="df-dot" style="background:#00ff88"></span>auth.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#00ff88"></span>firebase-sync.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#00ff88"></span>upload-tabs.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#00ff88"></span>dropzone.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#00ff88"></span>tv-manager.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#00ff88"></span>modals.js</div>
+      </div>
+      <div class="df-cell">
+        <div class="df-cell-title">ACESSA FIREBASE</div>
+        <div class="df-item"><span class="df-dot" style="background:#ff8800"></span>firebase-sync.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#ff8800"></span>tv-manager.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#ff8800"></span>upload-handler.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#ff8800"></span>media-manager.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#ff8800"></span>category-manager.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#ff8800"></span>profile.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#ff8800"></span>support.js</div>
+        <div class="df-item"><span class="df-dot" style="background:#ff8800"></span>icloud-manager.js</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="docs-footer">
+    <p>© 2025 <a href="https://dsignertv.com.br" target="_blank">DSigner TV</a> · Documentação técnica do sistema · Gerado com Claude</p>
+  </footer>
+
+</div>
+
+<script>
+// ============ AUTH LOGIC ============
+const DEMO_EMAIL = 'dev@dsignertv.com';
+const DEMO_PASS  = 'dsigner2025';
+
+function doLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+
+  errEl.classList.remove('show');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Entrando...';
+
+  setTimeout(() => {
+    if (email === DEMO_EMAIL && pass === DEMO_PASS) {
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('docs-page').classList.add('visible');
+      document.getElementById('user-greeting').textContent = '👤 ' + email;
+    } else {
+      errEl.textContent = 'Email ou senha incorretos.';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg> Entrar';
+    }
+  }, 900);
+}
+
+function doLogout() {
+  document.getElementById('docs-page').classList.remove('visible');
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-btn').innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg> Entrar';
+}
+
+// ============ FILTER / SEARCH ============
+function showSection(cat, tabEl) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  const cards = document.querySelectorAll('.module-card');
+  cards.forEach(card => {
+    const cardCat = card.dataset.cat || '';
+    card.style.display = (cat === 'all' || cardCat.includes(cat)) ? '' : 'none';
+  });
+}
+
+function searchModules(q) {
+  q = q.toLowerCase();
+  const cards = document.querySelectorAll('.module-card');
+  cards.forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = (!q || text.includes(q)) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
