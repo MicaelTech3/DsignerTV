@@ -1,8 +1,29 @@
 // ======================== utils.js ==========================
 export const isOnline = () => navigator.onLine;
 
+// Sanitiza strings para uso seguro como chave/path no Firebase
+// Remove ou substitui: . # $ [ ] e outros caracteres inválidos
+function sanitizeForFirebase(str) {
+  return str
+    .replace(/\./g, '_')   // ponto → underline
+    .replace(/#/g, '_')
+    .replace(/\$/g, '_')
+    .replace(/\[/g, '_')
+    .replace(/\]/g, '_')
+    .replace(/\//g, '_');  // barra também não pode em segmentos
+}
+
 export function tvSlugFromName(name) {
-  return name.replace(/\s+/g, '_').toLowerCase();
+  return sanitizeForFirebase(
+    name.replace(/\s+/g, '_').toLowerCase()
+  );
+}
+
+// Sanitiza o nome da mídia (usado como chave no DB)
+export function sanitizeMediaName(name) {
+  return sanitizeForFirebase(
+    name.replace(/\s+/g, '_').toLowerCase()
+  );
 }
 
 export function getMediaNameFromUrl(tvName, url) {
@@ -16,7 +37,8 @@ export function getMediaNameFromUrl(tvName, url) {
     const fileParts = file.split('_');
     fileParts.shift();
     const base = fileParts.join('_');
-    return base.replace(/\.[^/.]+$/, '');
+    const mediaName = base.replace(/\.[^/.]+$/, ''); // remove extensão
+    return sanitizeForFirebase(mediaName);
   } catch {
     return null;
   }

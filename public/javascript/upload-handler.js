@@ -1,5 +1,5 @@
 // ======================== upload-handler.js ==========================
-import { isOnline, tvSlugFromName } from './utils.js';
+import { isOnline, tvSlugFromName, sanitizeMediaName } from './utils.js';
 import { showToast } from './toast.js';
 import { getTVs, getCurrentUserId, getUploadMode, getDzSelectedFiles, setDzSelectedFiles, getPlaylistEnabled } from './state.js';
 import { updateActiveMediaStatus } from './firebase-sync.js';
@@ -52,11 +52,18 @@ export async function uploadMediaToStorage(file, tv) {
 export async function registerMediaInDB(tv, fileName, mediaData) {
   const currentUserId = getCurrentUserId();
   if (!currentUserId) return null;
+
   const tvNameSlug = tvSlugFromName(tv.name);
+
+  // Remove o timestamp do início do fileName (ex: "1234567890_foto.png" → "foto.png")
   const nameParts = fileName.split('_');
-  nameParts.shift();
+  nameParts.shift(); // remove timestamp
   const baseName = nameParts.join('_');
-  const mediaName = baseName.replace(/\.[^/.]+$/, '');
+  const nameWithoutExt = baseName.replace(/\.[^/.]+$/, ''); // remove extensão
+
+  // ✅ Sanitiza para remover pontos e outros caracteres inválidos no Firebase
+  const mediaName = sanitizeMediaName(nameWithoutExt);
+
   const entry = {
     tvId: tv.id,
     tvName: tv.name,
@@ -74,7 +81,11 @@ export async function registerMediaInDB(tv, fileName, mediaData) {
     active: true,
     storagePath: `tv_media/${tvNameSlug}/${fileName}`
   };
-  await authModule.database.ref(`users/${currentUserId}/tv_midias/${tvNameSlug}/${mediaName}`).set(entry);
+
+  await authModule.database
+    .ref(`users/${currentUserId}/tv_midias/${tvNameSlug}/${mediaName}`)
+    .set(entry);
+
   return { tvNameSlug, mediaName };
 }
 
@@ -114,8 +125,7 @@ async function uploadMidia() {
       }
 
       const isVideo = type === 'video';
-      let duration = null,
-        loop = false;
+      let duration = null, loop = false;
       if (!isVideo) {
         const v = parseInt(durationEl?.value || '10', 10);
         duration = isNaN(v) || v < 1 ? 10 : v;
