@@ -1,29 +1,22 @@
 // ======================== utils.js ==========================
 export const isOnline = () => navigator.onLine;
 
-// Sanitiza strings para uso seguro como chave/path no Firebase
-// Remove ou substitui: . # $ [ ] e outros caracteres inválidos
 function sanitizeForFirebase(str) {
   return str
-    .replace(/\./g, '_')   // ponto → underline
+    .replace(/\./g, '_')
     .replace(/#/g, '_')
     .replace(/\$/g, '_')
     .replace(/\[/g, '_')
     .replace(/\]/g, '_')
-    .replace(/\//g, '_');  // barra também não pode em segmentos
+    .replace(/\//g, '_');
 }
 
 export function tvSlugFromName(name) {
-  return sanitizeForFirebase(
-    name.replace(/\s+/g, '_').toLowerCase()
-  );
+  return sanitizeForFirebase(name.replace(/\s+/g, '_').toLowerCase());
 }
 
-// Sanitiza o nome da mídia (usado como chave no DB)
 export function sanitizeMediaName(name) {
-  return sanitizeForFirebase(
-    name.replace(/\s+/g, '_').toLowerCase()
-  );
+  return sanitizeForFirebase(name.replace(/\s+/g, '_').toLowerCase());
 }
 
 export function getMediaNameFromUrl(tvName, url) {
@@ -37,7 +30,7 @@ export function getMediaNameFromUrl(tvName, url) {
     const fileParts = file.split('_');
     fileParts.shift();
     const base = fileParts.join('_');
-    const mediaName = base.replace(/\.[^/.]+$/, ''); // remove extensão
+    const mediaName = base.replace(/\.[^/.]+$/, '');
     return sanitizeForFirebase(mediaName);
   } catch {
     return null;
@@ -48,14 +41,10 @@ export function updateNetIndicator() {
   const el = document.getElementById('net-indicator');
   if (!el) return;
   if (navigator.onLine) {
-    el.classList.add('online');
-    el.classList.remove('offline');
-    el.setAttribute('aria-label', 'Conectado');
-    el.title = 'Conectado';
+    el.classList.add('online'); el.classList.remove('offline');
+    el.setAttribute('aria-label', 'Conectado'); el.title = 'Conectado';
   } else {
-    el.classList.add('offline');
-    el.classList.remove('online');
-    el.setAttribute('aria-label', 'Sem conexão');
-    el.title = 'Sem conexão';
+    el.classList.add('offline'); el.classList.remove('online');
+    el.setAttribute('aria-label', 'Sem conexão'); el.title = 'Sem conexão';
   }
 }
